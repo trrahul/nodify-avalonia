@@ -1,0 +1,35 @@
+﻿<ResourceDictionary  xmlns:data="clr-namespace:Avalonia.Data;assembly=Avalonia.Markup" xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+                    xmlns:local="clr-namespace:Nodify.Avalonia" 
+                    xmlns:helpers="clr-namespace:Nodify.Avalonia.Helpers">
+
+    <ControlTheme x:Key="{x:Type local:DecoratorContainer}" TargetType="local:DecoratorContainer">
+        <Setter Property="KeyboardNavigation.IsTabStop"
+                Value="False" />
+        <Setter Property="RenderTransform" >
+            <Setter.Value>
+                <data:MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleTransformConverter}">
+                    <data:Binding Path="ViewportTransform.Children[0].ScaleX" RelativeSource="{RelativeSource AncestorType=local:NodifyEditor}" />
+                    <data:Binding Path="ViewportTransform.Children[0].ScaleY" RelativeSource="{RelativeSource AncestorType=local:NodifyEditor}" />
+                </data:MultiBinding>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Padding="{TemplateBinding Padding}"
+                            x:Name="Border"
+                            CornerRadius="3">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="Brushes.xaml" />
+        <ResourceInclude Source="Controls.xaml" />
+        <ResourceInclude Source="Generic.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+
+    <Color x:Key="ForegroundColor">Black</Color>
+    <Color x:Key="DisabledForegroundColor">Gray</Color>
+
+    <Color x:Key="BackgroundColor">#D4DCF2</Color>
+    <Color x:Key="ContrastBackgroundColor">#CCD6ED</Color>
+    <Color x:Key="HighlightedBackgroundColor">#B1C5FF</Color>
+
+    <Color x:Key="BorderColor">#CBCCDF</Color>
+    <Color x:Key="DisabledBorderColor">Gray</Color>
+    <Color x:Key="HighlightedBorderColor">#7EB4EA</Color>
+    <Color x:Key="FocusedBorderColor">#569DE5</Color>
+
+    <Color x:Key="GridLinesColor">#7EB4EA</Color>
+</ResourceDictionary>

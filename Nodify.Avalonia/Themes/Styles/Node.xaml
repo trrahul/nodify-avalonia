@@ -1,0 +1,148 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Nodify" 
+                    xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes">
+
+    <DataTemplate x:Key="DefaultInputConnectorTemplate">
+        <nodes:NodeInput />
+    </DataTemplate>
+    <DataTemplate x:Key="DefaultOutputConnectorTemplate">
+        <nodes:NodeOutput />
+    </DataTemplate>
+    <DataTemplate x:Key="DefaultFlowInputConnectorTemplate">
+        <nodes:NodeInput/>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DefaultFlowOutputConnectorTemplate">
+        <nodes:NodeOutput/>
+    </DataTemplate>
+
+    <ControlTheme x:Key="{x:Type nodes:Node}" TargetType="nodes:Node">
+        <Setter Property="Background"
+                Value="{DynamicResource Node.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource Node.ForegroundBrush}" />
+        <Setter Property="ContentBrush"
+                Value="{DynamicResource Node.ContentBrush}" />
+        <Setter Property="HeaderBrush"
+                Value="{DynamicResource Node.HeaderBrush}" />
+        <Setter Property="FooterBrush"
+                Value="{DynamicResource Node.FooterBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource Node.BorderBrush}" />
+        <Setter Property="MinHeight"
+                Value="15" />
+        <Setter Property="MinWidth"
+                Value="15" />
+        <Setter Property="VerticalAlignment"
+                Value="Center" />
+        <Setter Property="HorizontalAlignment"
+                Value="Center" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Center" />
+        <Setter Property="InputConnectorTemplate"
+                Value="{StaticResource DefaultInputConnectorTemplate}" />
+        <Setter Property="OutputConnectorTemplate"
+                Value="{StaticResource DefaultOutputConnectorTemplate}" />
+        <Setter Property="FlowInputConnectorTemplate"
+                Value="{StaticResource DefaultFlowInputConnectorTemplate}" />
+        <Setter Property="FlowOutputConnectorTemplate"
+                Value="{StaticResource DefaultFlowOutputConnectorTemplate}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="3">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!--Header-->
+                            <Border IsVisible="{TemplateBinding HasHeader}"
+                                    Background="{TemplateBinding HeaderBrush}"
+                                    CornerRadius="3 3 0 0"
+                                    Grid.ColumnSpan="3"
+                                    Padding="6 4 6 4">
+                                <ContentPresenter Content="{TemplateBinding Header}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+                            </Border>
+
+                            <!--Body-->
+                            <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <!--Flow IN-->
+                                <ItemsControl ItemsSource="{TemplateBinding FlowInput}" Grid.Column="0" Grid.Row="0"
+                                              ItemTemplate="{TemplateBinding FlowInputConnectorTemplate}"
+                                              Focusable="False" />
+                                <!--Data IN-->
+                                <ItemsControl ItemsSource="{TemplateBinding Input}" Grid.Column="0"  Grid.Row="1"
+                                              ItemTemplate="{TemplateBinding InputConnectorTemplate}"
+                                              Focusable="False" />
+
+                                <!--Content-->
+                                <Border Grid.Column="1" Grid.Row="1"
+                                        Padding="16 0 16 0"
+                                        Background="{TemplateBinding ContentBrush}">
+                                    <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      Content="{TemplateBinding Content}"
+                                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                </Border>
+
+                                <!--Data OUT-->
+                                <ItemsControl ItemsSource="{TemplateBinding Output}"
+                                              ItemTemplate="{TemplateBinding OutputConnectorTemplate}"
+                                              Grid.Column="2" Grid.Row="3"
+                                              Focusable="False" />
+
+                                <!--Flow OUT-->
+                                <ItemsControl ItemsSource="{TemplateBinding FlowOutput}"
+                                              ItemTemplate="{TemplateBinding FlowOutputConnectorTemplate}"
+                                              Grid.Column="2" Grid.Row="0"
+                                              Focusable="False" />
+                            </Grid>
+
+                            <!--Footer-->
+                            <Border IsVisible="{TemplateBinding HasFooter}"
+                                    Background="{TemplateBinding FooterBrush}"
+                                    CornerRadius="0 0 3 3"
+                                    Grid.Row="2"
+                                    Grid.ColumnSpan="3"
+                                    Padding="6 4 6 4">
+                                <ContentPresenter Content="{TemplateBinding Footer}"
+                                                  ContentTemplate="{TemplateBinding FooterTemplate}"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^[HasHeader=true]">
+            <Setter Property="Background"
+                    Value="{DynamicResource Node.BackgroundBrush}" />
+            <Setter Property="ContentBrush"
+                    Value="{DynamicResource Node.ContentBrush}" />
+            <Setter Property="HeaderBrush"
+                    Value="{DynamicResource Node.HeaderBrush}" />
+            <Setter Property="FooterBrush"
+                    Value="{DynamicResource Node.FooterBrush}" />
+            <Setter Property="BorderBrush"
+                    Value="{DynamicResource Node.BorderBrush}" />
+            <Setter Property="Foreground"
+                    Value="{DynamicResource Node.HeaderForegroundBrush}" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

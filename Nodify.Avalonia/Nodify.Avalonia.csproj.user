@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <None Update="Themes\Brushes.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Controls.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Nodify.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\Connection.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\Connector.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\Controls.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\DecoratorContainer.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\GroupingNode.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\ItemContainer.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\KnotNode.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\Node.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\NodeInput.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\NodeOutput.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\NodifyEditor.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\PendingConnection.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Styles\StateNode.xaml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+</Project>

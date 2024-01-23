@@ -1,0 +1,36 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
+    <ControlTheme x:Key="{x:Type connections:Connector}" TargetType="connections:Connector">
+        <Setter Property="Background"
+                Value="{DynamicResource Connector.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource Connector.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource Connector.BorderBrush}" />
+        <Setter Property="Width"
+                Value="14" />
+        <Setter Property="Height"
+                Value="14" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Ellipse x:Name="Connector"
+                             Width="{TemplateBinding Width}"
+                             Height="{TemplateBinding Height}"
+                             Stroke="{TemplateBinding BorderBrush}"
+                             Fill="Transparent"
+                             StrokeThickness="2" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^:isconnected /template/ Ellipse#Connector">
+            <Setter Property="Fill"
+                    Value="{Binding BorderBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+        <Style Selector="^:isoverelement /template/ Ellipse#Connector" >
+            <Setter Property="Fill"
+                    Value="{Binding BorderBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+    </ControlTheme>
+</ResourceDictionary>

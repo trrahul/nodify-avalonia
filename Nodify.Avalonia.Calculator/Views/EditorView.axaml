@@ -1,0 +1,361 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Nodify.Avalonia.Calculator.ViewModels"
+             xmlns:connections="clr-namespace:Nodify.Avalonia.Connections;assembly=Nodify.Avalonia"
+             xmlns:nodify="clr-namespace:Nodify.Avalonia;assembly=Nodify.Avalonia"
+             xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes;assembly=Nodify.Avalonia"
+             xmlns:views="clr-namespace:Nodify.Avalonia.Calculator.Views"
+             xmlns:converters="clr-namespace:Nodify.Avalonia.Calculator.Converters"
+             xmlns:objectModel="clr-namespace:System.Collections.ObjectModel;assembly=System.Runtime"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="viewModels:EditorViewModel"
+             x:Class="Nodify.Avalonia.Calculator.Views.EditorView">
+	<UserControl.Resources>
+		<GeometryDrawing x:Key="SmallGridGeometry"
+                         Geometry="M0,0 L0,1 0.03,1 0.03,0.03 1,0.03 1,0 Z"
+                         Brush="{DynamicResource GridLinesBrush}" />
+
+		<GeometryDrawing x:Key="LargeGridGeometry"
+                         Geometry="M0,0 L0,1 0.015,1 0.015,0.015 1,0.015 1,0 Z"
+                         Brush="{DynamicResource GridLinesBrush}" />
+
+		<DrawingBrush x:Key="SmallGridLinesDrawingBrush"
+                      TileMode="Tile"
+                      DestinationRect="0 0 15 15"
+                      Transform="{Binding ViewportTransform, ElementName=Editor}"
+                      Drawing="{StaticResource SmallGridGeometry}" />
+        <DrawingBrush x:Key="LargeGridLinesDrawingBrush"
+                      TileMode="Tile"
+                      Opacity="0.5"
+                      DestinationRect="0 0 150 150"
+                      Transform="{Binding ViewportTransform, ElementName=Editor}"
+                      Drawing="{StaticResource LargeGridGeometry}" />
+
+        <LinearGradientBrush x:Key="AnimatedBrush" StartPoint="0 0" EndPoint="1 0">
+			<GradientStop Color="#6366f1" Offset="0" />
+			<GradientStop Color="#a855f7" Offset="0.5" />
+			<GradientStop Color="#ec4899" Offset="1" />
+		</LinearGradientBrush>
+		<Border x:Key="AnimatedBorderPlaceholder" BorderBrush="{StaticResource AnimatedBrush}" />
+
+        <DataTemplate x:Key="ConnectionTemplate"
+                      DataType="{x:Type viewModels:ConnectionViewModel}">
+			<connections:CircuitConnection Source="{Binding Output.Anchor}"
+                                      Target="{Binding Input.Anchor}" />
+		</DataTemplate>
+
+		<DataTemplate x:Key="PendingConnectionTemplate"
+                      DataType="{x:Type viewModels:PendingConnectionViewModel}">
+			<connections:PendingConnection IsVisible="{Binding IsVisible}"
+                                      Source="{Binding Source, Mode=TwoWay}"
+                                      Target="{Binding Target, Mode=TwoWay}"
+                                      TargetAnchor="{Binding TargetLocation, Mode=TwoWay}"
+                                      StartedCommand="{Binding ((viewModels:CalculatorViewModel)DataContext).StartConnectionCommand, RelativeSource={RelativeSource AncestorType={x:Type nodify:NodifyEditor}}}"
+                                      CompletedCommand="{Binding ((viewModels:CalculatorViewModel)DataContext).CreateConnectionCommand, RelativeSource={RelativeSource AncestorType={x:Type nodify:NodifyEditor}}}" />
+		</DataTemplate>
+		<ControlTheme x:Key="ItemContainerTheme" x:DataType="viewModels:OperationViewModel"
+               TargetType="{x:Type nodify:ItemContainer}"
+               BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
+			<Setter Property="Location"
+                    Value="{Binding Location}" />
+			<Setter Property="IsSelected"
+                    Value="{Binding IsSelected}" />
+			<Setter Property="ActualSize"
+                    Value="{Binding Size, Mode=TwoWay}" />
+			<Setter Property="BorderBrush" Value="{Binding BorderBrush, Source={StaticResource AnimatedBorderPlaceholder}}" />
+		</ControlTheme>
+	</UserControl.Resources>
+
+	<Grid>
+		<nodify:NodifyEditor DataContext="{Binding Calculator}"
+                             ItemsSource="{Binding Operations}"
+                             Connections="{Binding Connections}"
+                             SelectedItems="{Binding SelectedOperations}"
+                             DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
+                             PendingConnection="{Binding PendingConnection}"
+                             PendingConnectionTemplate="{StaticResource PendingConnectionTemplate}"
+                             ConnectionTemplate="{StaticResource ConnectionTemplate}"
+                             Background="{StaticResource SmallGridLinesDrawingBrush}"
+                             ItemContainerTheme="{StaticResource ItemContainerTheme}"
+                             GridCellSize="15" 
+                             x:Name="Editor">
+			<nodify:NodifyEditor.Styles>
+				<!--<Style Selector="^[IsLoaded=True]">
+					<Style.Animations>
+		--><!--<Storyboard x:Key="AnimateBorder" RepeatBehavior="Forever">
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}"
+                                    Duration="0:0:2" To="1 0" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
+                                    Duration="0:0:2" To="1 1" BeginTime="0:0:2" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
+                                    Duration="0:0:2" To="0 1" BeginTime="0:0:4" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
+                                    Duration="0:0:2" To="0 0" BeginTime="0:0:6" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
+                                    Duration="0:0:2" To="1 1" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)" 
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}"
+                                    Duration="0:0:2" To="0 1" BeginTime="0:0:2" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
+                                    Duration="0:0:2" To="0 0" BeginTime="0:0:4" />
+            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)"
+                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
+                                    Duration="0:0:2" To="1 0" BeginTime="0:0:6" />
+        </Storyboard>--><!--
+                    </Style.Animations>
+                </Style>-->
+                <Style Selector="nodes|NodeInput" x:DataType="viewModels:ConnectorViewModel">
+					<Setter Property="Header"
+                            Value="{Binding}" />
+					<Setter Property="IsConnected"
+                            Value="{Binding IsConnected}" />
+					<Setter Property="Anchor"
+                            Value="{Binding Anchor, Mode=TwoWay}" />
+					<Setter Property="ToolTip.Tip"
+                            Value="{Binding Value}" />
+					<Setter Property="HeaderTemplate">
+						<Setter.Value>
+							<DataTemplate DataType="{x:Type viewModels:ConnectorViewModel}">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Text="{Binding Title}"
+                                               Margin="0 0 5 0" />
+									<TextBox Text="{Binding Value}"
+                                             IsVisible="{Binding IsConnected}" />
+								</StackPanel>
+							</DataTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+
+				<Style Selector="nodes|NodeOutput" x:DataType="viewModels:ConnectorViewModel">
+					<Setter Property="Header"
+                            Value="{Binding}" />
+					<Setter Property="IsConnected"
+                            Value="{Binding IsConnected}" />
+					<Setter Property="Anchor"
+                            Value="{Binding Anchor, Mode=TwoWay}" />
+					<Setter Property="HeaderTemplate">
+						<Setter.Value>
+							<DataTemplate DataType="{x:Type viewModels:ConnectorViewModel}">
+								<TextBox Text="{Binding Value}"
+                                         IsEnabled="False" />
+							</DataTemplate>
+						</Setter.Value>
+					</Setter>
+				</Style>
+
+			</nodify:NodifyEditor.Styles>
+			<nodify:NodifyEditor.DataTemplates>
+                <DataTemplate DataType="{x:Type viewModels:ExpandoOperationViewModel}">
+					<nodes:Node Header="{Binding Title}"
+                                 Content="{Binding}"
+                                 Input="{Binding Input}"
+                                 Output="{Binding Output, Converter={x:Static converters:ItemToListConverter.Instance}}">
+						<nodes:Node.ContentTemplate>
+							<DataTemplate DataType="{x:Type viewModels:ExpandoOperationViewModel}">
+								<StackPanel>
+									<Button Theme="{DynamicResource IconButton}"
+                                            ContentTemplate="{DynamicResource PlusIcon}"
+                                            Command="{Binding AddInputCommand}" />
+									<Button Theme="{DynamicResource IconButton}"
+                                            ContentTemplate="{DynamicResource RemoveKeyIcon}"
+                                            Command="{Binding RemoveInputCommand}" />
+								</StackPanel>
+							</DataTemplate>
+						</nodes:Node.ContentTemplate>
+					</nodes:Node>
+				</DataTemplate>
+
+				<DataTemplate DataType="{x:Type viewModels:ExpressionOperationViewModel}">
+					<nodes:Node Content="{Binding}"
+                                 Input="{Binding Input}"
+                                 Output="{Binding Output, Converter={x:Static converters:ItemToListConverter.Instance}}">
+						<nodes:Node.ContentTemplate>
+							<DataTemplate DataType="{x:Type viewModels:ExpressionOperationViewModel}">
+								<TextBox Text="{Binding Expression}"
+                                         MinWidth="100"
+                                         Margin="5 0 0 0" />
+							</DataTemplate>
+						</nodes:Node.ContentTemplate>
+					</nodes:Node>
+				</DataTemplate>
+                <DataTemplate DataType="{x:Type viewModels:OperationGraphViewModel}">
+					<nodes:GroupingNode Header="{Binding}"
+                                         CanResize="{Binding IsExpanded}"
+                                         ActualSize="{Binding DesiredSize, Mode=TwoWay}"
+                                         MovementMode="Self">
+						<nodes:GroupingNode.HeaderTemplate>
+							<DataTemplate DataType="{x:Type viewModels:OperationGraphViewModel}">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+
+									<TextBlock Text="{Binding Title}" />
+									<StackPanel Orientation="Horizontal"
+                                                Margin="5 0 0 0"
+                                                Grid.Column="1">
+										<TextBlock Text="Expand?"
+                                                   IsVisible="{Binding IsExpanded}"
+                                                   Margin="0 0 5 0" />
+										<CheckBox IsChecked="{Binding IsExpanded}" />
+									</StackPanel>
+								</Grid>
+							</DataTemplate>
+						</nodes:GroupingNode.HeaderTemplate>
+						<Grid>
+							<nodify:NodifyEditor Tag="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+                                                 DataContext="{Binding InnerCalculator}"
+                                                 ItemsSource="{Binding Operations}"
+                                                 Connections="{Binding Connections}"
+                                                 SelectedItems="{Binding SelectedOperations}"
+                                                 DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
+                                                 PendingConnection="{Binding PendingConnection}"
+                                                 PendingConnectionTemplate="{StaticResource PendingConnectionTemplate}"
+                                                 ConnectionTemplate="{StaticResource ConnectionTemplate}"
+                                                 ItemContainerTheme="{StaticResource ItemContainerTheme}"
+                                                 Background="Transparent"
+                                                 GridCellSize="15"
+                                                 IsVisible="{Binding ((viewModels:OperationGraphViewModel)DataContext).IsExpanded, RelativeSource={RelativeSource AncestorType=nodes:GroupingNode}}">
+
+								<nodify:NodifyEditor.KeyBindings>
+									<KeyBinding Gesture="Delete"
+                                                Command="{Binding DeleteSelectionCommand}" />
+									<KeyBinding Gesture="C"
+                                                Command="{Binding GroupSelectionCommand}" />
+								</nodify:NodifyEditor.KeyBindings>
+								<nodify:NodifyEditor.Decorators>
+									<objectModel:Collection x:TypeArguments="nodify:DecoratorContainer">
+										<nodify:DecoratorContainer DataContext="{Binding OperationsMenu}"
+                                                                   Location="{Binding Location}">
+											<views:OperationsMenuView />
+										</nodify:DecoratorContainer>
+									</objectModel:Collection >
+								</nodify:NodifyEditor.Decorators>
+							</nodify:NodifyEditor>
+
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+
+								<ItemsControl ItemsSource="{Binding Input}">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<nodes:NodeInput />
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+
+								<nodes:NodeOutput DataContext="{Binding Output}"
+                                                   Grid.Column="1"
+                                                   VerticalAlignment="Top"
+                                                   HorizontalAlignment="Right" />
+							</Grid>
+						</Grid>
+					</nodes:GroupingNode>
+				</DataTemplate>
+				<DataTemplate DataType="{x:Type viewModels:CalculatorOperationViewModel}">
+					<nodes:Node Header="{Binding Title}"
+                                 Input="{Binding Input}"
+                                 Output="{Binding Output, Converter={x:Static converters:ItemToListConverter.Instance}}"
+                                 ToolTip.Tip="Double click to expand">
+						<Interaction.Behaviors>
+							<EventTriggerBehavior EventName="DoubleTapped">
+								<InvokeCommandAction Command="{Binding ((viewModels:EditorViewModel)DataContext).OpenCalculatorCommand, RelativeSource={RelativeSource AncestorType=views:EditorView}}"
+                                                     CommandParameter="{Binding InnerCalculator}" />
+							</EventTriggerBehavior>
+						</Interaction.Behaviors>
+					</nodes:Node>
+				</DataTemplate>
+
+				<DataTemplate DataType="{x:Type viewModels:CalculatorInputOperationViewModel}">
+					<nodes:Node Header="{Binding Title}"
+                                Output="{Binding Output}">
+						<nodes:Node.Styles>
+							<Style Selector="nodes|NodeOutput" x:DataType="viewModels:ConnectorViewModel">
+								<Setter Property="Header"
+                                        Value="{Binding}" />
+								<Setter Property="IsConnected"
+                                        Value="{Binding IsConnected}" />
+								<Setter Property="Anchor"
+                                        Value="{Binding Anchor, Mode=TwoWay}" />
+								<Setter Property="HeaderTemplate">
+									<Setter.Value>
+										<DataTemplate DataType="{x:Type viewModels:ConnectorViewModel}">
+											<StackPanel Orientation="Horizontal">
+												<TextBox Text="{Binding Value}"
+                                                         IsEnabled="False" />
+												<TextBlock Text="{Binding Title}"
+                                                           Margin="5 0 0 0" />
+											</StackPanel>
+										</DataTemplate>
+									</Setter.Value>
+								</Setter>
+							</Style>
+						</nodes:Node.Styles>
+						<StackPanel>
+							<Button Theme="{DynamicResource IconButton}"
+                                    ContentTemplate="{DynamicResource PlusIcon}"
+                                    Command="{Binding AddOutputCommand}" />
+							<Button Theme="{DynamicResource IconButton}"
+                                    ContentTemplate="{DynamicResource RemoveKeyIcon}"
+                                    Command="{Binding RemoveOutputCommand}" />
+						</StackPanel>
+					</nodes:Node>
+				</DataTemplate>
+
+				<DataTemplate DataType="{x:Type viewModels:OperationGroupViewModel}">
+					<nodes:GroupingNode Header="{Binding Title}"
+                                         ActualSize="{Binding GroupSize, Mode=TwoWay}" />
+				</DataTemplate>
+
+				
+                <DataTemplate DataType="{x:Type viewModels:OperationViewModel}">
+                    <nodes:Node Content="{Binding Title}"
+                                Input="{Binding Input}"
+                                Output="{Binding Output, Converter={x:Static converters:ItemToListConverter.Instance}}" />
+                </DataTemplate>
+			</nodify:NodifyEditor.DataTemplates>
+
+			<nodify:NodifyEditor.KeyBindings>
+				<KeyBinding Gesture="Delete"
+                            Command="{Binding DeleteSelectionCommand}" />
+				<KeyBinding Gesture="C"
+                            Command="{Binding GroupSelectionCommand}" />
+			</nodify:NodifyEditor.KeyBindings>
+
+			<!--<nodify:NodifyEditor.Triggers> todo
+                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard Name="AnimateBorder" Storyboard="{StaticResource AnimateBorder}" />
+                </EventTrigger>
+            </nodify:NodifyEditor.Triggers>-->
+
+			<!--<data:CompositeCollection>
+               
+            </data:CompositeCollection>-->
+			<nodify:NodifyEditor.Decorators>
+				<objectModel:Collection x:TypeArguments="nodify:DecoratorContainer">
+					<nodify:DecoratorContainer DataContext="{Binding OperationsMenu}"
+                                               Location="{Binding Location}">
+						<views:OperationsMenuView />
+					</nodify:DecoratorContainer>
+				</objectModel:Collection>
+			</nodify:NodifyEditor.Decorators>
+		</nodify:NodifyEditor>
+
+		<Grid Background="{StaticResource LargeGridLinesDrawingBrush}"
+              ZIndex="-2" />
+	</Grid>
+</UserControl>

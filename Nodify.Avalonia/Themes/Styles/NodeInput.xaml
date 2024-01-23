@@ -1,0 +1,96 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Nodify" 
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections"
+                    xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes">
+
+    <ControlTemplate x:Key="ConnectorThumbTemplate"
+                     TargetType="{x:Type TemplatedControl}">
+        <Ellipse Width="14"
+                 Height="14"
+                 Stroke="{TemplateBinding BorderBrush}"
+                 Fill="{TemplateBinding Background}"
+                 StrokeThickness="2" />
+    </ControlTemplate>
+    <ControlTemplate x:Key="FlowConnectorThumbTemplate"
+                     TargetType="{x:Type TemplatedControl}">
+        <Path Data="M 0,0 0,100 86,50 0,0" StrokeLineCap="Round" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2"
+              Fill="{TemplateBinding Background}" Width="14" Stretch="Uniform" Height="14"></Path>
+    </ControlTemplate>
+    <LinearGradientBrush x:Key="FadeOpacityMask"
+                         StartPoint="10%,20%" EndPoint="90%,80%">
+        <GradientStop Color="#11FFFFFF"
+                      Offset="0" />
+        <GradientStop Color="#66FFFFFF"
+                      Offset="0.3" />
+        <GradientStop Color="#44FFFFFF"
+                      Offset="0.7" />
+        <GradientStop Color="#22FFFFFF"
+                      Offset="1" />
+    </LinearGradientBrush>
+
+    <ControlTheme x:Key="{x:Type nodes:NodeInput}" TargetType="nodes:NodeInput">
+        <Setter Property="Background"
+                Value="{DynamicResource NodeInput.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource NodeInput.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource NodeInput.BorderBrush}" />
+        <Setter Property="Padding"
+                Value="4 2" />
+        <Setter Property="HorizontalAlignment"
+                Value="Left" />
+        <Setter Property="ConnectorTemplate"
+                Value="{StaticResource ConnectorThumbTemplate}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type nodes:NodeInput}">
+                    <Grid Background="{TemplateBinding Background}">
+                        <Border IsVisible="False" CornerRadius="0 3 3 0"
+                                x:Name="Highlight"
+                                OpacityMask="{StaticResource FadeOpacityMask}"
+                                Background="{TemplateBinding BorderBrush}" />
+
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="{TemplateBinding Padding}">
+
+							<TemplatedControl x:Name="PART_Connector"
+                                              Focusable="False"
+                                              Margin="0 0 5 0"
+                                              VerticalAlignment="Center"
+                                              Background="Transparent"
+                                              BorderBrush="{TemplateBinding BorderBrush}"
+                                              Template="{TemplateBinding ConnectorTemplate}" />
+
+                            <ContentPresenter Content="{TemplateBinding Header}"
+                                              ContentTemplate="{TemplateBinding HeaderTemplate}"/>
+                        </StackPanel>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^[IsConnected=true] /template/ TemplatedControl#PART_Connector">
+            <Setter Property="Background"
+                    Value="{TemplateBinding BorderBrush}" />
+        </Style>
+        <Style Selector="^[(connections|PendingConnection.IsOverElement)=true] /template/ TemplatedControl#PART_Connector">
+            <Setter Property="Background"
+                    Value="{TemplateBinding BorderBrush}" />
+        </Style>
+        <Style Selector="^[IsPointerOver=true] /template/ Border#Highlight">
+            <Setter Property="IsVisible"
+                    Value="true" />
+        </Style>
+        <Style Selector="^[(connections|PendingConnection.IsOverElement)=true] /template/ Border#Highlight">
+            <Setter Property="IsVisible"
+                    Value="True" />
+        </Style>
+        <Style Selector="^[IsFlow=True]">
+            <Setter Property="ConnectorTemplate"
+                    Value="{StaticResource FlowConnectorThumbTemplate}" />
+            <Setter Property="BorderBrush"
+                    Value="#26bf08" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

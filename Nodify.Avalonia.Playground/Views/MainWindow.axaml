@@ -1,0 +1,228 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Nodify.Avalonia.Playground.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:Nodify.Avalonia.Playground.Converters"
+        xmlns:editor="clr-namespace:Nodify.Avalonia.Playground.Editor"
+        xmlns:views="clr-namespace:Nodify.Avalonia.Playground.Views"
+        xmlns:local="clr-namespace:Nodify.Avalonia.Playground"
+        xmlns:nodify="clr-namespace:Nodify.Avalonia;assembly=Nodify.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Nodify.Avalonia.Playground.Views.MainWindow"
+        x:DataType="vm:PlaygroundViewModel"
+        Icon="/Assets/avalonia-logo.ico" 
+        Title="Nodify.Avalonia.Playground">
+
+    <Window.Resources>
+        <converters:DebugConverter x:Key="DebugConverter" />
+        <converters:ToStringConverter x:Key="ToStringConverter" />
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:PlaygroundViewModel />
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <editor:NodifyEditorView x:Name="EditorView"
+                                DataContext="{Binding GraphViewModel}"
+                                Grid.RowSpan="3" />
+
+        <!--ACTIONS-->
+        <Border VerticalAlignment="Top"
+                Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding GenerateRandomNodesCommand}"
+                            Content="GENERATE RANDOM NODES"
+                            ToolTip.Tip="Generate nodes using the specified settings."
+                            />
+                    <!--Classes="HollowButton"--> 
+                    <Button Command="{Binding PerformanceTestCommand}"
+                            Content="PERFORMANCE TEST"
+                            ToolTip.Tip="You will encounter rendering performance issues. Try disabling the connections to see the difference."
+                            />
+                    <Button Command="{Binding ToggleConnectionsCommand}"
+                            Content="CONNECT / DISCONNECT"
+                            ToolTip.Tip="Will add new connections if Connect Nodes is checked, otherwise it will disconnect nodes."
+                             />
+                    <Button Command="{Binding ResetCommand}"
+                            Content="RESET PLAYGROUND"
+                            ToolTip.Tip="Reset the Location, Zoom, Nodes and Connections."
+                            />
+                    <Button Click="BringIntoView_Click"
+                            Content="BRING INTO VIEW"
+                            ToolTip.Tip="Bring a random node into view." />
+                    <Button Click="FitToScreen_Click"
+                            Content="FIT TO SCREEN"
+                            ToolTip.Tip="Scales the viewport to fit all nodes if that's possible."
+                    />
+                    <!--CommandTarget="{Binding EditorInstance, ElementName=EditorView}"
+                    Style="{StaticResource HollowButton}"-->
+                    <Button Command="{Binding GraphViewModel.CommentSelectionCommand}"
+                            Content="COMMENT SELECTION"
+                            ToolTip.Tip="Creates a comment node containing the selected nodes."
+                    />
+                </StackPanel>
+
+                <ToggleSwitch IsChecked="{Binding CurrentThemeToggle}" OffContent="Light" OnContent="Dark"
+                        ToolTip.Tip="Change theme"
+                        Grid.Column="1" />
+
+            </Grid>
+        </Border>
+
+        <!--SETTINGS-->
+        <Expander Grid.Row="1"
+                  HorizontalContentAlignment="Left"
+                  VerticalContentAlignment="Center"
+                  HorizontalAlignment="Left"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  IsExpanded="True"
+                  ExpandDirection="Left"
+                  Padding="0 1 4 3">
+            <Expander.Styles>
+                <Style Selector="Expander">
+                    <Setter Property="Tag"
+                            Value="{StaticResource ExpandRightIcon}" />
+                </Style>
+                <Style Selector="Expander[IsExpanded=True]">
+                    <Setter Property="Tag"
+                            Value="{StaticResource ExpandLeftIcon}" >
+                    </Setter>
+                </Style>
+            </Expander.Styles>
+
+            <ScrollViewer>
+                <Grid IsSharedSizeScope="True"
+                      Width="330">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Expander Header="Playground Settings"
+                              Padding="0 5 0 0"
+                              BorderThickness="0 0 0 1"
+                              IsExpanded="True"
+                              BorderBrush="{DynamicResource BackgroundBrush}">
+                        <Expander.Styles>
+                            <Style Selector="Expander">
+                                <Setter Property="Tag"
+                                        Value="{StaticResource ExpandRightIcon}" />
+                            </Style>
+                            <Style Selector="Expander[IsExpanded=True]">
+                                <Setter Property="Tag"
+                                        Value="{StaticResource ExpandDownIcon}" />
+                            </Style>
+                        </Expander.Styles>
+
+                        <views:PlaygroundSettingsView />
+                    </Expander>
+
+                    <Expander Header="Editor Settings"
+                              Padding="0 5 0 0"
+                              BorderThickness="0 0 0 1"
+                              IsExpanded="True" ExpandDirection="Down"
+                              BorderBrush="{DynamicResource BackgroundBrush}"
+                              Grid.Row="1">
+                        <Expander.Styles>
+                            <Style Selector="Expander">
+                                <Setter Property="Tag"
+                                        Value="{StaticResource ExpandRightIcon}" />
+                            </Style>
+                            <Style Selector="Expander[IsExpanded=True]">
+                                <Setter Property="Tag"
+                                        Value="{StaticResource ExpandDownIcon}" />
+                            </Style>
+                        </Expander.Styles>
+
+                        <views:EditorSettingsView />
+                    </Expander>
+                </Grid>
+            </ScrollViewer>
+        </Expander>
+
+        <!--INFORMATION-->
+        <Border Grid.Row="2"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                VerticalAlignment="Bottom"
+                Padding="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.Styles>
+                    <Style Selector="TextBlock">
+                        <Setter Property="Foreground"
+                                Value="{DynamicResource ForegroundBrush}" />
+                        <Setter Property="Margin"
+                                Value="0 0 10 0" />
+                    </Style>
+                </Grid.Styles>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock ToolTip.Tip="The number of selected items.">
+                        <TextBlock.Inlines>
+                            <Run Text="Selected: " />
+                            <Run Foreground="YellowGreen"
+                                 Text="{Binding GraphViewModel.SelectedNodes.Count, Mode=OneWay}" />
+                            <Run Text="/" />
+                            <Run Text="{Binding GraphViewModel.Nodes.Count, Mode=OneWay}" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                    <TextBlock ToolTip.Tip="The number of connections.">
+                        <TextBlock.Inlines>
+                            <Run Text="Connections: " />
+                            <Run Foreground="YellowGreen"
+                                 Text="{Binding GraphViewModel.Connections.Count, Mode=OneWay}" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <TextBlock ToolTip.Tip="The viewport's location.">
+                        <TextBlock.Inlines>
+                            <Run Text="Location: " />
+                            <Run Foreground="Orange"
+                                 Text="{Binding Location.Value, Mode=OneWay, Converter={StaticResource ToStringConverter}, Source={x:Static local:EditorSettings.Instance}}" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                    <TextBlock ToolTip.Tip="The viewport's size.">
+                        <TextBlock.Inlines>
+                            <Run Text="Size: " />
+                            <Run Foreground="YellowGreen"
+                                 Text="{Binding GraphViewModel.ViewportSize, Mode=OneWay, Converter={StaticResource ToStringConverter}}" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                    <TextBlock ToolTip.Tip="The viewport's zoom. Not accurate when trying to zoom outside the MinViewportZoom and MaxViewportZoom because of dependency property coercion not updating the binding with the final result.">
+                        <TextBlock.Inlines>
+                            <Run Text="Zoom: " />
+                            <Run Foreground="DodgerBlue"
+                                 Text="{Binding Zoom, Mode=OneWay, Converter={StaticResource ToStringConverter}, Source={x:Static local:EditorSettings.Instance}}" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                    <TextBlock ToolTip.Tip="The estimated frame rate. (my be buggy)">
+                        <TextBlock.Inlines>
+                            <Run Text="FPS: " />
+                            <Run Foreground="LawnGreen" Name="FPSText" />
+                        </TextBlock.Inlines>
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+</Window>

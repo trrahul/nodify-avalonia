@@ -1,0 +1,134 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:shared="clr-namespace:Nodify.Avalonia.Shared;assembly=Nodify.Avalonia.Shared"
+        xmlns:viewModels="clr-namespace:Nodify.Avalonia.Calculator.ViewModels"
+        xmlns:views="clr-namespace:Nodify.Avalonia.Calculator.Views"
+        xmlns:controls="clr-namespace:Nodify.Avalonia.Shared.Controls;assembly=Nodify.Avalonia.Shared"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Nodify.Avalonia.Calculator.Views.MainWindow"
+        x:DataType="viewModels:ApplicationViewModel"
+        Background="{DynamicResource NodifyEditor.BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Nodify.Calculator">
+    <Window.DataContext>
+        <viewModels:ApplicationViewModel />
+    </Window.DataContext>
+    <Window.KeyBindings>
+        <!--<KeyBinding Gesture="Ctrl + T"
+                    Command="{Binding Source={x:Static shared:ThemeManager.SetNextThemeCommand}}" />-->
+        <KeyBinding Gesture="Ctrl + N"
+                    Command="{Binding AddEditorCommand}" />
+        <KeyBinding Gesture="Ctrl + W"
+                    Command="{Binding CloseEditorCommand}"
+                    CommandParameter="{Binding SelectedEditor.Id}"/>
+    </Window.KeyBindings>
+
+    <Window.DataTemplates>
+        <DataTemplate DataType="{x:Type viewModels:EditorViewModel}">
+            <views:EditorView/>
+        </DataTemplate>
+    </Window.DataTemplates>
+    <Grid>
+        <controls:TabControlEx ItemsSource="{Binding Editors}"
+                             SelectedItem="{Binding SelectedEditor}" 
+                             AddTabCommand="{Binding AddEditorCommand}"
+                             AutoScrollToEnd="{Binding AutoSelectNewEditor}">
+            <controls:TabControlEx.ItemContainerTheme>
+                <ControlTheme BasedOn="{StaticResource {x:Type controls:TabItemEx}}" TargetType="controls:TabItemEx" x:DataType="viewModels:EditorViewModel">
+                    <Setter Property="Header" 
+                            Value="{Binding Header}"/>
+                    <Setter Property="CloseTabCommand" 
+                            Value="{Binding ((viewModels:ApplicationViewModel)DataContext).CloseEditorCommand ,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=controls:TabControlEx}}"/>
+                    <Setter Property="CloseTabCommandParameter" 
+                            Value="{Binding Id}"/>
+                </ControlTheme>
+            </controls:TabControlEx.ItemContainerTheme>
+            <!--<controls:TabControlEx.Styles>
+                <Style Selector="controls|TabItemEx" x:DataType="viewModels:EditorViewModel">
+                    <Setter Property="Header" 
+                            Value="{Binding Name}"/>
+                    <Setter Property="CloseTabCommand" 
+                            Value="{Binding ((viewModels:ApplicationViewModel)DataContext).CloseEditorCommand ,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=controls:TabControlEx}}"/>
+                    <Setter Property="CloseTabCommandParameter" 
+                            Value="{Binding Id}"/>
+                </Style>
+            </controls:TabControlEx.Styles>-->
+        </controls:TabControlEx>
+        
+        <Expander Header="Click to hide/show"
+                  IsExpanded="True"
+                  Margin="10"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom">
+            <Border MaxWidth="325"
+                    CornerRadius="3">
+                <Border.Background>
+                    <SolidColorBrush Color="{DynamicResource BackgroundColor}"
+                                     Opacity="0.7" />
+                </Border.Background>
+                <StackPanel Margin="10"
+                            IsHitTestVisible="False">
+                    <StackPanel.Styles>
+                        <Style Selector="TextBlock">
+                            <Setter Property="Margin"
+                                    Value="0 0 0 5" />
+                        </Style>
+                    </StackPanel.Styles>
+
+                    <StackPanel Margin="0 0 0 20">
+                        <TextBlock Text="(New) Drag a connection and drop it on the editor"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource NodeInput.BorderBrush}"
+                               FontWeight="Bold"/>
+                        <TextBlock Text="(New) CTRL + N : open new editor"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource NodeInput.BorderBrush}"
+                               FontWeight="Bold"/>
+                        <TextBlock Text="(New) CTRL + W : close current editor"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource NodeInput.BorderBrush}"
+                               FontWeight="Bold"/>
+                    </StackPanel>
+                    <TextBlock TextWrapping="Wrap">
+                <Run Foreground="Red"
+                        FontWeight="Bold">ALT + Click</Run>
+                <Run>: disconnect connector</Run>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap">
+                <Run Foreground="Red"
+                        FontWeight="Bold">Right Click</Run>
+                <Run>: show operations menu (create nodes)</Run>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap">
+                <Run Foreground="Red"
+                        FontWeight="Bold">Delete</Run>
+                <Run>:  delete selection</Run>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap">
+                <Run Foreground="Red"
+                        FontWeight="Bold">CTRL + T</Run>
+                <Run>: change theme</Run>
+                    </TextBlock>
+                    <TextBlock TextWrapping="Wrap">
+                <Run Foreground="Red"
+                        FontWeight="Bold">C</Run>
+                <Run>: group selection (hold SHIFT and mouse drag the header to move the group node alone)</Run>
+                    </TextBlock>
+                    <TextBlock Text="Hover over a connector to see its value"
+                               TextWrapping="Wrap"
+                               FontWeight="Bold" />
+                    <TextBlock Text="Create a Calculator node and double click it to open"
+                               TextWrapping="Wrap"
+                               FontWeight="Bold" />
+                    <TextBlock Text="Create an Operation Graph and add operations to it"
+                               TextWrapping="Wrap"
+                               FontWeight="Bold" />
+                </StackPanel>
+            </Border>
+        </Expander>
+    </Grid>
+
+</Window>

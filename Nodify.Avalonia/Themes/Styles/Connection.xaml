@@ -1,0 +1,38 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
+
+    <ControlTheme x:Key="{x:Type connections:Connection}" TargetType="connections:Connection">
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="Stroke"
+                Value="{DynamicResource Connection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource Connection.StrokeBrush}" />
+        <Setter Property="Spacing"
+                Value="20" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type connections:LineConnection}" TargetType="connections:LineConnection">
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="Spacing"
+                Value="30" />
+        <Setter Property="Stroke"
+                Value="{DynamicResource LineConnection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource LineConnection.StrokeBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type connections:CircuitConnection}" TargetType="connections:CircuitConnection">
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="Spacing"
+                Value="30" />
+        <Setter Property="Stroke"
+                Value="{DynamicResource CircuitConnection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource CircuitConnection.StrokeBrush}" />
+    </ControlTheme>
+
+</ResourceDictionary>

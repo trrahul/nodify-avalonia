@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <None Update="Themes\Controls.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Dark.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Icons.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Light.xaml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Update="Themes\Nodify.xaml">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+</Project>

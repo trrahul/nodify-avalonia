@@ -1,0 +1,60 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Nodify" 
+                    xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
+
+    <ControlTheme x:Key="{x:Type nodes:StateNode}" TargetType="nodes:StateNode">
+        <Setter Property="Background"
+                Value="{DynamicResource StateNode.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource StateNode.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource StateNode.BorderBrush}" />
+        <Setter Property="HighlightBrush"
+                Value="{DynamicResource StateNode.HighlightBrush}" />
+        <Setter Property="Padding"
+                Value="7 5" />
+        <Setter Property="BorderThickness"
+                Value="10" />
+        <Setter Property="CornerRadius"
+                Value="3" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type nodes:StateNode}">
+                    <Border x:Name="Border"
+                            Padding="{TemplateBinding BorderThickness}"
+                            Margin="{TemplateBinding Margin}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <Border x:Name="PART_Content"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                Cursor="SizeAll"
+                                MinWidth="30"
+                                MinHeight="30"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        </Border>
+                        <Border.Styles>
+                            <Style Selector="Border#Border">
+                                <Setter Property="Background"
+                                        Value="{Binding BorderBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                            </Style>
+                            <Style Selector="Border#Border[IsPointerOver=true]">
+                                <!--todo was direcltyover-->
+                                <Setter Property="Background"
+                                        Value="{Binding HighlightBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                            </Style>
+                        </Border.Styles>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^[(connections|PendingConnection.IsOverElement)=true] /template/ Border#Border">
+            <Setter Property="Background"
+                    Value="{Binding HighlightBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

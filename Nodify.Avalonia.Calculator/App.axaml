@@ -1,0 +1,17 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:calculator="clr-namespace:Nodify.Avalonia.Calculator"
+             x:Class="Nodify.Avalonia.Calculator.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <calculator:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Nodify.Avalonia/Themes/Controls.xaml"/>
+        <StyleInclude Source="avares://Nodify.Avalonia.Shared/Themes/Styles.axaml"/>
+    </Application.Styles>
+</Application>

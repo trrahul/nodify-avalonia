@@ -1,0 +1,40 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
+
+    <DataTemplate x:Key="DefaultConnectorTemplate">
+        <connections:Connector Focusable="False"
+                         Cursor="Arrow" />
+    </DataTemplate>
+
+    <ControlTheme x:Key="{x:Type nodes:KnotNode}" TargetType="nodes:KnotNode">
+        <Setter Property="Background"
+                Value="{DynamicResource KnotNode.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource KnotNode.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource KnotNode.BorderBrush}" />
+        <Setter Property="Padding"
+                Value="15 5" />
+        <Setter Property="Cursor"
+                Value="SizeAll" />
+        <Setter Property="ContentTemplate"
+                Value="{StaticResource DefaultConnectorTemplate}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate >
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="3">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

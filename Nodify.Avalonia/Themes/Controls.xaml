@@ -1,0 +1,214 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Nodify" 
+                    xmlns:avalonia="clr-namespace:Nodify.Avalonia" 
+                    xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes"
+                    xmlns:helpers="clr-namespace:Nodify.Avalonia.Helpers"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
+
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="Nodify.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="Dark.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="Light.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <!--NODIFY EDITOR-->
+    <StyleInclude Source="Styles/Controls.xaml"/>
+    <!--<Style Selector="Rectangle.SelectionRectangle">
+        <Setter Property="Stroke"
+                Value="DodgerBlue" />
+        <Setter Property="StrokeThickness"
+                Value="1" />
+        <Setter Property="Fill">
+            <Setter.Value>
+                <SolidColorBrush Opacity="0.1"
+                                 Color="DodgerBlue" />
+            </Setter.Value>
+        </Setter>
+    </Style>-->
+
+    <!--<Style Selector="avalonia|NodifyEditor">
+        <Setter Property="Background"
+                Value="{DynamicResource NodifyEditor.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource NodifyEditor.ForegroundBrush}" />
+        --><!--<Setter Property="SelectionRectangleStyle"
+                Value="{DynamicResource NodifyEditor.SelectionRectangleStyle}" todo/>--><!--
+    </Style>-->
+
+    <!--ITEM CONTAINER-->
+
+    <!--<Style Selector="avalonia|ItemContainer">
+        <Setter Property="HighlightBrush"
+                Value="{DynamicResource ItemContainer.HighlightBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource ItemContainer.BorderBrush}" />
+        <Setter Property="SelectedBrush"
+                Value="{DynamicResource ItemContainer.SelectedBrush}" />
+    </Style>-->
+    
+    <!--DECORATOR CONTAINER-->
+
+    <!--<Style Selector="avalonia|DecoratorContainer">
+        <Setter Property="RenderTransform"
+                Value="{Binding ViewportTransform, RelativeSource={RelativeSource AncestorType=avalonia:NodifyEditor}, Converter={x:Static helpers:NodifyConverters.UnscaleTransformConverter}}" />
+    </Style>-->
+
+    <!--NODE-->
+
+    <!--<Style Selector="nodes|Node">
+        <Setter Property="Background"
+                Value="{DynamicResource Node.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource Node.ForegroundBrush}" />
+        <Setter Property="ContentBrush"
+                Value="{DynamicResource Node.ContentBrush}" />
+        <Setter Property="HeaderBrush"
+                Value="{DynamicResource Node.HeaderBrush}" />
+        <Setter Property="FooterBrush"
+                Value="{DynamicResource Node.FooterBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource Node.BorderBrush}" />
+    </Style>
+    <Style Selector="nodes|Node[HasHeader=true]">
+        <Setter Property="Background"
+                Value="{DynamicResource Node.BackgroundBrush}" />
+        <Setter Property="ContentBrush"
+                Value="{DynamicResource Node.ContentBrush}" />
+        <Setter Property="HeaderBrush"
+                Value="{DynamicResource Node.HeaderBrush}" />
+        <Setter Property="FooterBrush"
+                Value="{DynamicResource Node.FooterBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource Node.BorderBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource Node.HeaderForegroundBrush}" />
+    </Style>
+
+    --><!--STATE NODE--><!--
+
+    <Style Selector="nodes|StateNode">
+        <Setter Property="Background"
+                Value="{DynamicResource StateNode.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource StateNode.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource StateNode.BorderBrush}" />
+        <Setter Property="HighlightBrush"
+                Value="{DynamicResource StateNode.HighlightBrush}" />
+    </Style>
+
+    --><!--GROUPING NODE--><!--
+
+    <Style Selector="nodes|GroupingNode">
+        <Setter Property="Background"
+                Value="{DynamicResource GroupingNode.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource GroupingNode.ForegroundBrush}" />
+        <Setter Property="HeaderBrush"
+                Value="{DynamicResource GroupingNode.HeaderBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource GroupingNode.BorderBrush}" />
+    </Style>
+
+    --><!--KNOT NODE--><!--
+
+    <Style Selector="nodes|KnotNode">
+        <Setter Property="Background"
+                Value="{DynamicResource KnotNode.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource KnotNode.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource KnotNode.BorderBrush}" />
+    </Style>
+
+    --><!--CONNECTOR--><!--
+
+    <Style Selector="connections|Connector">
+        <Setter Property="Background"
+                Value="{DynamicResource Connector.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource Connector.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource Connector.BorderBrush}" />
+    </Style>
+
+    --><!--NODE INPUT--><!--
+
+    <Style Selector="local|NodeInput">
+        <Setter Property="Background"
+                Value="{DynamicResource NodeInput.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource NodeInput.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource NodeInput.BorderBrush}" />
+    </Style>
+
+    --><!--NODE OUTPUT--><!--
+
+    <Style Selector="nodes|NodeOutput">
+        <Setter Property="Background"
+                Value="{DynamicResource NodeOutput.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource NodeOutput.ForegroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource NodeOutput.BorderBrush}" />
+    </Style>
+
+    --><!--CONNECTION--><!--
+
+    <Style Selector="connections|Connection">
+        <Setter Property="Stroke"
+                Value="{DynamicResource Connection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource Connection.StrokeBrush}" />
+    </Style>
+
+    --><!--LINE CONNECTION--><!--
+
+    <Style Selector="connections|LineConnection">
+        <Setter Property="Stroke"
+                Value="{DynamicResource LineConnection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource LineConnection.StrokeBrush}" />
+    </Style>
+
+    --><!--CIRCUIT CONNECTION--><!--
+
+    <Style Selector="connections|CircuitConnection">
+        <Setter Property="Stroke"
+                Value="{DynamicResource CircuitConnection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource CircuitConnection.StrokeBrush}" />
+    </Style>
+
+    --><!--PENDING CONNECTION--><!--
+
+    <Style Selector="connections|PendingConnection">
+        <Setter Property="Stroke"
+                Value="{DynamicResource PendingConnection.StrokeBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource PendingConnection.BorderBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource PendingConnection.ForegroundBrush}" />
+        <Setter Property="Background"
+                Value="{DynamicResource PendingConnection.BackgroundBrush}" />
+    </Style>-->
+
+</Styles>

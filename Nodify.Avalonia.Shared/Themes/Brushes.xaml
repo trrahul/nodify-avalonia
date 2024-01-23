@@ -1,0 +1,34 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="ForegroundBrush"
+                     Color="{DynamicResource ForegroundColor}" />
+
+    <SolidColorBrush x:Key="DisabledForegroundBrush"
+                     Color="{DynamicResource DisabledForegroundColor}" />
+
+    <SolidColorBrush x:Key="BackgroundBrush"
+                     Color="{DynamicResource BackgroundColor}" />
+
+    <SolidColorBrush x:Key="ContrastBackgroundBrush"
+                     Color="{DynamicResource ContrastBackgroundColor}" />
+    
+    <SolidColorBrush x:Key="HighlightedBackgroundBrush"
+                     Color="{DynamicResource HighlightedBackgroundColor}" />
+
+    <SolidColorBrush x:Key="BorderBrush"
+                     Color="{DynamicResource BorderColor}" />
+
+    <SolidColorBrush x:Key="DisabledBorderBrush"
+                     Color="{DynamicResource DisabledBorderColor}" />
+
+    <SolidColorBrush x:Key="HighlightedBorderBrush"
+                     Color="{DynamicResource HighlightedBorderColor}" />
+    
+    <SolidColorBrush x:Key="FocusedBorderBrush"
+                     Color="{DynamicResource FocusedBorderColor}" />
+    
+    <SolidColorBrush x:Key="GridLinesBrush"
+                     Color="{DynamicResource GridLinesColor}" />
+
+</ResourceDictionary>

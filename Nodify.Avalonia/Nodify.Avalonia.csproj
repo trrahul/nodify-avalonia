@@ -1,0 +1,94 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+        <AvaloniaResource Include="Themes\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaXaml Remove="Models\**"/>
+        <Compile Remove="Models\**"/>
+        <EmbeddedResource Remove="Models\**"/>
+        <None Remove="Models\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Assets\trianglefilled.svg"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.0.6"/>
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.6"/>
+        <PackageReference Include="Avalonia.Svg" Version="11.0.0.10"/>
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.6"/>
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.6"/>
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.6"/>
+        <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.6"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <None Update="Themes\Brushes.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Controls.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Dark.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Light.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Nodify.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\Connection.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\Connector.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\Controls.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\DecoratorContainer.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\GroupingNode.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\ItemContainer.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\KnotNode.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\Node.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\NodeInput.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\NodeOutput.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\NodifyEditor.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\PendingConnection.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\StateNode.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+    </ItemGroup>
+</Project>

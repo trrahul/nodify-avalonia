@@ -1,0 +1,64 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Nodify" 
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
+
+    <ControlTheme x:Key="{x:Type connections:PendingConnection}" TargetType="connections:PendingConnection">
+        <Setter Property="Stroke"
+                Value="{DynamicResource PendingConnection.StrokeBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource PendingConnection.BorderBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource PendingConnection.ForegroundBrush}" />
+        <Setter Property="Background"
+                Value="{DynamicResource PendingConnection.BackgroundBrush}" />
+        <Setter Property="IsHitTestVisible"
+                Value="False" />
+        <Setter Property="EnablePreview"
+                Value="False" />
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="StrokeDashArray"
+                Value="4,4" />
+        <Setter Property="IsVisible" Value="False"/>
+        <Setter Property="Padding"
+                Value="5" />
+        <Setter Property="EnableSnapping"
+                Value="True" />
+        <Setter Property="ClipToBounds"
+                Value="False"/> <!--required to make the control visible-->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type connections:PendingConnection}">
+                    <Canvas>
+                        <connections:LineConnection Source="{TemplateBinding SourceAnchor}"
+                                              Target="{TemplateBinding TargetAnchor}"
+                                              Stroke="{TemplateBinding Stroke}"
+                                              StrokeThickness="{TemplateBinding StrokeThickness}"
+                                              StrokeDashArray="{TemplateBinding StrokeDashArray}"
+                                              Direction="{TemplateBinding Direction}"
+                                              Spacing="0"
+                                              ArrowSize="0 0"
+                                              SourceOffsetMode="None" 
+                                              TargetOffsetMode="None" />
+                        <Border Background="{TemplateBinding Background}"
+                                Canvas.Left="{Binding TargetAnchor.X, RelativeSource={RelativeSource TemplatedParent}}"
+                                Canvas.Top="{Binding TargetAnchor.Y, RelativeSource={RelativeSource TemplatedParent}}"
+                                IsVisible="{TemplateBinding EnablePreview}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                CornerRadius="3"
+                                Margin="15">
+                            <ContentPresenter Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                        </Border>
+                    </Canvas>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

@@ -1,0 +1,125 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:helpers="clr-namespace:Nodify.Avalonia.Helpers"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections"
+                    xmlns:data="clr-namespace:Avalonia.Data;assembly=Avalonia.Markup"
+                    xmlns:avalonia="clr-namespace:Nodify.Avalonia">
+
+    <DataTemplate x:Key="ConnectionTemplate">
+        <connections:Connection />
+    </DataTemplate>
+
+    <DataTemplate x:Key="PendingConnectionTemplate">
+        <connections:PendingConnection IsTabStop="False" />
+    </DataTemplate>
+
+    <ControlTheme x:Key="NodifyEditor.SelectionRectangleTheme" TargetType="Rectangle">
+        <Setter Property="Stroke"
+                Value="{DynamicResource NodifyEditor.SelectionRectangleStrokeBrush}" />
+        <Setter Property="StrokeThickness"
+                Value="1" />
+        <Setter Property="Fill"
+                Value="{DynamicResource NodifyEditor.SelectionRectangleBackgroundBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type avalonia:NodifyEditor}" TargetType="avalonia:NodifyEditor">
+        <Setter Property="ClipToBounds"
+                Value="True" />
+        <Setter Property="Background"
+                Value="{DynamicResource NodifyEditor.BackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource NodifyEditor.ForegroundBrush}" />
+        <Setter Property="IsTabStop"
+                Value="False" />
+        <Setter Property="EnableRealtimeSelection"
+                Value="True" />
+        <Setter Property="DisplayConnectionsOnTop"
+                Value="False" />
+        <Setter Property="ConnectionTemplate"
+                Value="{StaticResource ConnectionTemplate}" />
+        <Setter Property="PendingConnectionTemplate"
+                Value="{StaticResource PendingConnectionTemplate}" />
+        <Setter Property="SelectionRectangleTheme" Value="{DynamicResource NodifyEditor.SelectionRectangleTheme}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type avalonia:NodifyEditor}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <Canvas RenderTransform="{TemplateBinding ViewportTransform}" RenderTransformOrigin="0,0">
+                            <ItemsPresenter >
+                                <ItemsPresenter.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <avalonia:NodifyCanvas Extent="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=avalonia:NodifyEditor}, Path=ItemsExtent,Mode=TwoWay}"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsPresenter.ItemsPanel>
+                            </ItemsPresenter>
+                            <ItemsControl ItemsSource="{TemplateBinding Connections}" x:Name="Connections"
+                                          ItemTemplate="{TemplateBinding ConnectionTemplate}" ClipToBounds="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                            </ItemsControl>
+                            <ContentPresenter Content="{TemplateBinding PendingConnection}" 
+                                              ContentTemplate="{TemplateBinding PendingConnectionTemplate}"/>
+
+                            <Rectangle Theme="{TemplateBinding SelectionRectangleTheme}"
+                                       Canvas.Top="{Binding SelectedArea.Y, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Canvas.Left="{Binding SelectedArea.X, RelativeSource={RelativeSource TemplatedParent}}"
+                                       IsVisible="{TemplateBinding IsSelecting}"
+                                       RenderTransformOrigin="0,0">
+                                <Rectangle.RenderTransform>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleTransformConverter}">
+                                        <data:Binding Path="ViewportTransform.Children[0].ScaleX" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <data:Binding Path="ViewportTransform.Children[0].ScaleY" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                    </MultiBinding>
+                                </Rectangle.RenderTransform>
+                                <Rectangle.Width>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleDoubleConverter}">
+                                        <Binding Path="SelectedArea.Width" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <Binding Path="ViewportZoom" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                    </MultiBinding>
+                                </Rectangle.Width>
+                                <Rectangle.Height>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleDoubleConverter}">
+                                        <Binding Path="SelectedArea.Height" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ViewportZoom" RelativeSource="{RelativeSource TemplatedParent}" />
+                                    </MultiBinding>
+                                </Rectangle.Height>
+                            </Rectangle>
+
+                            <avalonia:DecoratorsControl ItemsSource="{TemplateBinding Decorators}" 
+                                                     ItemTemplate="{TemplateBinding DecoratorTemplate}"
+                                                     IsTabStop="False" ClipToBounds="False" 
+                                                     ItemContainerTheme="{TemplateBinding DecoratorContainerTheme}">
+                                <avalonia:DecoratorsControl.Template>
+                                    <ControlTemplate TargetType="avalonia:DecoratorsControl">
+                                        <ItemsPresenter>
+                                            <ItemsPresenter.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <avalonia:NodifyCanvas Extent="{Binding DecoratorsExtent, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType=avalonia:NodifyEditor}}"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsPresenter.ItemsPanel>
+                                        </ItemsPresenter>
+                                    </ControlTemplate>
+                                </avalonia:DecoratorsControl.Template>
+                            </avalonia:DecoratorsControl>
+                        </Canvas>
+                           
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style Selector="^ /template/ ItemsControl#Connections">
+            <Setter Property="Panel.ZIndex"
+                    Value="-1" />
+        </Style>
+        <Style Selector="^[DisplayConnectionsOnTop=true] /template/ ItemsControl#Connections">
+            <Setter Property="Panel.ZIndex"
+                    Value="0" />
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

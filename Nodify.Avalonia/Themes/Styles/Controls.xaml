@@ -1,0 +1,23 @@
+﻿<Styles xmlns="https://github.com/avaloniaui">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!--NODES-->
+                <ResourceInclude Source="Node.xaml" />
+                <ResourceInclude Source="KnotNode.xaml" />
+                <ResourceInclude Source="GroupingNode.xaml" />
+                <ResourceInclude Source="StateNode.xaml" />
+                <ResourceInclude Source="Connector.xaml" />
+                <ResourceInclude Source="NodeInput.xaml" />
+                <ResourceInclude Source="NodeOutput.xaml" />
+                <ResourceInclude Source="Connection.xaml" />
+                <ResourceInclude Source="PendingConnection.xaml" />
+
+                <!--CORE-->
+                <ResourceInclude Source="ItemContainer.xaml" />
+                <ResourceInclude Source="DecoratorContainer.xaml" />
+                <ResourceInclude Source="NodifyEditor.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+</Styles>
