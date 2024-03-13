@@ -40,6 +40,7 @@ namespace Nodify.Avalonia
         public static readonly DirectProperty<ItemContainer, bool?> IsPreviewingSelectionProperty =
             AvaloniaProperty.RegisterDirect<ItemContainer, bool?>(nameof(IsPreviewingSelection),o => o.IsPreviewingSelection);
         public static readonly StyledProperty<Point> LocationProperty = AvaloniaProperty.Register<ItemContainer,Point>(nameof(Location),defaultBindingMode:BindingMode.TwoWay);
+        public static readonly StyledProperty<Point> PreviewLocationProperty = AvaloniaProperty.Register<ItemContainer,Point>(nameof(PreviewLocation),defaultBindingMode:BindingMode.TwoWay);
         public static readonly StyledProperty<Size> ActualSizeProperty = AvaloniaProperty.Register<ItemContainer,Size>(nameof(ActualSize));
         public static readonly DirectProperty<ItemContainer,Size?> DesiredSizeForSelectionProperty = AvaloniaProperty.RegisterDirect<ItemContainer,Size?>(nameof(DesiredSizeForSelection),o => o.DesiredSizeForSelection);
         public static readonly DirectProperty<ItemContainer,bool> IsPreviewingLocationProperty = AvaloniaProperty.RegisterDirect<ItemContainer, bool>(nameof(IsPreviewingLocation),o => o.IsPreviewingLocation);
@@ -70,6 +71,15 @@ namespace Nodify.Avalonia
         {
             get => (Point)GetValue(LocationProperty);
             set => SetValue(LocationProperty, value);
+        }
+        
+        /// <summary>
+        /// Gets or sets the preview location of this <see cref="ItemContainer"/> inside the <see cref="NodifyEditor"/> in graph space coordinates.
+        /// </summary>
+        public Point PreviewLocation
+        {
+            get => (Point)GetValue(PreviewLocationProperty);
+            set => SetValue(PreviewLocationProperty, value);
         }
 
         /// <summary>

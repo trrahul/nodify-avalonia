@@ -83,7 +83,19 @@ namespace Nodify.Avalonia.Helpers
 
                     r.X += delta.X ; // Snapping without correction
                     r.Y += delta.Y ; // Snapping without correction
-                    //Debug.WriteLine($"Dragged x:{r.X}, y:{r.Y}, d:{delta}");
+
+                    Point result = container.Location + new Vector(r.X, r.Y);
+
+                    // Correct the final position
+                    if (NodifyEditor.EnableSnappingCorrection)
+                    {
+                        var x = (int)result.X / _editor.GridCellSize * _editor.GridCellSize;
+                        var y = (int)result.Y / _editor.GridCellSize * _editor.GridCellSize;
+                        result = new Point(x, y);
+                    }
+
+                    container.PreviewLocation = result;
+
                     container.OnPreviewLocationChanged(container.Location + new Vector(r.X, r.Y));
                 }
             }

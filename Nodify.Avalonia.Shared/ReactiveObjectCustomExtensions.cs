@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using ReactiveUI;
 
-namespace Nodify.Avalonia.Extensions;
+namespace Nodify.Avalonia.Shared;
 
 public static class ReactiveObjectCustomExtensions
 {

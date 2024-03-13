@@ -8,7 +8,9 @@ namespace Nodify.Avalonia.Calculator.Views
         public MainWindow()
         {
             InitializeComponent();
-            this.AttachDevTools();
+#if DEBUG
+            //this.AttachDevTools();
+#endif
         }
     }
 }

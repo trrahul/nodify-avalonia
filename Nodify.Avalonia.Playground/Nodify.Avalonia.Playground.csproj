@@ -14,6 +14,12 @@
     <AvaloniaResource Include="Themes\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.4" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.4" />
+
+  </ItemGroup>
+
 
   <ItemGroup>
     <ProjectReference Include="..\Nodify.Avalonia.Shared\Nodify.Avalonia.Shared.csproj" />

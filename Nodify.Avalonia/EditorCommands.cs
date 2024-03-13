@@ -7,7 +7,6 @@ using Avalonia;
 using Avalonia.Media;
 using Nodify.Avalonia.Helpers;
 using Nodify.Avalonia.Helpers.Gestures;
-using ReactiveUI;
 
 namespace Nodify.Avalonia
 {

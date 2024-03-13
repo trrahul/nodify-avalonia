@@ -53,8 +53,9 @@ namespace Nodify.Avalonia.Playground.Views
         public MainWindow()
         {
             InitializeComponent();
-
+#if DEBUG
             this.AttachDevTools();
+#endif
             //CompositionTargetEx.Rendering += OnRendering;
         }
 

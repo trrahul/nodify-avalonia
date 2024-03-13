@@ -14,7 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.4" />
     <PackageReference Include="StringMath" Version="4.1.0" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.5" />
+
   </ItemGroup>
 
   <ItemGroup>

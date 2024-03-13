@@ -10,7 +10,6 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Nodify.Avalonia.Events;
 using Nodify.Avalonia.Extensions;
 using Nodify.Avalonia.Helpers;

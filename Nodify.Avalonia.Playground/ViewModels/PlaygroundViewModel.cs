@@ -8,6 +8,7 @@ using Avalonia.Styling;
 using Nodify.Avalonia.Extensions;
 using Nodify.Avalonia.Playground.Editor;
 using Nodify.Avalonia.Playground.Helpers;
+using Nodify.Avalonia.Shared;
 using ReactiveUI;
 
 namespace Nodify.Avalonia.Playground.ViewModels
