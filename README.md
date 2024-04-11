@@ -14,7 +14,7 @@ Inspired by the library Nodify(https://github.com/miroiu/nodify)
  - **Select**, **move** and **connect** nodes
  - Lots of **configurable** dependency properties
  - Ready for undo/redo
- - Example applications: [**Playground**], , [**Calculator**]
+ - Example applications: [**Playground**], [**Calculator**]
 
 ## Screenshots
 
