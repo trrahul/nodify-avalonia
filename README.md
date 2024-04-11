@@ -2,6 +2,10 @@
 
 Inspired by the library Nodify(https://github.com/miroiu/nodify)
 
+## Install
+
+`Install-Package Nodify.Avalonia`
+
 ## Features
  - Designed from the start to work with **MVVM**
  - **No dependencies** other than Avalonia
