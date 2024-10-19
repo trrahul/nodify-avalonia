@@ -16,6 +16,10 @@ Inspired by the library Nodify(https://github.com/miroiu/nodify)
  - Ready for undo/redo
  - Example applications: [**Playground**], [**Calculator**]
 
+### You can see this library in action in this video.
+[![VIDEO](https://img.youtube.com/vi/vJu3wMTGsGU/0.jpg)](https://www.youtube.com/watch?v=vJu3wMTGsGU)
+
+
 ## Screenshots
 
 ![sample1](https://github.com/user-attachments/assets/4c67386c-5ef4-4ebf-b627-de794d037ddc)
