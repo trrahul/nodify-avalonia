@@ -1,6 +1,9 @@
 # nodify-avalonia
 
-Inspired by the library Nodify(https://github.com/miroiu/nodify)
+[![NuGet](https://img.shields.io/nuget/v/Nodify.Avalonia?style=for-the-badge&logo=nuget&label=release)](https://www.nuget.org/packages/Nodify.Avalonia/)
+[![NuGet](https://img.shields.io/nuget/dt/Nodify.Avalonia?label=downloads&style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/Nodify.Avalonia)
+[![License](https://img.shields.io/github/license/trrahul/nodify-avalonia?style=for-the-badge)](https://github.com/trrahul/nodify-avalonia/blob/master/LICENSE)
+[![C#](https://img.shields.io/static/v1?label=docs&message=WIKI&color=blue&style=for-the-badge)](https://github.com/trrahul/nodify-avalonia/wiki)
 
 ## Install
 
