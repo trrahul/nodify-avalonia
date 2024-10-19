@@ -14,7 +14,7 @@ Inspired by the library Nodify(https://github.com/miroiu/nodify)
  - **Select**, **move** and **connect** nodes
  - Lots of **configurable** dependency properties
  - Ready for undo/redo
- - Example applications: [**Playground**], [**Calculator**]
+ - Example applications: [Nodify.Avalonia.Playground](Nodify.Avalonia.Playground), [Nodify.Avalonia.Calculator](Nodify.Avalonia.Calculator).
 
 ### You can see this library in action in this video.
 [![VIDEO](https://img.youtube.com/vi/vJu3wMTGsGU/0.jpg)](https://www.youtube.com/watch?v=vJu3wMTGsGU)
