@@ -74,17 +74,17 @@ See Nodify.Avalonia in action:
 ### Calculator Demo
 A functional calculator built with visual programming nodes:
 
-![Calculator Demo](https://github.com/user-attachments/assets/4c67386c-5ef4-4ebf-b627-de794d037ddc)
+![Calculator Demo](https://github.com/trrahul/nodify-avalonia/assets/7353840/ad8543f5-15c2-4506-93ca-2c40933bef26)
 
 ### Playground Application
 Interactive playground showcasing all features:
 
-![Playground Demo](https://github.com/user-attachments/assets/7664c675-3e2d-451a-b07b-f009d6ab121d)
+![Playground Demo](https://github.com/trrahul/nodify-avalonia/assets/7353840/11a10880-a8e3-4923-b26e-0feeeb1a7b73)
 
 ### Node Graph Examples
-![Node Graph 1](https://github.com/trrahul/nodify-avalonia/assets/7353840/ad8543f5-15c2-4506-93ca-2c40933bef26)
+![Node Graph 1](https://github.com/user-attachments/assets/4c67386c-5ef4-4ebf-b627-de794d037ddc)
 
-![Node Graph 2](https://github.com/trrahul/nodify-avalonia/assets/7353840/11a10880-a8e3-4923-b26e-0feeeb1a7b73)
+![Node Graph 2](https://github.com/user-attachments/assets/7664c675-3e2d-451a-b07b-f009d6ab121d)
 
 ## 📚 Example Applications
 
