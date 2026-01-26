@@ -1,94 +1,94 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>Library</OutputType>
-        <TargetFramework>net7.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-        <Description>An MVVM Node editor for Avalonia.</Description>
-        <PackageProjectUrl>https://github.com/trrahul/nodify-avalonia</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/trrahul/nodify-avalonia</RepositoryUrl>
-        <PackageTags>avalonia;node-editor;</PackageTags>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-        <IncludeSymbols>True</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	    <Version>1.0.2</Version>
-    </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Description>An MVVM Node editor for Avalonia.</Description>
+		<PackageProjectUrl>https://github.com/trrahul/nodify-avalonia</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/trrahul/nodify-avalonia</RepositoryUrl>
+		<PackageTags>avalonia;node-editor;</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<Version>1.0.2</Version>
+	</PropertyGroup>
 
-    <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />
-        <AvaloniaResource Include="Themes\**" />
-    </ItemGroup>
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+		<AvaloniaResource Include="Themes\**" />
+	</ItemGroup>
 
-    <ItemGroup>
-        <AvaloniaXaml Remove="Models\**" />
-        <Compile Remove="Models\**" />
-        <EmbeddedResource Remove="Models\**" />
-        <None Remove="Models\**" />
-    </ItemGroup>
-
-
-    <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.0.4" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.0.4" />
-    </ItemGroup>
+	<ItemGroup>
+		<AvaloniaXaml Remove="Models\**" />
+		<Compile Remove="Models\**" />
+		<EmbeddedResource Remove="Models\**" />
+		<None Remove="Models\**" />
+	</ItemGroup>
 
 
-    <ItemGroup>
-        <None Update="Themes\Brushes.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Controls.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Dark.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Light.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Nodify.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\Connection.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\Connector.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\Controls.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\DecoratorContainer.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\GroupingNode.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\ItemContainer.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\KnotNode.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\Node.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\NodeInput.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\NodeOutput.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\NodifyEditor.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\PendingConnection.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-        <None Update="Themes\Styles\StateNode.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </None>
-    </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="11.3.11" />
+		<PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<None Update="Themes\Brushes.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Controls.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Dark.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Light.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Nodify.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\Connection.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\Connector.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\Controls.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\DecoratorContainer.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\GroupingNode.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\ItemContainer.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\KnotNode.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\Node.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\NodeInput.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\NodeOutput.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\NodifyEditor.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\PendingConnection.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+		<None Update="Themes\Styles\StateNode.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
+	</ItemGroup>
 </Project>
