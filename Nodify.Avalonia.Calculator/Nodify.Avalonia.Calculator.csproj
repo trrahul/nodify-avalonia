@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.4" />
-    <PackageReference Include="StringMath" Version="4.1.0" />
-    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.0.5" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+    <PackageReference Include="StringMath" Version="4.1.3" />
+    <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.3.0.6" />
 
   </ItemGroup>
 
