@@ -528,7 +528,7 @@ namespace Nodify.Avalonia.Connections
                 // Raise DisconnectCommand if DisconnectEvent is not handled
                 if (!args.Handled && (DisconnectCommand?.CanExecute(splitLocation) ?? false))
                 {
-                    DisconnectCommand.Execute(null);
+                    DisconnectCommand.Execute(splitLocation);
                 }
 
                 e.Handled = true;

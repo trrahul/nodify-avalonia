@@ -69,5 +69,15 @@ namespace Nodify.Avalonia.Calculator.Views
                 calculator.OperationsMenu.Close();
             }
         }
+
+        private void OnOperationNodeDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            if (sender is Control { DataContext: CalculatorOperationViewModel operation }
+                && DataContext is EditorViewModel editor
+                && editor.OpenCalculatorCommand.CanExecute(operation.InnerCalculator))
+            {
+                editor.OpenCalculatorCommand.Execute(operation.InnerCalculator);
+            }
+        }
     }
 }

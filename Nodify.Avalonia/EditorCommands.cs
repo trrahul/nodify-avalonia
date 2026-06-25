@@ -116,7 +116,10 @@ namespace Nodify.Avalonia
 
                     for (var i = 0; i < selected.Count; i++)
                     {
-                        containers.Add((ItemContainer)editor.ItemContainerGenerator.CreateContainer(selected[i],i,null));
+                        if (editor.ContainerFromItem(selected[i]) is ItemContainer container)
+                        {
+                            containers.Add(container);
+                        }
                     }
 
                     if (e.Parameter is Alignment alignment)

@@ -549,7 +549,7 @@
                             <ContentPresenter x:Name="Icon"
                                               Margin="4 0 6 0"
                                               VerticalAlignment="Center" Content="{TemplateBinding Icon}"
-                                              IsVisible="{Binding Icon, Source={RelativeSource TemplatedParent},Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                              IsVisible="{Binding Icon, RelativeSource={RelativeSource TemplatedParent},Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                             <ContentPresenter Grid.Column="1"
                                               x:Name="Header"
@@ -563,7 +563,7 @@
                                               Margin="32 1 8 1"
                                               Content="{TemplateBinding InputGesture}"
                                               VerticalAlignment="Center"
-                                              IsVisible="{Binding InputGesture, Source={RelativeSource TemplatedParent},Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                              IsVisible="{Binding InputGesture, RelativeSource={RelativeSource TemplatedParent},Converter={x:Static ObjectConverters.IsNotNull}}" />
 
                             <Grid Grid.Column="3"
                                   Margin="4 0 6 0"

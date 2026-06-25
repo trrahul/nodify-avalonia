@@ -130,7 +130,7 @@ namespace Nodify.Avalonia.Helpers
             var items = (IList)_host.Items;
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)_host.ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
                 container.IsPreviewingSelection = false;
             }
         }
@@ -145,7 +145,7 @@ namespace Nodify.Avalonia.Helpers
             var items = (IList)_host.Items;
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)_host.ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
                 if (container.IsSelectableInArea(area, fit))
                 {
                     container.IsPreviewingSelection = true;
@@ -158,7 +158,7 @@ namespace Nodify.Avalonia.Helpers
             var items = (IList)_host.Items;
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)_host.ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
                 if (container.IsSelectableInArea(area, fit))
                 {
                     container.IsPreviewingSelection = false;
@@ -179,7 +179,7 @@ namespace Nodify.Avalonia.Helpers
             var items = (IList)_host.Items;
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)_host.ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
                 if (container.IsSelectableInArea(area, fit))
                 {
                     container.IsPreviewingSelection = !container.IsPreviewingSelection;

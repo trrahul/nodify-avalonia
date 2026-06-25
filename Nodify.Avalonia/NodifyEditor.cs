@@ -1247,7 +1247,7 @@ namespace Nodify.Avalonia
             Selection.BeginBatchUpdate();
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)ContainerFromIndex(i)!;
                 if (container.IsPreviewingSelection == true)
                 {
                     Selection.Select(i);
@@ -1267,7 +1267,7 @@ namespace Nodify.Avalonia
             var items = (IList)Items;
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)ContainerFromIndex(i)!;
                 container.IsPreviewingSelection = null;
             }
         }
@@ -1284,7 +1284,7 @@ namespace Nodify.Avalonia
             Selection.BeginBatchUpdate();
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)ContainerFromIndex(i)!;
 
                 if (container.IsSelectableInArea(area, fit))
                 {
@@ -1321,7 +1321,7 @@ namespace Nodify.Avalonia
             Selection.BeginBatchUpdate();
             for (var i = 0; i < items.Count; i++)
             {
-                var container = (ItemContainer)ItemContainerGenerator.ContainerFromIndex(i);
+                var container = (ItemContainer)ContainerFromIndex(i)!;
                 if (container.IsSelectableInArea(area, fit))
                 {
                     Selection.Select(i);
