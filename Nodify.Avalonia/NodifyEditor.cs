@@ -36,8 +36,6 @@ namespace Nodify.Avalonia
     [DefaultProperty(nameof(Decorators))]
     public class NodifyEditor : SelectingItemsControl, IRoutedCommandBindable
     {
-        //protected const string ElementItemsHost = "PART_ItemsHost";
-
         #region Viewport
 
         public static readonly StyledProperty<double> ViewportZoomProperty = AvaloniaProperty.Register<NodifyEditor,double>(nameof(ViewportZoom), 1d, defaultBindingMode:BindingMode.TwoWay, coerce: ConstrainViewportZoomToRange);
@@ -74,7 +72,6 @@ namespace Nodify.Avalonia
             editor.TranslateTransform.X = -translate.X * zoom;
             editor.TranslateTransform.Y = -translate.Y * zoom;
             editor.ViewportSize = new Size(editor.Bounds.Width / zoom, editor.Bounds.Height / zoom);
-            editor.ApplyRenderingOptimizations();
             editor.OnViewportUpdated();
         }
 
@@ -224,25 +221,6 @@ namespace Nodify.Avalonia
         internal void UnselectAll()
         {
             Selection.Clear();
-        }
-
-        private void ApplyRenderingOptimizations()
-        {
-            //ToDo caching
-            //if (ItemsHost != null)
-            //{
-            //    if (EnableRenderingContainersOptimizations && Items.Count >= OptimizeRenderingMinimumContainers)
-            //    {
-            //        double zoom = ViewportZoom;
-            //        double availableZoomIn = 1.0 - MinViewportZoom;
-            //        bool shouldCache = zoom / availableZoomIn <= OptimizeRenderingZoomOutPercent;
-            //        ItemsHost.CacheMode = shouldCache ? new BitmapCache(1.0 / zoom) : null;
-            //    }
-            //    else
-            //    {
-            //        ItemsHost.CacheMode = null;
-            //    }
-            //}
         }
 
         #endregion
@@ -447,9 +425,6 @@ namespace Nodify.Avalonia
         public static readonly StyledProperty<bool> DisablePanningProperty = AvaloniaProperty.Register<NodifyEditor,bool>(nameof(DisablePanning), false);
         public static readonly StyledProperty<bool> EnableRealtimeSelectionProperty = AvaloniaProperty.Register<NodifyEditor,bool>(nameof(EnableRealtimeSelection), false);
         public static readonly StyledProperty<IEnumerable> DecoratorsProperty = AvaloniaProperty.Register<NodifyEditor,IEnumerable>(nameof(Decorators));
-
-        private static void OnSelectedItemsSourceChanged(NodifyEditor d, AvaloniaPropertyChangedEventArgs<IList?> e)
-            => d.OnSelectedItemsSourceChanged(e.OldValue.Value, e.NewValue.Value);
 
         private static uint OnCoerceGridCellSize(AvaloniaObject avaloniaObject, uint value)
             => value > 0u ? value : 1u;
@@ -718,7 +693,6 @@ namespace Nodify.Avalonia
             MinViewportZoomProperty.Changed.AddClassHandler<NodifyEditor, double>(OnMinViewportZoomChanged);
             MaxViewportZoomProperty.Changed.AddClassHandler<NodifyEditor, double>(OnMaxViewportZoomChanged);
             ViewportLocationProperty.Changed.AddClassHandler<NodifyEditor, Point>(OnViewportLocationChanged);
-            SelectedItemsProperty.Changed.AddClassHandler<NodifyEditor, IList?>(OnSelectedItemsSourceChanged);
             GridCellSizeProperty.Changed.AddClassHandler<NodifyEditor, uint>(OnGridCellSizeChanged);
             DisablePanningProperty.Changed.AddClassHandler<NodifyEditor, bool>(OnDisablePanningChanged);
         }
@@ -728,7 +702,6 @@ namespace Nodify.Avalonia
         /// </summary>
         public NodifyEditor()
         {
-            //Todo
             EditorCommands.Register(this);
             AddHandler(Connector.DisconnectEvent, new ConnectorEventHandler(OnConnectorDisconnected));
             AddHandler(Connector.PendingConnectionStartedEvent, new PendingConnectionEventHandler(OnConnectionStarted));
@@ -755,8 +728,6 @@ namespace Nodify.Avalonia
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
-            //_ic = e.NameScope.Find<ItemsControl>("ItemsControl")!;
-            //ItemsHost = this.ItemsPanelRoot;
             OnDisableAutoPanningChanged(DisableAutoPanning);
 
             State.Enter(null);
@@ -771,8 +742,6 @@ namespace Nodify.Avalonia
                 RenderTransformOrigin = new RelativePoint(0, 0, RelativeUnit.Relative)
             };
         }
-
-        //protected override bool IsItemItsOwnContainerOverride(Control item) => item is ItemContainer;
 
         #endregion
 
@@ -928,8 +897,6 @@ namespace Nodify.Avalonia
 
         #region Auto panning
 
-
-        //todo
         private void HandleAutoPanning(object? sender, EventArgs e)
         {
             if (!IsPanning && State.CurrentPointerArgs != null && this.IsPointerCapturedWithin(State.CurrentPointerArgs))
@@ -1051,7 +1018,6 @@ namespace Nodify.Avalonia
         private bool _isPanning;
 
         private TransformGroup _viewportTransform = new TransformGroup();
-        //private ItemsControl _ic;
 
         /// <summary>The current state of the editor.</summary>
         public EditorState State => _states.Peek();
@@ -1172,69 +1138,6 @@ namespace Nodify.Avalonia
 
         protected override void OnKeyDown(KeyEventArgs e)
             => State.HandleKeyDown(e);
-
-        #endregion
-
-        #region Selection Handlers
-
-        private void OnSelectedItemsSourceChanged(IList? oldValue, IList? newValue)
-        {
-            if (oldValue is INotifyCollectionChanged oc)
-            {
-                oc.CollectionChanged -= OnSelectedItemsChanged;
-            }
-
-            if (newValue is INotifyCollectionChanged nc)
-            {
-                nc.CollectionChanged += OnSelectedItemsChanged;
-            }
-            //only a single collection 
-            //IList selectedItems = SelectedItems;
-            //Selection.BeginBatchUpdate();
-            //selectedItems.Clear();
-            //if (newValue != null)
-            //{
-            //    for (var i = 0; i < newValue.Count; i++)
-            //    {
-            //        selectedItems.Add(newValue[i]);
-            //    }
-            //}
-            //Selection.EndBatchUpdate();
-        }
-
-        private void OnSelectedItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Reset:
-            //        base.SelectedItems.Clear();
-            //        break;
-
-            //    case NotifyCollectionChangedAction.Add:
-            //        IList? newItems = e.NewItems;
-            //        if (newItems != null)
-            //        {
-            //            IList selectedItems = base.SelectedItems;
-            //            for (var i = 0; i < newItems.Count; i++)
-            //            {
-            //                selectedItems.Add(newItems[i]);
-            //            }
-            //        }
-            //        break;
-
-            //    case NotifyCollectionChangedAction.Remove:
-            //        IList? oldItems = e.OldItems;
-            //        if (oldItems != null)
-            //        {
-            //            IList selectedItems = base.SelectedItems;
-            //            for (var i = 0; i < oldItems.Count; i++)
-            //            {
-            //                selectedItems.Remove(oldItems[i]);
-            //            }
-            //        }
-            //        break;
-            //}
-        }
 
         #endregion
 

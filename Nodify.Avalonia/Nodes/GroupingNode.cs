@@ -177,7 +177,6 @@ namespace Nodify.Avalonia.Nodes
 
         static GroupingNode()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(GroupingNode), new FrameworkPropertyMetadata(typeof(GroupingNode)));
             Panel.ZIndexProperty.OverrideMetadata<GroupingNode>(new StyledPropertyMetadata<int>(-1));
             Panel.ZIndexProperty.Changed.AddClassHandler<GroupingNode, int>(OnZIndexPropertyChanged);
             ActualSizeProperty.Changed.AddClassHandler<GroupingNode,Size>(OnActualSizeChanged);

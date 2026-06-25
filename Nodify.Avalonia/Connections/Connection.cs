@@ -10,12 +10,6 @@ namespace Nodify.Avalonia.Connections
     /// </summary>
     public class Connection : BaseConnection
     {
-        static Connection()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(Connection), new FrameworkPropertyMetadata(typeof(Connection)));
-            //AffectsRender<Connection>(SourceProperty,TargetProperty,SourceOffsetProperty,TargetOffsetProperty,SourceOffsetModeProperty,TargetOffsetModeProperty,DirectionProperty,SpacingProperty,ArrowSizeProperty,ArrowEndsProperty,ArrowShapeProperty);
-        }
-
         // ReSharper disable once InconsistentNaming
         private const double _baseOffset = 100d;
         // ReSharper disable once InconsistentNaming
@@ -45,7 +39,6 @@ namespace Nodify.Avalonia.Connections
             context.LineTo(startPoint);
             context.CubicBezierTo(startPoint + controlPoint, endPoint - controlPoint, endPoint);
             context.LineTo(target);
-            //context.EndFigure(false);
             return ((target, source), (source, target));
         }
     }

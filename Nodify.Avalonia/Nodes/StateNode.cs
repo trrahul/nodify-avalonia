@@ -70,11 +70,6 @@ namespace Nodify.Avalonia.Nodes
         /// </summary>
         protected Control? ContentControl { get; private set; }
 
-        static StateNode()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(StateNode), new FrameworkPropertyMetadata(typeof(StateNode)));
-        }
-
         /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {

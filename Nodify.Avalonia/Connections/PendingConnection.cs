@@ -244,7 +244,6 @@ namespace Nodify.Avalonia.Connections
 
         static PendingConnection()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(PendingConnection), new FrameworkPropertyMetadata(typeof(PendingConnection)));
             AllowOnlyConnectorsProperty.Changed.AddClassHandler<PendingConnection, bool>(OnAllowOnlyConnectorsChanged);
             IsVisibleProperty.Changed.AddClassHandler<PendingConnection,bool>(OnVisibilityChanged);
             PendingConnection.IsOverElementProperty.Changed.AddClassHandler<Connector, bool>(Connector.OnIsOverElementChanged);
