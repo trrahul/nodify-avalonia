@@ -45,10 +45,5 @@ namespace Nodify.Avalonia.Nodes
         }
 
         #endregion
-
-        static NodeInput()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(NodeInput), new FrameworkPropertyMetadata(typeof(NodeInput)));
-        }
     }
 }

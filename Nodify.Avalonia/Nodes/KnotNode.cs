@@ -8,9 +8,5 @@ namespace Nodify.Avalonia.Nodes
     /// </summary>
     public class KnotNode : ContentControl
     {
-        static KnotNode()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(KnotNode), new FrameworkPropertyMetadata(typeof(KnotNode)));
-        }
     }
 }

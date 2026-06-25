@@ -122,7 +122,6 @@ namespace Nodify.Avalonia.Connections
 
         static Connector()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(Connector), new FrameworkPropertyMetadata(typeof(Connector)));
             FocusableProperty.OverrideMetadata(typeof(Connector), new StyledPropertyMetadata<bool>(true));
             IsConnectedProperty.Changed.AddClassHandler<Connector, bool>(OnIsConnectedChanged);
         }

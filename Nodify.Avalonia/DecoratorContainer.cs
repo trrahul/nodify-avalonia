@@ -68,7 +68,6 @@ namespace Nodify.Avalonia
 
         static DecoratorContainer()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(DecoratorContainer), new FrameworkPropertyMetadata(typeof(DecoratorContainer)));
             LocationProperty.Changed.AddClassHandler<DecoratorContainer, Point>(OnLocationChanged);
         }
 

@@ -25,7 +25,6 @@ namespace Nodify.Avalonia.Connections
 
         static CircuitConnection()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(CircuitConnection), new FrameworkPropertyMetadata(typeof(CircuitConnection)));
             AffectsRender<CircuitConnection>(AngleProperty);
         }
 

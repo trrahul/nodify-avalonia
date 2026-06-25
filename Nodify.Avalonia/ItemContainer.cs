@@ -293,7 +293,6 @@ namespace Nodify.Avalonia
 
         static ItemContainer()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(ItemContainer), new FrameworkPropertyMetadata(typeof(ItemContainer)));
             FocusableProperty.OverrideMetadata(typeof(ItemContainer), new StyledPropertyMetadata<bool>(true));
             IsSelectedProperty.Changed.AddClassHandler<ItemContainer, bool>(OnIsSelectedChanged);
             LocationProperty.Changed.AddClassHandler<ItemContainer, Point>(OnLocationChanged);

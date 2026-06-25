@@ -159,7 +159,6 @@ namespace Nodify.Avalonia.Nodes
 
         static Node()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(Node), new FrameworkPropertyMetadata(typeof(Node)));
             FooterProperty.Changed.AddClassHandler<Node, object?>((o,e)=> o.HasFooter = e.NewValue.Value != null);
             HeaderProperty.Changed.AddClassHandler<Node, object?>((o, e) => o.HasHeader = e.NewValue.Value != null);
         }

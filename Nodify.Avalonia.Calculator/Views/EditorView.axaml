@@ -270,14 +270,8 @@
 					<nodes:Node Header="{Binding Title}"
                                  Input="{Binding Input}"
                                  Output="{Binding Output, Converter={x:Static converters:ItemToListConverter.Instance}}"
-                                 ToolTip.Tip="Double click to expand">
-						<Interaction.Behaviors>
-							<EventTriggerBehavior EventName="DoubleTapped">
-								<InvokeCommandAction Command="{Binding ((viewModels:EditorViewModel)DataContext).OpenCalculatorCommand, RelativeSource={RelativeSource AncestorType=views:EditorView}}"
-                                                     CommandParameter="{Binding InnerCalculator}" />
-							</EventTriggerBehavior>
-						</Interaction.Behaviors>
-					</nodes:Node>
+                                 ToolTip.Tip="Double click to expand"
+                                 DoubleTapped="OnOperationNodeDoubleTapped" />
 				</DataTemplate>
 
 				<DataTemplate DataType="{x:Type viewModels:CalculatorInputOperationViewModel}">

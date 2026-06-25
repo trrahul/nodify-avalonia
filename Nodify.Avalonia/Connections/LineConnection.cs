@@ -9,11 +9,6 @@ namespace Nodify.Avalonia.Connections
     /// </summary>
     public class LineConnection : BaseConnection
     {
-        static LineConnection()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(LineConnection), new FrameworkPropertyMetadata(typeof(LineConnection)));
-        }
-
         protected override ((Point ArrowStartSource, Point ArrowStartTarget), (Point ArrowEndSource, Point ArrowEndTarget)) DrawLineGeometry(StreamGeometryContext context, Point source, Point target)
         {
             double direction = Direction == ConnectionDirection.Forward ? 1d : -1d;
