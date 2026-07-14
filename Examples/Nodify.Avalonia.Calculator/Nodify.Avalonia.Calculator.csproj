@@ -1,28 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <!-- Several bindings are intentionally late-bound (gesture editors, enum item lists). -->
-    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-    <AvaloniaResource Include="Themes\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.0.5" />
+    <InternalsVisibleTo Include="Nodify.Avalonia.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.5" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
+    <PackageReference Include="StringMath" Version="4.1.3" />
+
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Nodify.Avalonia.Shared\Nodify.Avalonia.Shared.csproj" />
-    <ProjectReference Include="..\Nodify.Avalonia\Nodify.Avalonia.csproj" />
+    <ProjectReference Include="..\..\Nodify.Avalonia\Nodify.Avalonia.csproj" />
   </ItemGroup>
 </Project>

@@ -504,9 +504,7 @@ namespace Nodify.Avalonia
             // container state can focus the item and before the event bubbles to NodifyEditor,
             // where LastInputWasKeyboard is updated.
             PseudoClasses.Set(KeyboardFocusPseudoClass, false);
-            DragTrace.Log($"IC.OnPointerPressed src={e.Source?.GetType().Name} posInThis={e.GetPosition(this)} selLoc={IsSelectableLocation(e.GetPosition(this))} bounds={Bounds.Size} IsDraggable={IsDraggable} IsSelectable={IsSelectable} captured={e.Pointer.Captured?.GetType().Name ?? "null"}");
             InputProcessor.ProcessEvent(e);
-            DragTrace.Log($"IC.OnPointerPressed done: captured={e.Pointer.Captured?.GetType().Name ?? "null"} handled={e.Handled}");
         }
 
         /// <inheritdoc />

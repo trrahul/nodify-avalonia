@@ -72,8 +72,8 @@ namespace Nodify.Avalonia
 
         // Visual.Bounds and IKeyboardFocusTarget.Bounds would clash if both were named "Bounds".
         // Use explicit interface implementation to expose the graph-space focus bounds without a conflict.
-        global::Avalonia.Rect IKeyboardFocusTarget<DecoratorContainer>.Bounds
-            => new global::Avalonia.Rect(Location, ActualSize);
+        Rect IKeyboardFocusTarget<DecoratorContainer>.Bounds
+            => new Rect(Location, ActualSize);
 
         DecoratorContainer IKeyboardFocusTarget<DecoratorContainer>.Element => this;
 
@@ -111,19 +111,12 @@ namespace Nodify.Avalonia
         {
             base.OnAttachedToVisualTree(e);
 
-            // Resolve and cache Owner while still attached — items placed directly in the
-            // Decorators collection (as their own container, see DecoratorsControl's
-            // NeedsContainerOverride) never go through a parameterized ctor, so Owner must be
-            // captured here to still be available from OnDetachedFromVisualTree below (by then
-            // the visual parent link is already gone and FindAncestorOfType would return null).
             _owner ??= this.FindAncestorOfType<DecoratorsControl>();
         }
 
         /// <inheritdoc />
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            // Focus-trap: if this decorator container is removed while it (or a descendant) holds
-            // keyboard focus, return focus to the editor so keyboard navigation keeps working.
             bool hadKeyboardFocus = IsKeyboardFocusWithin;
 
             base.OnDetachedFromVisualTree(e);

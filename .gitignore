@@ -3,6 +3,9 @@
 ################################################################################
 
 /.vs
-*/bin
-*/obj
+**/bin/
+**/obj/
 /.idea/.idea.Nodify.Avalonia/.idea
+
+/reference/
+artifacts/

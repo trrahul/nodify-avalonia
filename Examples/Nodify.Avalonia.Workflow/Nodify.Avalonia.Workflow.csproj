@@ -1,13 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <!-- This app leans on late-bound bindings (MultiBinding-produced view models, deep
-         "$parent[Window].DataContext.X.Y" paths) that compiled bindings can't resolve
-         without per-binding x:DataType plumbing throughout nested DataTemplates.
-         Mirrors Nodify.Avalonia.Playground's choice; see CLAUDE.md. -->
+    <!-- Several bindings are intentionally late-bound (gesture editors, enum item lists). -->
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -22,16 +19,10 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.5" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.0.5" />
-    <PackageReference Include="ReactiveUI.Avalonia" Version="12.0.3" />
-    <PackageReference Include="Xaml.Behaviors.Avalonia" Version="12.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Nodify.Avalonia.Shared\Nodify.Avalonia.Shared.csproj" />
-    <ProjectReference Include="..\Nodify.Avalonia\Nodify.Avalonia.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Nodify.Avalonia.Tests" />
+    <ProjectReference Include="..\..\Nodify.Avalonia\Nodify.Avalonia.csproj" />
   </ItemGroup>
 </Project>

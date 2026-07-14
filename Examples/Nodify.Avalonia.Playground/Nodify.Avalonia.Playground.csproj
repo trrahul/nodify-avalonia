@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nodify.Avalonia.Shared\Nodify.Avalonia.Shared.csproj" />
-    <ProjectReference Include="..\Nodify.Avalonia\Nodify.Avalonia.csproj" />
+    <ProjectReference Include="..\..\Nodify.Avalonia\Nodify.Avalonia.csproj" />
   </ItemGroup>
 
 
