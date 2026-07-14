@@ -1,4 +1,4 @@
-﻿<Styles xmlns="https://github.com/avaloniaui">
+<Styles xmlns="https://github.com/avaloniaui">
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -12,11 +12,13 @@
                 <ResourceInclude Source="NodeOutput.xaml" />
                 <ResourceInclude Source="Connection.xaml" />
                 <ResourceInclude Source="PendingConnection.xaml" />
+                <ResourceInclude Source="HotKeyControl.xaml" />
 
                 <!--CORE-->
                 <ResourceInclude Source="ItemContainer.xaml" />
                 <ResourceInclude Source="DecoratorContainer.xaml" />
                 <ResourceInclude Source="NodifyEditor.xaml" />
+                <ResourceInclude Source="Minimap.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

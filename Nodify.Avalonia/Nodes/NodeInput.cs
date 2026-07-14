@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml.Templates;
 using Nodify.Avalonia.Connections;
 
@@ -16,6 +17,7 @@ namespace Nodify.Avalonia.Nodes
         public static readonly StyledProperty<object?> HeaderProperty = HeaderedContentControl.HeaderProperty.AddOwner<NodeInput>();
         public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty = HeaderedContentControl.HeaderTemplateProperty.AddOwner<NodeInput>();
         public static readonly StyledProperty<ControlTemplate> ConnectorTemplateProperty = AvaloniaProperty.Register<NodeInput,ControlTemplate>(nameof(ConnectorTemplate));
+        public static readonly StyledProperty<Orientation> OrientationProperty = AvaloniaProperty.Register<NodeInput, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
         /// <summary>
         /// Gets of sets the data used for the control's header.
@@ -42,6 +44,13 @@ namespace Nodify.Avalonia.Nodes
         {
             get => GetValue(ConnectorTemplateProperty);
             set => SetValue(ConnectorTemplateProperty, value);
+        }
+
+        /// <inheritdoc cref="global::Avalonia.Controls.StackPanel.Orientation" />
+        public Orientation Orientation
+        {
+            get => GetValue(OrientationProperty);
+            set => SetValue(OrientationProperty, value);
         }
 
         #endregion

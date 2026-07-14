@@ -14,6 +14,17 @@
                         <MergeResourceInclude Source="Nodify.xaml"/>
                     </ResourceDictionary.MergedDictionaries>
                 </ResourceDictionary>
+                <!--"Default" is kept (duplicated) alongside the named variant below:
+                    StaticResource lookup for resources nested in inline XAML (e.g. an app's
+                    <ControlTheme BasedOn="{StaticResource ...}"/>) resolves against
+                    ThemeVariant.Default when the ambient live variant isn't established yet at
+                    that parse point; dropping "Default" throws KeyNotFoundException there even
+                    though DynamicResource lookups against the real ActualThemeVariant work fine.-->
+                <ResourceDictionary x:Key="{x:Static avalonia:NodifyThemeVariants.Nodify}">
+                    <ResourceDictionary.MergedDictionaries>
+                        <MergeResourceInclude Source="Nodify.xaml"/>
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <ResourceDictionary.MergedDictionaries>
                         <MergeResourceInclude Source="Dark.xaml"/>

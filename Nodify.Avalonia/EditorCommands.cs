@@ -13,24 +13,11 @@ namespace Nodify.Avalonia
     public static class EditorCommands
     {
         /// <summary>
-        /// Specifies the possible alignment values used by the <see cref="Align"/> command.
-        /// </summary>
-        public enum Alignment
-        {
-            Top,
-            Left,
-            Bottom,
-            Right,
-            Middle,
-            Center
-        }
-
-        /// <summary>
         /// Zoom in relative to the editor's viewport center.
         /// </summary>
         public static RoutedUICommand ZoomIn { get; } = new RoutedUICommand("Zoom in", nameof(ZoomIn), typeof(EditorCommands), new InputGestureCollection
         {
-           EditorGestures.ZoomIn 
+           EditorGestures.Mappings.Editor.ZoomIn
         });
 
         /// <summary>
@@ -38,7 +25,7 @@ namespace Nodify.Avalonia
         /// </summary>
         public static RoutedUICommand ZoomOut { get; } = new RoutedUICommand("Zoom out", nameof(ZoomOut), typeof(EditorCommands), new InputGestureCollection
         {
-            EditorGestures.ZoomOut
+            EditorGestures.Mappings.Editor.ZoomOut
         });
 
         /// <summary>
@@ -52,7 +39,7 @@ namespace Nodify.Avalonia
         /// </summary>
         public static RoutedUICommand BringIntoView { get; } = new RoutedUICommand("Bring location into view", nameof(BringIntoView), typeof(EditorCommands), new InputGestureCollection
         {
-            EditorGestures.ResetViewportLocation
+            EditorGestures.Mappings.Editor.ResetViewport
         });
 
         /// <summary>
@@ -60,14 +47,24 @@ namespace Nodify.Avalonia
         /// </summary>
         public static RoutedUICommand FitToScreen { get; } = new RoutedUICommand("Fit to screen", nameof(FitToScreen), typeof(EditorCommands), new InputGestureCollection
         {
-            EditorGestures.FitToScreen
+            EditorGestures.Mappings.Editor.FitToScreen
         });
 
         /// <summary>
         /// Aligns <see cref="NodifyEditor.SelectedItems"/> using the specified alignment method.
-        /// Parameter is of type <see cref="Alignment"/> or a string that can be converted to an alignment.
+        /// Parameter is of type <see cref="Nodify.Avalonia.Alignment"/> or a string that can be converted to an alignment.
         /// </summary>
         public static RoutedUICommand Align { get; } = new RoutedUICommand("Align", nameof(Align), typeof(EditorCommands));
+
+        /// <summary>
+        /// Locks the position of the <see cref="NodifyEditor.SelectedContainers"/>.
+        /// </summary>
+        public static RoutedUICommand LockSelection { get; } = new RoutedUICommand("Lock selection", nameof(LockSelection), typeof(EditorCommands));
+
+        /// <summary>
+        /// Unlocks the position of the <see cref="NodifyEditor.SelectedContainers"/>.
+        /// </summary>
+        public static RoutedUICommand UnlockSelection { get; } = new RoutedUICommand("Unlock selection", nameof(UnlockSelection), typeof(EditorCommands));
 
         internal static void Register(IRoutedCommandBindable routedCommandBindable)
         {
@@ -77,6 +74,8 @@ namespace Nodify.Avalonia
             RegisterClassCommandBinding(routedCommandBindable,new RoutedCommandBinding(BringIntoView, OnBringIntoView, OnQueryBringIntoViewStatus));
             RegisterClassCommandBinding(routedCommandBindable, new RoutedCommandBinding(FitToScreen, OnFitToScreen, OnQueryFitToScreenStatus));
             RegisterClassCommandBinding(routedCommandBindable, new RoutedCommandBinding(Align, OnAlign, OnQueryAlignStatus));
+            RegisterClassCommandBinding(routedCommandBindable, new RoutedCommandBinding(LockSelection, OnLockSelection, OnQueryLockSelectionStatus));
+            RegisterClassCommandBinding(routedCommandBindable, new RoutedCommandBinding(UnlockSelection, OnUnlockSelection, OnQueryUnlockSelectionStatus));
         }
 
         public static void RegisterClassCommandBinding(IRoutedCommandBindable routedCommandBindable,RoutedCommandBinding commandBinding)
@@ -92,97 +91,69 @@ namespace Nodify.Avalonia
         }
 
 
-        private static void OnQueryAlignStatus(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnQueryAlignStatus(object? sender,CanExecuteRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
-                e.CanExecute = (editor).SelectedItems.Count > 1;
+                e.CanExecute = (editor.SelectedItems?.Count ?? 0) > 1;
             }
         }
 
-        private static void OnAlign(object sender, ExecutedRoutedEventArgs e)
+        private static void OnAlign(object? sender,ExecutedRoutedEventArgs e)
         {
-            if (sender is NodifyEditor editor)
+            // Delegates to NodifyEditor.AlignSelection, which guards on IsDragging and toggles it
+            // itself — so ItemsDragStartedCommand/ItemsDragCompletedCommand fire via the IsDragging
+            // property transition. This handler must NOT fire those commands manually (that would double-fire).
+            if (sender is NodifyEditor editor && editor.SelectedContainersCount > 0)
             {
-                IList? selected = editor.SelectedItems;
-                if (selected.Count > 0)
+                if (e.Parameter is Alignment alignment)
                 {
-                    if (editor.ItemsDragStartedCommand?.CanExecute(null) ?? false)
-                    {
-                        editor.ItemsDragStartedCommand.Execute(null);
-                    }
-
-                    var containers = new List<ItemContainer>(selected.Count);
-
-                    for (var i = 0; i < selected.Count; i++)
-                    {
-                        if (editor.ContainerFromItem(selected[i]) is ItemContainer container)
-                        {
-                            containers.Add(container);
-                        }
-                    }
-
-                    if (e.Parameter is Alignment alignment)
-                    {
-                        AlignContainers(containers, alignment, e.Source as ItemContainer);
-                    }
-                    else if (e.Parameter is string str && Enum.TryParse(str, true, out alignment))
-                    {
-                        AlignContainers(containers, alignment, e.Source as ItemContainer);
-                    }
-                    else
-                    {
-                        AlignContainers(containers, Alignment.Top, e.Source as ItemContainer);
-                    }
-
-                    if (editor.ItemsDragCompletedCommand?.CanExecute(null) ?? false)
-                    {
-                        editor.ItemsDragCompletedCommand.Execute(null);
-                    }
+                    editor.AlignSelection(alignment, e.Source as ItemContainer);
+                }
+                else if (e.Parameter is string str && Enum.TryParse(str, true, out alignment))
+                {
+                    editor.AlignSelection(alignment, e.Source as ItemContainer);
+                }
+                else
+                {
+                    editor.AlignSelection(Alignment.Top, e.Source as ItemContainer);
                 }
             }
         }
 
-        private static void AlignContainers(List<ItemContainer> containers, Alignment alignment, ItemContainer? instigator = default)
+        private static void OnQueryLockSelectionStatus(object? sender, CanExecuteRoutedEventArgs e)
         {
-            switch (alignment)
+            if (sender is NodifyEditor editor)
             {
-                case Alignment.Top:
-                    double top = instigator?.Location.Y ?? containers.Min(x => x.Location.Y);
-                    containers.ForEach(c => c.Location = new Point(c.Location.X, top));
-                    break;
-
-                case Alignment.Left:
-                    double left = instigator?.Location.X ?? containers.Min(x => x.Location.X);
-                    containers.ForEach(c => c.Location = new Point(left, c.Location.Y));
-                    break;
-
-                case Alignment.Bottom:
-                    double bottom = instigator != null ? instigator.Location.Y + instigator.Bounds.Height : containers.Max(x => x.Location.Y + x.Bounds.Height);
-                    containers.ForEach(c => c.Location = new Point(c.Location.X, bottom - c.Bounds.Height));
-                    break;
-
-                case Alignment.Right:
-                    double right = instigator != null ? instigator.Location.X + instigator.Bounds.Width : containers.Max(x => x.Location.X + x.Bounds.Width);
-                    containers.ForEach(c => c.Location = new Point(right - c.Bounds.Width, c.Location.Y));
-                    break;
-
-                case Alignment.Middle:
-                    double mid = instigator != null ? instigator.Location.Y + instigator.Bounds.Height / 2 : containers.Average(c => c.Location.Y + c.Bounds.Height / 2);
-                    containers.ForEach(c => c.Location = new Point(c.Location.X, mid - c.Bounds.Height / 2));
-                    break;
-
-                case Alignment.Center:
-                    double center = instigator != null ? instigator.Location.X + instigator.Bounds.Width / 2 : containers.Average(c => c.Location.X + c.Bounds.Width / 2);
-                    containers.ForEach(c => c.Location = new Point(center - c.Bounds.Width / 2, c.Location.Y));
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(alignment), alignment, null);
+                e.CanExecute = editor.SelectedContainers.Any(c => c.IsDraggable);
             }
         }
 
-        private static void OnQueryBringIntoViewStatus(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnLockSelection(object? sender, ExecutedRoutedEventArgs e)
+        {
+            if (sender is NodifyEditor editor)
+            {
+                editor.LockSelection();
+            }
+        }
+
+        private static void OnQueryUnlockSelectionStatus(object? sender, CanExecuteRoutedEventArgs e)
+        {
+            if (sender is NodifyEditor editor)
+            {
+                e.CanExecute = editor.SelectedContainers.Any(c => !c.IsDraggable);
+            }
+        }
+
+        private static void OnUnlockSelection(object? sender, ExecutedRoutedEventArgs e)
+        {
+            if (sender is NodifyEditor editor)
+            {
+                editor.UnlockSelection();
+            }
+        }
+
+        private static void OnQueryBringIntoViewStatus(object? sender,CanExecuteRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -190,7 +161,7 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static async void OnBringIntoView(object sender, ExecutedRoutedEventArgs e)
+        private static async void OnBringIntoView(object? sender,ExecutedRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -200,19 +171,19 @@ namespace Nodify.Avalonia
                         await editor.BringIntoView(location);
                         break;
                     case Rect rect:
-                        await editor.BringIntoView(rect);
+                        await editor.BringIntoView(rect, animated: true);
                         break;
                     case string str:
                         await editor.BringIntoView(Point.Parse(str));
                         break;
                     default:
-                        await editor.BringIntoView(new Point());
+                        await editor.ResetViewport();
                         break;
                 }
             }
         }
 
-        private static void OnQueryFitToScreenStatus(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnQueryFitToScreenStatus(object? sender,CanExecuteRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -220,7 +191,7 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static void OnFitToScreen(object sender, ExecutedRoutedEventArgs e)
+        private static void OnFitToScreen(object? sender,ExecutedRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -228,15 +199,15 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static void OnQuerySelectAllStatus(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnQuerySelectAllStatus(object? sender,CanExecuteRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
-                e.CanExecute = !editor.IsSelecting;
+                e.CanExecute = !editor.IsSelecting && editor.CanSelectMultipleItems;
             }
         }
 
-        private static void OnSelectAll(object sender, ExecutedRoutedEventArgs e)
+        private static void OnSelectAll(object? sender,ExecutedRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -244,7 +215,7 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static void OnQueryStatusZoomIn(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnQueryStatusZoomIn(object? sender,CanExecuteRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -252,7 +223,7 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static void OnZoomIn(object sender, ExecutedRoutedEventArgs e)
+        private static void OnZoomIn(object? sender,ExecutedRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -260,7 +231,7 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static void OnQueryStatusZoomOut(object sender, CanExecuteRoutedEventArgs e)
+        private static void OnQueryStatusZoomOut(object? sender,CanExecuteRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {
@@ -268,7 +239,7 @@ namespace Nodify.Avalonia
             }
         }
 
-        private static void OnZoomOut(object sender, ExecutedRoutedEventArgs e)
+        private static void OnZoomOut(object? sender,ExecutedRoutedEventArgs e)
         {
             if (sender is NodifyEditor editor)
             {

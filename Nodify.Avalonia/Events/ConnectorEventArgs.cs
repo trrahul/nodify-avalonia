@@ -5,31 +5,31 @@ using Avalonia.Interactivity;
 namespace Nodify.Avalonia.Events
 {
     /// <summary>
-    /// Represents the method that will handle <see cref="Connector"/> related routed events.
+    /// Represents the method that will handle <see cref="Connections.Connector"/> related routed events.
     /// </summary>
     /// <param name="sender">The object where the event handler is attached.</param>
     /// <param name="e">The event data.</param>
     public delegate void ConnectorEventHandler(object sender, ConnectorEventArgs e);
 
     /// <summary>
-    /// Provides data for <see cref="Nodify.Connector"/> related routed events.
+    /// Provides data for <see cref="Connections.Connector"/> related routed events.
     /// </summary>
     public class ConnectorEventArgs : RoutedEventArgs
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConnectorEventArgs"/> class using the specified <see cref="Connector"/>.
+        /// Initializes a new instance of the <see cref="ConnectorEventArgs"/> class using the specified <see cref="Connections.Connector"/>.
         /// </summary>
-        /// <param name="connector">The <see cref="FrameworkElement.DataContext"/> of a related <see cref="Nodify.Connector"/>.</param>
+        /// <param name="connector">The <see cref="StyledElement.DataContext"/> of a related <see cref="Connections.Connector"/>.</param>
         public ConnectorEventArgs(object connector)
             => Connector = connector;
 
         /// <summary>
-        /// Gets or sets the <see cref="Nodify.Connector.Anchor"/> of the <see cref="Nodify.Connector"/> associated with this event.
+        /// Gets or sets the <see cref="Connections.Connector.Anchor"/> of the <see cref="Connections.Connector"/> associated with this event.
         /// </summary>
         public Point Anchor { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="FrameworkElement.DataContext"/> of the <see cref="Nodify.Connector"/> associated with this event.
+        /// Gets the <see cref="StyledElement.DataContext"/> of the <see cref="Connections.Connector"/> associated with this event.
         /// </summary>
         public object Connector { get; }
 

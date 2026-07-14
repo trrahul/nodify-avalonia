@@ -6,19 +6,19 @@ using Avalonia.Media;
 
 namespace Nodify.Avalonia.Helpers
 {
-    /// <summary>
-    /// Commits the position changes at the end of the operation. Updates the RenderTransform to preview the container position.
-    /// </summary>
     internal class DraggingOptimized : IDraggingStrategy
     {
         private readonly NodifyEditor _editor;
         private Vector _dragAccumulator;
-        private readonly IList<ItemContainer> _selectedContainers;
+        private readonly List<ItemContainer> _selectedContainers;
 
-        public DraggingOptimized(NodifyEditor editor)
+        public IReadOnlyCollection<ItemContainer> Containers => _selectedContainers;
+        public Vector Offset { get; private set; }
+
+        public DraggingOptimized(NodifyEditor editor, IEnumerable<ItemContainer> containers)
         {
             _editor = editor;
-            _selectedContainers = _editor.SelectedContainers.Where(c => c.IsDraggable).ToList();
+            _selectedContainers = containers.Where(c => c.IsDraggable).ToList();
         }
 
         public void Abort(Vector change)
@@ -26,7 +26,7 @@ namespace Nodify.Avalonia.Helpers
             for (var i = 0; i < _selectedContainers.Count; i++)
             {
                 ItemContainer container = _selectedContainers[i];
-                var r = (TranslateTransform)container.RenderTransform;
+                var r = (TranslateTransform)container.RenderTransform!;
 
                 r.X = 0;
                 r.Y = 0;
@@ -42,19 +42,18 @@ namespace Nodify.Avalonia.Helpers
             for (var i = 0; i < _selectedContainers.Count; i++)
             {
                 ItemContainer container = _selectedContainers[i];
-                var r = (TranslateTransform)container.RenderTransform;
+                var r = (TranslateTransform)container.RenderTransform!;
 
                 Point result = container.Location + new Vector(r.X, r.Y);
 
-                // Correct the final position
-                if (NodifyEditor.EnableSnappingCorrection)
+                if (NodifyEditor.EnableSnappingCorrection && (r.X != 0 || r.Y != 0))
                 {
                     var x = (int)result.X / _editor.GridCellSize * _editor.GridCellSize;
                     var y = (int)result.Y / _editor.GridCellSize * _editor.GridCellSize;
                     result = new Point(x, y);
                 }
 
-                container.Location = result;
+                container.SetCurrentValue(ItemContainer.LocationProperty, result);
 
                 r.X = 0;
                 r.Y = 0;
@@ -66,6 +65,7 @@ namespace Nodify.Avalonia.Helpers
         public void Start(Vector change)
         {
             _dragAccumulator = new Vector(0, 0);
+            Offset = new Vector(0, 0);
         }
 
         public void Update(Vector change)
@@ -76,17 +76,18 @@ namespace Nodify.Avalonia.Helpers
 
             if (delta.X != 0 || delta.Y != 0)
             {
+                Offset += delta;
+
                 for (var i = 0; i < _selectedContainers.Count; i++)
                 {
                     ItemContainer container = _selectedContainers[i];
-                    var r = (TranslateTransform)container.RenderTransform;
+                    var r = (TranslateTransform)container.RenderTransform!;
 
-                    r.X += delta.X ; // Snapping without correction
-                    r.Y += delta.Y ; // Snapping without correction
+                    r.X += delta.X ;
+                    r.Y += delta.Y ;
 
                     Point result = container.Location + new Vector(r.X, r.Y);
 
-                    // Correct the final position
                     if (NodifyEditor.EnableSnappingCorrection)
                     {
                         var x = (int)result.X / _editor.GridCellSize * _editor.GridCellSize;

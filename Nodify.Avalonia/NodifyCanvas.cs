@@ -14,7 +14,7 @@ namespace Nodify.Avalonia
         /// <summary>The desired size of the item.</summary>
         Size DesiredSize { get; }
 
-        /// <inheritdoc cref="UIElement.Arrange(Rect)" />
+        /// <inheritdoc cref="global::Avalonia.Layout.Layoutable.Arrange(Rect)" />
         void Arrange(Rect rect);
     }
 
@@ -49,7 +49,6 @@ namespace Nodify.Avalonia
             for (int i = 0; i < children.Count; i++)
             {
                 var item = (INodifyCanvasItem)children[i];
-                //Debug.WriteLine($"Loc : {item.Location}");
                 item.Arrange(new Rect(item.Location, item.DesiredSize));
 
                 Size size = children[i].Bounds.Size;

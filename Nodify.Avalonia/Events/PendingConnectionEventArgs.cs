@@ -20,7 +20,7 @@ namespace Nodify.Avalonia.Events
         /// <summary>
         /// Initializes a new instance of the <see cref="PendingConnectionEventArgs"/> class using the specified <see cref="SourceConnector"/>.
         /// </summary>
-        /// <param name="sourceConnector">The <see cref="FrameworkElement.DataContext"/> of a related <see cref="Connector"/>.</param>
+        /// <param name="sourceConnector">The <see cref="StyledElement.DataContext"/> of a related <see cref="Connector"/>.</param>
         public PendingConnectionEventArgs(object sourceConnector)
             => SourceConnector = sourceConnector;
         
@@ -30,12 +30,12 @@ namespace Nodify.Avalonia.Events
         public Point Anchor { get; set; }
         
         /// <summary>
-        /// Gets the <see cref="FrameworkElement.DataContext"/> of the <see cref="Connector"/> that started this <see cref="PendingConnection"/>.
+        /// Gets the <see cref="StyledElement.DataContext"/> of the <see cref="Connector"/> that started this <see cref="PendingConnection"/>.
         /// </summary>
         public object SourceConnector { get; }
         
         /// <summary>
-        /// Gets or sets the <see cref="FrameworkElement.DataContext"/> of the target <see cref="Connector"/> when the <see cref="PendingConnection"/> is completed.
+        /// Gets or sets the <see cref="StyledElement.DataContext"/> of the target <see cref="Connector"/> when the <see cref="PendingConnection"/> is completed.
         /// </summary>
         public object? TargetConnector { get; set; }
 

@@ -5,7 +5,10 @@ namespace Nodify.Avalonia.Helpers.Gestures
     /// <summary>Combines multiple input gestures.</summary>
     public class MultiGesture : InputGesture
     {
-        /// <summary>The strategy used by <see cref="Matches(object, InputEventArgs)"/>.</summary>
+        /// <summary>A gesture that never matches. Used as the default for unbound gestures.</summary>
+        public static readonly MultiGesture None = new MultiGesture(Match.Any);
+
+        /// <summary>The strategy used by <see cref="Matches(object, RoutedEventArgs)"/>.</summary>
         public enum Match
         {
             /// <summary>Any gesture can match.</summary>
@@ -16,6 +19,9 @@ namespace Nodify.Avalonia.Helpers.Gestures
 
         private readonly InputGesture[] _gestures;
         private readonly Match _match;
+
+        /// <summary>Gets the gestures combined by this instance.</summary>
+        public InputGesture[] Gestures => _gestures;
 
         /// <summary>Constructs an instance of a <see cref="MultiGesture"/>.</summary>
         /// <param name="match">The matching strategy.</param>
@@ -37,7 +43,7 @@ namespace Nodify.Avalonia.Helpers.Gestures
             return MatchesAll(targetElement, inputEventArgs);
         }
 
-        private bool MatchesAll(object targetElement, RoutedEventArgs inputEventArgs)
+        private bool MatchesAll(object? targetElement, RoutedEventArgs inputEventArgs)
         {
             for (int i = 0; i < _gestures.Length; i++)
             {
@@ -50,7 +56,7 @@ namespace Nodify.Avalonia.Helpers.Gestures
             return true;
         }
 
-        private bool MatchesAny(object targetElement, RoutedEventArgs inputEventArgs)
+        private bool MatchesAny(object? targetElement, RoutedEventArgs inputEventArgs)
         {
             for (int i = 0; i < _gestures.Length; i++)
             {

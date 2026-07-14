@@ -22,6 +22,26 @@
                 Value="{DynamicResource NodifyEditor.SelectionRectangleBackgroundBrush}" />
     </ControlTheme>
 
+    <ControlTheme x:Key="NodifyEditor.PushedAreaTheme" TargetType="Rectangle">
+        <Setter Property="Stroke"
+                Value="{DynamicResource NodifyEditor.PushedAreaStrokeBrush}" />
+        <Setter Property="StrokeThickness"
+                Value="1" />
+        <Setter Property="Fill"
+                Value="{DynamicResource NodifyEditor.PushedAreaBackgroundBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="NodifyEditor.CuttingLineTheme" TargetType="connections:CuttingLine">
+        <Setter Property="Stroke"
+                Value="{DynamicResource NodifyEditor.CuttingLineStrokeBrush}" />
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="StrokeDashArray"
+                Value="2,1" />
+        <Setter Property="Fill"
+                Value="{DynamicResource NodifyEditor.CuttingLineBackgroundBrush}" />
+    </ControlTheme>
+
     <ControlTheme x:Key="{x:Type avalonia:NodifyEditor}" TargetType="avalonia:NodifyEditor">
         <Setter Property="ClipToBounds"
                 Value="True" />
@@ -40,6 +60,8 @@
         <Setter Property="PendingConnectionTemplate"
                 Value="{StaticResource PendingConnectionTemplate}" />
         <Setter Property="SelectionRectangleTheme" Value="{DynamicResource NodifyEditor.SelectionRectangleTheme}"/>
+        <Setter Property="PushedAreaTheme" Value="{DynamicResource NodifyEditor.PushedAreaTheme}"/>
+        <Setter Property="CuttingLineTheme" Value="{DynamicResource NodifyEditor.CuttingLineTheme}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type avalonia:NodifyEditor}">
@@ -54,14 +76,19 @@
                                     </ItemsPanelTemplate>
                                 </ItemsPresenter.ItemsPanel>
                             </ItemsPresenter>
-                            <ItemsControl ItemsSource="{TemplateBinding Connections}" x:Name="Connections"
-                                          ItemTemplate="{TemplateBinding ConnectionTemplate}" ClipToBounds="False">
-                                <ItemsControl.ItemsPanel>
+                            <connections:ConnectionsMultiSelector x:Name="PART_ConnectionsHost"
+                                          ItemsSource="{TemplateBinding Connections}"
+                                          SelectedItem="{Binding SelectedConnection, RelativeSource={RelativeSource TemplatedParent}}"
+                                          SelectedItems="{TemplateBinding SelectedConnections}"
+                                          CanSelectMultipleItems="{TemplateBinding CanSelectMultipleConnections}"
+                                          ItemTemplate="{TemplateBinding ConnectionTemplate}"
+                                          ClipToBounds="False" IsTabStop="False">
+                                <connections:ConnectionsMultiSelector.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <Canvas/>
                                     </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
+                                </connections:ConnectionsMultiSelector.ItemsPanel>
+                            </connections:ConnectionsMultiSelector>
                             <ContentPresenter Content="{TemplateBinding PendingConnection}" 
                                               ContentTemplate="{TemplateBinding PendingConnectionTemplate}"/>
 
@@ -90,7 +117,63 @@
                                 </Rectangle.Height>
                             </Rectangle>
 
-                            <avalonia:DecoratorsControl ItemsSource="{TemplateBinding Decorators}" 
+                            <Rectangle Theme="{TemplateBinding PushedAreaTheme}"
+                                       Canvas.Top="{Binding PushedArea.Y, RelativeSource={RelativeSource TemplatedParent}}"
+                                       Canvas.Left="{Binding PushedArea.X, RelativeSource={RelativeSource TemplatedParent}}"
+                                       IsVisible="{TemplateBinding IsPushingItems}"
+                                       RenderTransformOrigin="0,0">
+                                <Rectangle.RenderTransform>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleTransformConverter}">
+                                        <data:Binding Path="ViewportTransform.Children[0].ScaleX" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <data:Binding Path="ViewportTransform.Children[0].ScaleY" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                    </MultiBinding>
+                                </Rectangle.RenderTransform>
+                                <Rectangle.Width>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleDoubleConverter}">
+                                        <Binding Path="PushedArea.Width" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <Binding Path="ViewportZoom" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                    </MultiBinding>
+                                </Rectangle.Width>
+                                <Rectangle.Height>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleDoubleConverter}">
+                                        <Binding Path="PushedArea.Height" RelativeSource="{RelativeSource TemplatedParent}"/>
+                                        <Binding Path="ViewportZoom" RelativeSource="{RelativeSource TemplatedParent}" />
+                                    </MultiBinding>
+                                </Rectangle.Height>
+                            </Rectangle>
+
+                            <connections:CuttingLine
+                                Canvas.Top="{Binding CuttingLineStart.Y, RelativeSource={RelativeSource TemplatedParent}}"
+                                Canvas.Left="{Binding CuttingLineStart.X, RelativeSource={RelativeSource TemplatedParent}}"
+                                IsVisible="{TemplateBinding IsCutting}"
+                                Theme="{TemplateBinding CuttingLineTheme}"
+                                RenderTransformOrigin="0,0">
+                                <!--
+                                    StartPoint is left at its default (0,0): Canvas.Top/Left above anchor this
+                                    element at the real CuttingLineStart, matching the SelectionRectangle/PushedArea
+                                    pattern (Canvas.Top/Left = unscaled graph position). EndPoint is bound to the
+                                    (CuttingLineEnd - CuttingLineStart) delta pre-scaled by ViewportZoom, mirroring
+                                    how those Rectangles pre-scale Width/Height, so the RenderTransform below un-scales
+                                    it back to the true delta once the outer viewport transform re-applies zoom —
+                                    keeping the line's endpoints correctly positioned while its StrokeThickness/dash
+                                    pattern stay a constant on-screen size regardless of zoom.
+                                -->
+                                <connections:CuttingLine.EndPoint>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.CuttingLineDeltaConverter}">
+                                        <data:Binding Path="CuttingLineStart" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <data:Binding Path="CuttingLineEnd" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <data:Binding Path="ViewportZoom" RelativeSource="{RelativeSource TemplatedParent}" />
+                                    </MultiBinding>
+                                </connections:CuttingLine.EndPoint>
+                                <connections:CuttingLine.RenderTransform>
+                                    <MultiBinding Converter="{x:Static helpers:NodifyConverters.UnscaleTransformConverter}">
+                                        <data:Binding Path="ViewportTransform.Children[0].ScaleX" RelativeSource="{RelativeSource TemplatedParent}" />
+                                        <data:Binding Path="ViewportTransform.Children[0].ScaleY" RelativeSource="{RelativeSource Mode=TemplatedParent}" />
+                                    </MultiBinding>
+                                </connections:CuttingLine.RenderTransform>
+                            </connections:CuttingLine>
+
+                            <avalonia:DecoratorsControl ItemsSource="{TemplateBinding Decorators}"
                                                      ItemTemplate="{TemplateBinding DecoratorTemplate}"
                                                      IsTabStop="False" ClipToBounds="False" 
                                                      ItemContainerTheme="{TemplateBinding DecoratorContainerTheme}">
@@ -112,13 +195,21 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style Selector="^ /template/ ItemsControl#Connections">
-            <Setter Property="Panel.ZIndex"
+        <Style Selector="^ /template/ ItemsControl#PART_ConnectionsHost">
+            <Setter Property="ZIndex"
                     Value="-1" />
         </Style>
-        <Style Selector="^[DisplayConnectionsOnTop=true] /template/ ItemsControl#Connections">
-            <Setter Property="Panel.ZIndex"
+        <Style Selector="^:connections-on-top /template/ ItemsControl#PART_ConnectionsHost">
+            <Setter Property="ZIndex"
                     Value="0" />
+        </Style>
+        <Style Selector="^[IsPushingItems=True][PushedAreaOrientation=Horizontal]">
+            <Setter Property="Cursor"
+                    Value="SizeWestEast" />
+        </Style>
+        <Style Selector="^[IsPushingItems=True][PushedAreaOrientation=Vertical]">
+            <Setter Property="Cursor"
+                    Value="SizeNorthSouth" />
         </Style>
     </ControlTheme>
 

@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Collections;
@@ -8,6 +11,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Nodify.Avalonia.Events;
@@ -26,9 +30,9 @@ namespace Nodify.Avalonia.Connections
 
         public static readonly StyledProperty<Point> SourceAnchorProperty = AvaloniaProperty.Register<PendingConnection,Point>(nameof(SourceAnchor));
         public static readonly StyledProperty<Point> TargetAnchorProperty = AvaloniaProperty.Register<PendingConnection,Point>(nameof(TargetAnchor));
-        public static readonly StyledProperty<object> SourceProperty = AvaloniaProperty.Register<PendingConnection,object>(nameof(Source));
-        public static readonly StyledProperty<object> TargetProperty = AvaloniaProperty.Register<PendingConnection,object>(nameof(Target));
-        public static readonly StyledProperty<object> PreviewTargetProperty = AvaloniaProperty.Register<PendingConnection,object>(nameof(PreviewTarget));
+        public static readonly StyledProperty<object?> SourceProperty = AvaloniaProperty.Register<PendingConnection,object?>(nameof(Source));
+        public static readonly StyledProperty<object?> TargetProperty = AvaloniaProperty.Register<PendingConnection,object?>(nameof(Target));
+        public static readonly StyledProperty<object?> PreviewTargetProperty = AvaloniaProperty.Register<PendingConnection,object?>(nameof(PreviewTarget));
         public static readonly StyledProperty<bool> EnablePreviewProperty = AvaloniaProperty.Register<PendingConnection, bool>(nameof(EnablePreview));
         public static readonly StyledProperty<double> StrokeThicknessProperty = Shape.StrokeThicknessProperty.AddOwner<PendingConnection>();
         public static readonly StyledProperty<AvaloniaList<double>?> StrokeDashArrayProperty = Shape.StrokeDashArrayProperty.AddOwner<PendingConnection>();
@@ -78,7 +82,7 @@ namespace Nodify.Avalonia.Connections
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Connector"/>'s <see cref="FrameworkElement.DataContext"/> that started this pending connection.
+        /// Gets or sets the <see cref="Connector"/>'s <see cref="StyledElement.DataContext"/> that started this pending connection.
         /// </summary>
         public object? Source
         {
@@ -87,7 +91,7 @@ namespace Nodify.Avalonia.Connections
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="Connector"/>'s <see cref="FrameworkElement.DataContext"/> (or potentially an <see cref="ItemContainer"/>'s <see cref="FrameworkElement.DataContext"/> if <see cref="AllowOnlyConnectors"/> is false) that the <see cref="Source"/> can connect to.
+        /// Gets or sets the <see cref="Connector"/>'s <see cref="StyledElement.DataContext"/> (or potentially an <see cref="ItemContainer"/>'s <see cref="StyledElement.DataContext"/> if <see cref="AllowOnlyConnectors"/> is false) that the <see cref="Source"/> can connect to.
         /// Only set when the connection is completed (see <see cref="CompletedCommand"/>).
         /// </summary>
         public object? Target
@@ -97,7 +101,7 @@ namespace Nodify.Avalonia.Connections
         }
 
         /// <summary>
-        /// <see cref="PreviewTarget"/> will be updated with a potential <see cref="Connector"/>'s <see cref="FrameworkElement.DataContext"/> if this is true.
+        /// <see cref="PreviewTarget"/> will be updated with a potential <see cref="Connector"/>'s <see cref="StyledElement.DataContext"/> if this is true.
         /// </summary>
         public bool EnablePreview
         {
@@ -210,7 +214,7 @@ namespace Nodify.Avalonia.Connections
         /// <summary>
         /// Gets or sets the command to invoke when the pending connection is started.
         /// Will not be invoked if <see cref="NodifyEditor.ConnectionStartedCommand"/> is used.
-        /// <see cref="Source"/> will be set to the <see cref="Connector"/>'s <see cref="FrameworkElement.DataContext"/> that started this connection and will also be the command's parameter.
+        /// <see cref="Source"/> will be set to the <see cref="Connector"/>'s <see cref="StyledElement.DataContext"/> that started this connection and will also be the command's parameter.
         /// </summary>
         public ICommand? StartedCommand
         {
@@ -221,7 +225,7 @@ namespace Nodify.Avalonia.Connections
         /// <summary>
         /// Gets or sets the command to invoke when the pending connection is completed.
         /// Will not be invoked if <see cref="NodifyEditor.ConnectionCompletedCommand"/> is used.
-        /// <see cref="Target"/> will be set to the desired <see cref="Connector"/>'s <see cref="FrameworkElement.DataContext"/> and will also be the command's parameter.
+        /// <see cref="Target"/> will be set to the desired <see cref="Connector"/>'s <see cref="StyledElement.DataContext"/> and will also be the command's parameter.
         /// </summary>
         public ICommand? CompletedCommand
         {
@@ -234,11 +238,30 @@ namespace Nodify.Avalonia.Connections
         #region Fields
 
         /// <summary>
+        /// Gets or sets whether hit testing is enabled for pending connections.
+        /// </summary>
+        public static bool EnableHitTesting { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the maximum number of hotkeys that can be displayed for a pending connection.
+        /// </summary>
+        /// <remarks>The maximum value can be 9.</remarks>
+        public static uint MaxHotKeys { get; set; } = 9;
+
+        /// <summary>
+        /// Gets or sets whether hotkeys are enabled for pending connections.
+        /// </summary>
+        public static HotKeysDisplayMode HotKeysDisplayMode { get; set; } = HotKeysDisplayMode.Keyboard;
+
+        /// <summary>
         /// Gets the <see cref="NodifyEditor"/> that owns this <see cref="PendingConnection"/>.
         /// </summary>
         protected NodifyEditor? Editor { get; private set; }
 
         private Control? _previousConnector;
+
+        private Connector? _hotKeysSource;
+        private readonly List<(HotKeyControl Control, Connector Connector)> _hotKeys = new List<(HotKeyControl, Connector)>();
 
         #endregion
 
@@ -260,6 +283,15 @@ namespace Nodify.Avalonia.Connections
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
+
+            if (Editor != null)
+            {
+                Editor.RemoveHandler(Connector.PendingConnectionStartedEvent, new PendingConnectionEventHandler(OnPendingConnectionStarted));
+                Editor.RemoveHandler(Connector.PendingConnectionDragEvent, new PendingConnectionEventHandler(OnPendingConnectionDrag));
+                Editor.RemoveHandler(Connector.PendingConnectionCompletedEvent, new PendingConnectionEventHandler(OnPendingConnectionCompleted));
+                Editor.RemoveHandler(InputElement.KeyUpEvent, new EventHandler<KeyEventArgs>(OnKeyUp));
+            }
+
             Editor = this.FindAncestorOfType<NodifyEditor>();
 
             if (Editor != null)
@@ -267,6 +299,7 @@ namespace Nodify.Avalonia.Connections
                 Editor.AddHandler(Connector.PendingConnectionStartedEvent, new PendingConnectionEventHandler(OnPendingConnectionStarted));
                 Editor.AddHandler(Connector.PendingConnectionDragEvent, new PendingConnectionEventHandler(OnPendingConnectionDrag));
                 Editor.AddHandler(Connector.PendingConnectionCompletedEvent, new PendingConnectionEventHandler(OnPendingConnectionCompleted));
+                Editor.AddHandler(InputElement.KeyUpEvent, new EventHandler<KeyEventArgs>(OnKeyUp), RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
                 SetAllowOnlyConnectorsAttached(Editor, AllowOnlyConnectors);
             }
         }
@@ -279,7 +312,7 @@ namespace Nodify.Avalonia.Connections
             {
                 e.Handled = true;
                 e.Canceled = !StartedCommand?.CanExecute(e.SourceConnector) ?? false;
-                    
+
                 Target = null;
                 IsVisible = !e.Canceled;
                 SourceAnchor = e.Anchor;
@@ -292,6 +325,16 @@ namespace Nodify.Avalonia.Connections
                 if (!e.Canceled)
                 {
                     StartedCommand?.Execute(Source);
+
+                    if (e.Source is Connector connector)
+                    {
+                        ShowHotKeys(connector);
+                    }
+                }
+
+                if (EnablePreview)
+                {
+                    PreviewTarget = e.SourceConnector;
                 }
             }
         }
@@ -302,42 +345,50 @@ namespace Nodify.Avalonia.Connections
             {
                 e.Handled = true;
                 TargetAnchor = new Point(e.Anchor.X + e.OffsetX, e.Anchor.Y + e.OffsetY);
-                if (Editor != null && (EnablePreview || EnableSnapping))
-                {
-                    // Look for a potential connector
-                    Control? connector = GetPotentialConnector(Editor,TargetAnchor, AllowOnlyConnectors);
 
-                    // Update the connector's anchor and snap to it if snapping is enabled
+                if (!EnableHitTesting)
+                {
+                    return;
+                }
+
+                if (Editor != null)
+                {
+                    Control? connector = GetPotentialConnector(Editor, TargetAnchor, AllowOnlyConnectors);
+
                     if (EnableSnapping && connector is Connector target)
                     {
                         target.UpdateAnchor();
                         TargetAnchor = target.Anchor;
                     }
 
-                    // If it's not the same connector
-                    if (connector != _previousConnector)
+                    SetConnectionTarget(connector);
+
+                    if (EnablePreview)
                     {
-                        if (_previousConnector != null)
-                        {
-                            SetIsOverElement(_previousConnector, false);
-                        }
-
-                        // And we have a connector
-                        if (connector != null)
-                        {
-                            SetIsOverElement(connector, true);
-
-                            // Update the preview target if enabled
-                            if (EnablePreview)
-                            {
-                                PreviewTarget = connector.DataContext;
-                            }
-                        }
-
-                        _previousConnector = connector;
+                        PreviewTarget = connector?.DataContext;
                     }
                 }
             }
+        }
+
+        private void SetConnectionTarget(Control? target)
+        {
+            if (target == _previousConnector)
+            {
+                return;
+            }
+
+            if (_previousConnector != null)
+            {
+                SetIsOverElement(_previousConnector, false);
+            }
+
+            if (target != null)
+            {
+                SetIsOverElement(target, true);
+            }
+
+            _previousConnector = target;
         }
 
         protected virtual void OnPendingConnectionCompleted(object sender, PendingConnectionEventArgs e)
@@ -347,22 +398,125 @@ namespace Nodify.Avalonia.Connections
                 e.Handled = true;
                 IsVisible = false;
 
-                if (_previousConnector != null)
-                {
-                    SetIsOverElement(_previousConnector, false);
-                    _previousConnector = null;
-                }
+                SetConnectionTarget(null);
+                HideHotKeys();
 
                 if (!e.Canceled)
                 {
                     Target = e.TargetConnector;
 
-                    // Invoke the CompletedCommand if event is not handled
                     if (CompletedCommand?.CanExecute(Target) ?? false)
                     {
                         CompletedCommand?.Execute(Target);
                     }
                 }
+
+                if (EnablePreview)
+                {
+                    PreviewTarget = null;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Hot Keys
+
+        private void OnKeyUp(object? sender, KeyEventArgs e)
+        {
+            if (_hotKeysSource is { IsPendingConnection: true })
+            {
+                int hotKey = GetHotKey(e.Key);
+                var entry = _hotKeys.Find(x => x.Control.Number == hotKey);
+                if (entry.Control != null)
+                {
+                    var tempSource = _hotKeysSource;
+                    tempSource.EndConnecting(entry.Connector);
+                    tempSource.ReleaseMouseCapture();
+                    HideHotKeys();
+                    e.Handled = true;
+                }
+            }
+        }
+
+        internal static int GetHotKey(Key key)
+        {
+            if (key >= Key.D1 && key <= Key.D9)
+            {
+                return key - Key.D0;
+            }
+
+            if (key >= Key.NumPad1 && key <= Key.NumPad9)
+            {
+                return key - Key.NumPad0;
+            }
+
+            return -1;
+        }
+
+        private void ShowHotKeys(Connector sourceConnector)
+        {
+            if (Editor == null
+                || HotKeysDisplayMode == HotKeysDisplayMode.None
+                || (HotKeysDisplayMode == HotKeysDisplayMode.Keyboard && !Editor.LastInputWasKeyboard))
+            {
+                return;
+            }
+
+            var adornerLayer = AdornerLayer.GetAdornerLayer(Editor);
+            if (adornerLayer == null)
+            {
+                return;
+            }
+
+            _hotKeysSource = sourceConnector;
+
+            var connectCommand = Editor.ConnectionCompletedCommand ?? CompletedCommand;
+            if (connectCommand != null)
+            {
+                bool isEditorConnect = connectCommand == Editor.ConnectionCompletedCommand;
+                var connectorsInViewport = Editor.GetConnectorsInViewport();
+
+                var possibleTargets = connectorsInViewport
+                    .Where(x => isEditorConnect
+                        ? connectCommand.CanExecute((sourceConnector.DataContext, x.DataContext))
+                        : connectCommand.CanExecute(x.DataContext))
+                    .OrderBy(x => sourceConnector.Anchor.VectorSubtract(x.Anchor).SquaredLength)
+                    .Take((int)Math.Min(MaxHotKeys, 9));
+
+                int index = 1;
+                foreach (var connector in possibleTargets)
+                {
+                    var hotKeyControl = new HotKeyControl
+                    {
+                        Number = index,
+                        DataContext = connector.DataContext
+                    };
+
+                    adornerLayer.Children.Add(hotKeyControl);
+                    AdornerLayer.SetAdornedElement(hotKeyControl, connector);
+
+                    _hotKeys.Add((hotKeyControl, connector));
+                    index++;
+                }
+            }
+        }
+
+        private void HideHotKeys()
+        {
+            _hotKeysSource = null;
+
+            if (_hotKeys.Count > 0)
+            {
+                var adornerLayer = Editor != null ? AdornerLayer.GetAdornerLayer(Editor) : null;
+                if (adornerLayer != null)
+                {
+                    foreach (var (ctrl, _) in _hotKeys)
+                    {
+                        adornerLayer.Children.Remove(ctrl);
+                    }
+                }
+                _hotKeys.Clear();
             }
         }
 
@@ -370,11 +524,7 @@ namespace Nodify.Avalonia.Connections
 
         #region Helpers
 
-        /// <summary>Searches for a potential connector prioritizing <see cref="Connector"/>s</summary>
-        /// <param name="editor">The editor to scan for connectors or item containers.</param>
-        /// <param name="pointerEventArgs"></param>
-        /// <param name="allowOnlyConnectors">Will also look for <see cref="ItemContainer"/>s if false.</param>
-        /// <returns>A connector, an item container, the editor or null.</returns>
+        // Returns a Connector, an ItemContainer (only if allowOnlyConnectors is false), the editor itself as fallback, or null.
         internal static Control? GetPotentialConnector(NodifyEditor editor, Point point,
             bool allowOnlyConnectors)
         {

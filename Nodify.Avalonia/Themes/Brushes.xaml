@@ -1,8 +1,22 @@
 ﻿<ResourceDictionary  xmlns="https://github.com/avaloniaui"
                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                     xmlns:avalonia="clr-namespace:Nodify.Avalonia">
+                     xmlns:avalonia="clr-namespace:Nodify.Avalonia"
+                     xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
 
-    <!--NODIFY EDITOR todo presentationoptions.freeze removed-->
+    <!--NODIFY EDITOR-->
+
+    <Color x:Key="NodifyEditor.FocusVisualColor">DodgerBlue</Color>
+
+    <SolidColorBrush x:Key="NodifyEditor.FocusVisualBrush"
+                     Color="{DynamicResource NodifyEditor.FocusVisualColor}" />
+
+    <Pen x:Key="{x:Static connections:BaseConnection.FocusVisualPenKey}"
+         Brush="{StaticResource NodifyEditor.FocusVisualBrush}"
+         Thickness="0.75">
+        <Pen.DashStyle>
+            <DashStyle Dashes="3,3" />
+        </Pen.DashStyle>
+    </Pen>
 
     <SolidColorBrush x:Key="NodifyEditor.BackgroundBrush"
                      Color="{DynamicResource NodifyEditor.BackgroundColor}" />
@@ -17,13 +31,27 @@
                      Opacity="0.1"
                      Color="{DynamicResource NodifyEditor.SelectionRectangleColor}" />
 
+    <SolidColorBrush x:Key="NodifyEditor.PushedAreaStrokeBrush"
+                     Color="{DynamicResource NodifyEditor.PushedAreaColor}" />
+
+    <SolidColorBrush x:Key="NodifyEditor.PushedAreaBackgroundBrush"
+                     Opacity="0.2"
+                     Color="{DynamicResource NodifyEditor.PushedAreaColor}" />
+
+    <SolidColorBrush x:Key="NodifyEditor.CuttingLineStrokeBrush"
+                     Color="{DynamicResource NodifyEditor.CuttingLineColor}" />
+
+    <SolidColorBrush x:Key="NodifyEditor.CuttingLineBackgroundBrush"
+                     Color="{DynamicResource NodifyEditor.CuttingLineColor}" />
+
     <!--ITEM CONTAINER-->
 
     <SolidColorBrush x:Key="ItemContainer.BorderBrush"
                      Color="{DynamicResource ItemContainer.BorderColor}" />
 
     <DrawingBrush x:Key="ItemContainer.HighlightBrush"
-                  TileMode="Tile" >
+                  TileMode="Tile"
+                  DestinationRect="0,0,24,24">
         <DrawingBrush.Drawing>
             <DrawingGroup>
                 <GeometryDrawing Brush="{DynamicResource ItemContainer.BorderBrush}">
@@ -36,8 +64,6 @@
                 </GeometryDrawing>
             </DrawingGroup>
         </DrawingBrush.Drawing>
-        <!--Viewport="0 0 24 24"
-        ViewportUnits="Absolute"-->
     </DrawingBrush>
 
     <SolidColorBrush x:Key="ItemContainer.SelectedBrush"
@@ -171,14 +197,17 @@
     <!--CONNECTION-->
 
     <SolidColorBrush x:Key="Connection.StrokeBrush"
-                     
+
                      Color="{DynamicResource Connection.StrokeColor}" />
 
     <!--LINE CONNECTION-->
 
     <SolidColorBrush x:Key="LineConnection.StrokeBrush"
-                     
+
                      Color="{DynamicResource LineConnection.StrokeColor}" />
+
+    <SolidColorBrush x:Key="StepConnection.StrokeBrush"
+                     Color="{DynamicResource StepConnection.StrokeColor}" />
 
     <!--CIRCUIT CONNECTION-->
 
@@ -201,7 +230,35 @@
                      Color="{DynamicResource PendingConnection.ForegroundColor}" />
     
     <SolidColorBrush x:Key="PendingConnection.BackgroundBrush"
-                     
+
                      Color="{DynamicResource PendingConnection.BackgroundColor}" />
+
+    <!--MINIMAP-->
+
+    <SolidColorBrush x:Key="Minimap.BackgroundBrush"
+                     Color="{DynamicResource Minimap.BackgroundColor}"
+                     Opacity="0.7" />
+
+    <SolidColorBrush x:Key="Minimap.ViewportStrokeBrush"
+                     Color="{DynamicResource Minimap.ViewportStrokeColor}" />
+
+    <SolidColorBrush x:Key="Minimap.ViewportBackgroundBrush"
+                     Color="{DynamicResource Minimap.ViewportBackgroundColor}"
+                     Opacity="0.2" />
+
+    <SolidColorBrush x:Key="MinimapItem.BackgroundBrush"
+                     Color="{DynamicResource MinimapItem.BackgroundColor}"
+                     Opacity="0.8" />
+
+    <!--HOT KEYS-->
+
+    <SolidColorBrush x:Key="HotKey.BackgroundBrush"
+                     Color="{DynamicResource HotKey.BackgroundColor}" />
+
+    <SolidColorBrush x:Key="HotKey.ForegroundBrush"
+                     Color="{DynamicResource HotKey.ForegroundColor}" />
+
+    <SolidColorBrush x:Key="HotKey.BorderBrush"
+                     Color="{DynamicResource HotKey.BorderColor}" />
 
 </ResourceDictionary>

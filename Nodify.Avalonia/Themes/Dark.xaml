@@ -7,23 +7,25 @@
 
     <!--NODIFY EDITOR-->
 
-    <Color x:Key="NodifyEditor.BackgroundColor">#202020</Color>
-    <Color x:Key="NodifyEditor.ForegroundColor">#ededed</Color>
-    <Color x:Key="NodifyEditor.SelectionRectangleColor">#327090</Color>
+    <Color x:Key="NodifyEditor.BackgroundColor">#1E1E1E</Color>
+    <Color x:Key="NodifyEditor.ForegroundColor">White</Color>
+    <Color x:Key="NodifyEditor.SelectionRectangleColor">DodgerBlue</Color>
+    <Color x:Key="NodifyEditor.PushedAreaColor">#74747c</Color>
+    <Color x:Key="NodifyEditor.CuttingLineColor">Red</Color>
 
     <!--ITEM CONTAINER-->
 
-    <Color x:Key="ItemContainer.BorderColor">#191919</Color>
-    <Color x:Key="ItemContainer.SelectedColor">#327090</Color>
+    <Color x:Key="ItemContainer.BorderColor">DodgerBlue</Color>
+    <Color x:Key="ItemContainer.SelectedColor">Orange</Color>
 
     <!--NODE-->
-    <Color x:Key="Node.BackgroundColor">#3c3c3c</Color>
-    <Color x:Key="Node.ContentColor">#3c3c3c</Color>
-    <Color x:Key="Node.ForegroundColor">#ededed</Color>
+    <Color x:Key="Node.BackgroundColor">#2D2D30</Color>
+    <Color x:Key="Node.ContentColor">#2D2D30</Color>
+    <Color x:Key="Node.ForegroundColor">White</Color>
     <Color x:Key="Node.HeaderForegroundColor">White</Color>
-    <Color x:Key="Node.HeaderColor">#393939</Color>
-    <Color x:Key="Node.FooterColor">#393939</Color>
-    <Color x:Key="Node.BorderColor">#191919</Color>
+    <Color x:Key="Node.HeaderColor">#1E1E1E</Color>
+    <Color x:Key="Node.FooterColor">#1E1E1E</Color>
+    <Color x:Key="Node.BorderColor">Transparent</Color>
 
     <!--STATE NODE-->
     <Color x:Key="StateNode.BackgroundColor">#171717</Color>
@@ -44,17 +46,17 @@
 
     <!--CONNECTOR-->
     <Color x:Key="Connector.BackgroundColor">Transparent</Color>
-    <Color x:Key="Connector.ForegroundColor">#ededed</Color>
+    <Color x:Key="Connector.ForegroundColor">White</Color>
     <Color x:Key="Connector.BorderColor">DodgerBlue</Color>
 
     <!--NODE INPUT-->
-    <Color x:Key="NodeInput.BackgroundColor">#3c3c3c</Color>
-    <Color x:Key="NodeInput.ForegroundColor">#ededed</Color>
+    <Color x:Key="NodeInput.BackgroundColor">#2D2D30</Color>
+    <Color x:Key="NodeInput.ForegroundColor">White</Color>
     <Color x:Key="NodeInput.BorderColor">DodgerBlue</Color>
 
     <!--NODE OUTPUT-->
-    <Color x:Key="NodeOutput.BackgroundColor">#3c3c3c</Color>
-    <Color x:Key="NodeOutput.ForegroundColor">#ededed</Color>
+    <Color x:Key="NodeOutput.BackgroundColor">#2D2D30</Color>
+    <Color x:Key="NodeOutput.ForegroundColor">White</Color>
     <Color x:Key="NodeOutput.BorderColor">DodgerBlue</Color>
 
     <!--CONNECTION-->
@@ -66,10 +68,24 @@
     <!--CIRCUIT CONNECTION-->
     <Color x:Key="CircuitConnection.StrokeColor">DodgerBlue</Color>
 
+    <!--STEP CONNECTION-->
+    <Color x:Key="StepConnection.StrokeColor">DodgerBlue</Color>
+
     <!--PENDING CONNECTION-->
-    <Color x:Key="PendingConnection.StrokeColor">Orange</Color>
+    <Color x:Key="PendingConnection.StrokeColor">DodgerBlue</Color>
     <Color x:Key="PendingConnection.BorderColor">Black</Color>
     <Color x:Key="PendingConnection.ForegroundColor">White</Color>
     <Color x:Key="PendingConnection.BackgroundColor">#121212</Color>
+
+    <!--MINIMAP-->
+    <Color x:Key="Minimap.BackgroundColor">#121212</Color>
+    <Color x:Key="Minimap.ViewportStrokeColor">#74747c</Color>
+    <Color x:Key="Minimap.ViewportBackgroundColor">#74747c</Color>
+    <Color x:Key="MinimapItem.BackgroundColor">DodgerBlue</Color>
+
+    <!--HOT KEYS-->
+    <Color x:Key="HotKey.BackgroundColor">White</Color>
+    <Color x:Key="HotKey.ForegroundColor">Black</Color>
+    <Color x:Key="HotKey.BorderColor">DodgerBlue</Color>
 
 </ResourceDictionary>

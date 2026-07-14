@@ -9,13 +9,19 @@
     <DataTemplate x:Key="DefaultOutputConnectorTemplate">
         <nodes:NodeOutput />
     </DataTemplate>
-    <DataTemplate x:Key="DefaultFlowInputConnectorTemplate">
-        <nodes:NodeInput/>
-    </DataTemplate>
 
-    <DataTemplate x:Key="DefaultFlowOutputConnectorTemplate">
-        <nodes:NodeOutput/>
-    </DataTemplate>
+    <ControlTheme x:Key="DefaultHeaderContainerTheme" TargetType="Border">
+        <Setter Property="CornerRadius"
+                Value="3 3 0 0" />
+        <Setter Property="Padding"
+                Value="6 4 6 4" />
+    </ControlTheme>
+    <ControlTheme x:Key="DefaultFooterContainerTheme" TargetType="Border">
+        <Setter Property="CornerRadius"
+                Value="0 0 3 3" />
+        <Setter Property="Padding"
+                Value="6 4 6 4" />
+    </ControlTheme>
 
     <ControlTheme x:Key="{x:Type nodes:Node}" TargetType="nodes:Node">
         <Setter Property="Background"
@@ -35,7 +41,7 @@
         <Setter Property="MinWidth"
                 Value="15" />
         <Setter Property="VerticalAlignment"
-                Value="Center" />
+                Value="Top" />
         <Setter Property="HorizontalAlignment"
                 Value="Center" />
         <Setter Property="VerticalContentAlignment"
@@ -46,10 +52,10 @@
                 Value="{StaticResource DefaultInputConnectorTemplate}" />
         <Setter Property="OutputConnectorTemplate"
                 Value="{StaticResource DefaultOutputConnectorTemplate}" />
-        <Setter Property="FlowInputConnectorTemplate"
-                Value="{StaticResource DefaultFlowInputConnectorTemplate}" />
-        <Setter Property="FlowOutputConnectorTemplate"
-                Value="{StaticResource DefaultFlowOutputConnectorTemplate}" />
+        <Setter Property="HeaderContainerStyle"
+                Value="{StaticResource DefaultHeaderContainerTheme}" />
+        <Setter Property="FooterContainerStyle"
+                Value="{StaticResource DefaultFooterContainerTheme}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
@@ -66,61 +72,58 @@
                             </Grid.RowDefinitions>
 
                             <!--Header-->
-                            <Border IsVisible="{TemplateBinding HasHeader}"
+                            <Border x:Name="PART_HeaderContainer"
+                                    IsVisible="{TemplateBinding HasHeader}"
                                     Background="{TemplateBinding HeaderBrush}"
-                                    CornerRadius="3 3 0 0"
-                                    Grid.ColumnSpan="3"
-                                    Padding="6 4 6 4">
+                                    Theme="{TemplateBinding HeaderContainerStyle}"
+                                    Grid.ColumnSpan="3">
                                 <ContentPresenter Content="{TemplateBinding Header}"
                                                   ContentTemplate="{TemplateBinding HeaderTemplate}"/>
                             </Border>
 
                             <!--Body-->
-                            <Grid Grid.Row="1" RowDefinitions="Auto,Auto,Auto,Auto">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <!--Flow IN-->
-                                <ItemsControl ItemsSource="{TemplateBinding FlowInput}" Grid.Column="0" Grid.Row="0"
-                                              ItemTemplate="{TemplateBinding FlowInputConnectorTemplate}"
-                                              Focusable="False" />
-                                <!--Data IN-->
-                                <ItemsControl ItemsSource="{TemplateBinding Input}" Grid.Column="0"  Grid.Row="1"
-                                              ItemTemplate="{TemplateBinding InputConnectorTemplate}"
-                                              Focusable="False" />
+                            <Border x:Name="PART_ContentContainer"
+                                    Theme="{TemplateBinding ContentContainerStyle}"
+                                    Grid.Row="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <!--Data IN-->
+                                    <ItemsControl ItemsSource="{TemplateBinding Input}" Grid.Column="0"
+                                                  VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                                  ItemTemplate="{TemplateBinding InputConnectorTemplate}"
+                                                  Focusable="False" />
 
-                                <!--Content-->
-                                <Border Grid.Column="1" Grid.Row="1"
-                                        Padding="16 0 16 0"
-                                        Background="{TemplateBinding ContentBrush}">
-                                    <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                      Content="{TemplateBinding Content}"
-                                                      ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                                </Border>
+                                    <!--Content-->
+                                    <Border Grid.Column="1"
+                                            Padding="{TemplateBinding ContentPadding}"
+                                            Background="{TemplateBinding ContentBrush}">
+                                        <ContentPresenter VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                          Content="{TemplateBinding Content}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                    </Border>
 
-                                <!--Data OUT-->
-                                <ItemsControl ItemsSource="{TemplateBinding Output}"
-                                              ItemTemplate="{TemplateBinding OutputConnectorTemplate}"
-                                              Grid.Column="2" Grid.Row="3"
-                                              Focusable="False" />
-
-                                <!--Flow OUT-->
-                                <ItemsControl ItemsSource="{TemplateBinding FlowOutput}"
-                                              ItemTemplate="{TemplateBinding FlowOutputConnectorTemplate}"
-                                              Grid.Column="2" Grid.Row="0"
-                                              Focusable="False" />
-                            </Grid>
+                                    <!--Data OUT-->
+                                    <ItemsControl ItemsSource="{TemplateBinding Output}"
+                                                  ItemTemplate="{TemplateBinding OutputConnectorTemplate}"
+                                                  VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                                                  HorizontalAlignment="Right"
+                                                  Grid.Column="2"
+                                                  Focusable="False" />
+                                </Grid>
+                            </Border>
 
                             <!--Footer-->
-                            <Border IsVisible="{TemplateBinding HasFooter}"
+                            <Border x:Name="PART_FooterContainer"
+                                    IsVisible="{TemplateBinding HasFooter}"
                                     Background="{TemplateBinding FooterBrush}"
-                                    CornerRadius="0 0 3 3"
+                                    Theme="{TemplateBinding FooterContainerStyle}"
                                     Grid.Row="2"
-                                    Grid.ColumnSpan="3"
-                                    Padding="6 4 6 4">
+                                    Grid.ColumnSpan="3">
                                 <ContentPresenter Content="{TemplateBinding Footer}"
                                                   ContentTemplate="{TemplateBinding FooterTemplate}"/>
                             </Border>

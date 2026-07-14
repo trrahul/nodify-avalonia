@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -44,25 +45,38 @@ public class CanvasAttached
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (var item in e.NewItems)
+                    foreach (var item in e.NewItems!)
                     {
                         var control = template.Build(item);
-                        control.DataContext = item;
-                        _canvas.Children.Add(control);
+                        if (control != null)
+                        {
+                            control.DataContext = item;
+                            _canvas.Children.Add(control);
+                        }
                     }
 
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (var item in e.OldItems)
+                    foreach (var item in e.OldItems!)
                     {
+                        var child = _canvas.Children.FirstOrDefault(c => ReferenceEquals(c.DataContext, item));
+                        if (child != null)
+                        {
+                            _canvas.Children.Remove(child);
+                        }
                     }
-
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _canvas.Children.Clear();
                     break;
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
+                    // Replace and Move don't require structural changes to children here;
+                    // the canvas layout is position-independent (DataContext binding handles updates).
+                    break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // Defensive: ignore unknown future action types rather than crashing.
+                    break;
             }
         });
     }
@@ -86,8 +100,11 @@ public class CanvasAttached
             foreach (var item in args.NewValue.Value)
             {
                 var control = template.Build(item);
-                control.DataContext = item;
-                canvas.Children.Add(control);
+                if (control != null)
+                {
+                    control.DataContext = item;
+                    canvas.Children.Add(control);
+                }
             }
         }
     }

@@ -14,7 +14,8 @@ namespace Nodify.Avalonia.Helpers
         private Point _startLocation;
         private SelectionType _selectionType;
         private bool _isRealtime;
-        private IReadOnlyList<ItemContainer> _initialSelection = new List<ItemContainer>();
+        private IReadOnlyList<ItemContainer> _selectableContainers = Array.Empty<ItemContainer>();
+        private IReadOnlyList<ItemContainer> _initialSelection = Array.Empty<ItemContainer>();
 
         /// <summary>Constructs a new instance of a <see cref="SelectionHelper"/>.</summary>
         /// <param name="host">The editor to select items from.</param>
@@ -43,6 +44,7 @@ namespace Nodify.Avalonia.Helpers
             if (!_host.IsSelecting)
             {
                 _selectionType = selectionType;
+                _selectableContainers = GetSelectableContainers();
                 _initialSelection = _host.SelectedContainers;
 
                 _isRealtime = _host.EnableRealtimeSelection;
@@ -73,22 +75,46 @@ namespace Nodify.Avalonia.Helpers
         /// <summary>Commits the current selection to the editor.</summary>
         public void End()
         {
-            if (_host.IsSelecting)
+            try
             {
-                PreviewSelection(_host.SelectedArea);
+                if (_host.IsSelecting)
+                {
+                    // A Replace selection (e.g. clicking empty canvas) also clears the connection
+                    // selection, so a selected connection is deselected when the user clicks elsewhere.
+                    if (_selectionType == SelectionType.Replace)
+                    {
+                        _host.UnselectAllConnections();
+                    }
 
-                _host.ApplyPreviewingSelection();
-                _host.IsSelecting = false;
+                    PreviewSelection(_host.SelectedArea);
+
+                    // IsSelecting flips to false BEFORE the preview is committed, so
+                    // ItemContainer.OnSelectedChanged (gated on !Editor.IsSelecting) raises
+                    // IsSelectedChangedEvent for each container the commit selects/deselects.
+                    _host.IsSelecting = false;
+                    _host.ApplyPreviewingSelection();
+                }
+            }
+            finally
+            {
+                ReleaseSnapshots();
             }
         }
 
         /// <summary>Aborts the current selection.</summary>
         public void Abort()
         {
-            if (_host.IsSelecting)
+            try
             {
-                _host.ClearPreviewingSelection();
-                _host.IsSelecting = false;
+                if (_host.IsSelecting)
+                {
+                    _host.ClearPreviewingSelection();
+                    _host.IsSelecting = false;
+                }
+            }
+            finally
+            {
+                ReleaseSnapshots();
             }
         }
 
@@ -127,11 +153,9 @@ namespace Nodify.Avalonia.Helpers
 
         private void PreviewUnselectAll()
         {
-            var items = (IList)_host.Items;
-            for (var i = 0; i < items.Count; i++)
+            for (var i = 0; i < _selectableContainers.Count; i++)
             {
-                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
-                container.IsPreviewingSelection = false;
+                _selectableContainers[i].IsPreviewingSelection = false;
             }
         }
 
@@ -142,23 +166,24 @@ namespace Nodify.Avalonia.Helpers
                 PreviewUnselectAll();
             }
 
-            var items = (IList)_host.Items;
-            for (var i = 0; i < items.Count; i++)
+            if (area.X != 0 || area.Y != 0 || area.Width > 0 || area.Height > 0)
             {
-                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
-                if (container.IsSelectableInArea(area, fit))
+                for (var i = 0; i < _selectableContainers.Count; i++)
                 {
-                    container.IsPreviewingSelection = true;
+                    var container = _selectableContainers[i];
+                    if (container.IsSelectableInArea(area, fit))
+                    {
+                        container.IsPreviewingSelection = true;
+                    }
                 }
             }
         }
 
         private void PreviewUnselectArea(Rect area, bool fit = false)
         {
-            var items = (IList)_host.Items;
-            for (var i = 0; i < items.Count; i++)
+            for (var i = 0; i < _selectableContainers.Count; i++)
             {
-                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
+                var container = _selectableContainers[i];
                 if (container.IsSelectableInArea(area, fit))
                 {
                     container.IsPreviewingSelection = false;
@@ -176,15 +201,35 @@ namespace Nodify.Avalonia.Helpers
 
         private void PreviewInvertSelection(Rect area, bool fit = false)
         {
-            var items = (IList)_host.Items;
-            for (var i = 0; i < items.Count; i++)
+            for (var i = 0; i < _selectableContainers.Count; i++)
             {
-                var container = (ItemContainer)_host.ContainerFromIndex(i)!;
+                var container = _selectableContainers[i];
                 if (container.IsSelectableInArea(area, fit))
                 {
                     container.IsPreviewingSelection = !container.IsPreviewingSelection;
                 }
             }
+        }
+
+        private IReadOnlyList<ItemContainer> GetSelectableContainers()
+        {
+            var items = (IList)_host.Items;
+            var containers = new List<ItemContainer>(items.Count);
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (_host.ContainerFromIndex(i) is ItemContainer { IsSelectable: true } container)
+                {
+                    containers.Add(container);
+                }
+            }
+
+            return containers;
+        }
+
+        private void ReleaseSnapshots()
+        {
+            _selectableContainers = Array.Empty<ItemContainer>();
+            _initialSelection = Array.Empty<ItemContainer>();
         }
     }
 }

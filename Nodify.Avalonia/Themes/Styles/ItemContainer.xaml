@@ -6,7 +6,8 @@
     <media:SolidColorBrush x:Key="ItemContainer.HighlightColor"
                      Color="DodgerBlue" />
     <DrawingBrush x:Key="ItemContainer.HighlightBrush"
-                      TileMode="Tile">
+                      TileMode="Tile"
+                      DestinationRect="0,0,24,24">
         <DrawingBrush.Drawing >
             <GeometryDrawing Brush="{StaticResource ItemContainer.HighlightColor}">
                 <GeometryDrawing.Geometry>
@@ -20,8 +21,14 @@
     </DrawingBrush>
 
     <ControlTheme x:Key="{x:Type avalonia:ItemContainer}" TargetType="avalonia:ItemContainer">
+        <!-- The editor clips its viewport, but node containers must not inherit that clip: the
+             keyboard focus rectangle is intentionally arranged two DIPs outside the node. -->
+        <Setter Property="ClipToBounds"
+                Value="False" />
         <Setter Property="BorderThickness"
                 Value="1" />
+        <Setter Property="SelectedBorderThickness"
+                Value="2" />
         <Setter Property="HighlightBrush"
                 Value="{DynamicResource ItemContainer.HighlightBrush}" />
         <Setter Property="BorderBrush"
@@ -33,44 +40,58 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type avalonia:ItemContainer}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            Padding="{TemplateBinding Padding}"
-                            x:Name="Border"
-                            CornerRadius="3">
-                        <ContentPresenter Name="PART_ContentPresenter"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          Content="{TemplateBinding Content}"
-                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
-                    </Border>
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                Padding="{TemplateBinding Padding}"
+                                x:Name="Border"
+                                CornerRadius="3">
+                            <ContentPresenter Name="PART_ContentPresenter"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              Content="{TemplateBinding Content}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+                        <Rectangle Name="PART_KeyboardFocusVisual"
+                                   IsVisible="False"
+                                   IsHitTestVisible="False"
+                                   Stroke="{DynamicResource NodifyEditor.FocusVisualBrush}"
+                                   StrokeThickness="1"
+                                   StrokeDashArray="2"
+                                   RadiusX="3"
+                                   RadiusY="3"
+                                   Margin="-2" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style Selector="^[IsSelected=True]">
+        <Style Selector="^[IsSelected=True]:ispreviewingselectable">
             <Setter Property="BorderBrush"
                     Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedBrush}" />
             <Setter Property="BorderThickness"
-                    Value="2" />
+                    Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedBorderThickness}" />
             <Setter Property="Margin"
-                    Value="-1" />
+                    Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedMargin}" />
         </Style>
         <Style Selector="^[IsPreviewingSelection=true]">
             <Setter Property="BorderBrush"
                     Value="{Binding RelativeSource={RelativeSource Self},Path= SelectedBrush}" />
             <Setter Property="BorderThickness"
-                    Value="2" />
+                    Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedBorderThickness}" />
             <Setter Property="Margin"
-                    Value="-1" />
+                    Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedMargin}" />
         </Style>
         <Style Selector="^:isoverelement">
             <Setter Property="BorderBrush"
                     Value="{Binding RelativeSource={RelativeSource Self},Path=  HighlightBrush}" />
             <Setter Property="BorderThickness"
-                    Value="2" />
+                    Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedBorderThickness}" />
             <Setter Property="Margin"
-                    Value="-1" />
+                    Value="{Binding RelativeSource={RelativeSource Self},Path=SelectedMargin}" />
+        </Style>
+        <Style Selector="^:keyboardfocus /template/ Rectangle#PART_KeyboardFocusVisual">
+            <Setter Property="IsVisible" Value="True" />
         </Style>
     </ControlTheme>
 

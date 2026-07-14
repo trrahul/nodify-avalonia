@@ -16,16 +16,17 @@ namespace Nodify.Avalonia.Nodes
     /// Represents a control that acts as a <see cref="Connector"/>.
     /// </summary>
     [TemplatePart(Name = ElementContent, Type = typeof(Control))]
+    [PseudoClasses(RingPointerOverPseudoClass)]
     public class StateNode : Connector
     {
         protected const string ElementContent = "PART_Content";
+        internal const string RingPointerOverPseudoClass = ":ringpointerover";
 
         #region Dependency Properties
 
         public static readonly StyledProperty<IBrush> HighlightBrushProperty = ItemContainer.HighlightBrushProperty.AddOwner<StateNode>();
         public static readonly StyledProperty<object?> ContentProperty = ContentPresenter.ContentProperty.AddOwner<StateNode>();
         public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty = ContentPresenter.ContentTemplateProperty.AddOwner<StateNode>();
-        //public static readonly StyledProperty<CornerRadius> CornerRadiusProperty = TemplatedControl.CornerRadiusProperty.AddOwner<StateNode>();
 
         /// <summary>
         /// Gets or sets the brush used when the <see cref="PendingConnection.IsOverElementProperty"/> attached property is true for this <see cref="StateNode"/>.
@@ -53,15 +54,6 @@ namespace Nodify.Avalonia.Nodes
             get => GetValue(ContentTemplateProperty);
             set => SetValue(ContentTemplateProperty, value);
         }
-        
-        /// <summary>
-        /// Gets or sets a value that represents the degree to which the corners of the <see cref="StateNode"/> are rounded.
-        /// </summary>
-        //public CornerRadius CornerRadius
-        //{
-        //    get => (CornerRadius)GetValue(CornerRadiusProperty);
-        //    set => SetValue(CornerRadiusProperty, value);
-        //}
 
         #endregion
         
@@ -73,8 +65,50 @@ namespace Nodify.Avalonia.Nodes
         /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            if (ContentControl != null)
+            {
+                ContentControl.PointerEntered -= OnContentPointerEntered;
+                ContentControl.PointerExited -= OnContentPointerExited;
+            }
+
             base.OnApplyTemplate(e);
             ContentControl = e.NameScope.Find<Control>(ElementContent);
+            if (ContentControl != null)
+            {
+                ContentControl.PointerEntered += OnContentPointerEntered;
+                ContentControl.PointerExited += OnContentPointerExited;
+            }
+        }
+
+        protected override void OnPointerEntered(PointerEventArgs e)
+        {
+            base.OnPointerEntered(e);
+            UpdateRingPointerOver(e.Source);
+        }
+
+        protected override void OnPointerMoved(PointerEventArgs e)
+        {
+            base.OnPointerMoved(e);
+            UpdateRingPointerOver(e.Source);
+        }
+
+        protected override void OnPointerExited(PointerEventArgs e)
+        {
+            base.OnPointerExited(e);
+            PseudoClasses.Set(RingPointerOverPseudoClass, false);
+        }
+
+        private void OnContentPointerEntered(object? sender, PointerEventArgs e)
+            => PseudoClasses.Set(RingPointerOverPseudoClass, false);
+
+        private void OnContentPointerExited(object? sender, PointerEventArgs e)
+            => UpdateRingPointerOver(e.Source);
+
+        private void UpdateRingPointerOver(object? source)
+        {
+            bool isOverContent = source is Visual visual
+                && (Equals(visual, ContentControl) || ContentControl?.IsVisualAncestorOf(visual) == true);
+            PseudoClasses.Set(RingPointerOverPseudoClass, IsPointerOver && !isOverContent);
         }
 
         /// <inheritdoc />

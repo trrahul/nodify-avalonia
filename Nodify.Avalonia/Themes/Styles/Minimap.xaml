@@ -1,0 +1,98 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:avalonia="clr-namespace:Nodify.Avalonia">
+
+    <avalonia:SubtractConverter x:Key="SubtractConverter" />
+
+    <ControlTheme x:Key="ViewportRectStyle"
+                  TargetType="Rectangle">
+        <Setter Property="Stroke"
+                Value="{DynamicResource Minimap.ViewportStrokeBrush}" />
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="Fill"
+                Value="{DynamicResource Minimap.ViewportBackgroundBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type avalonia:Minimap}"
+                  TargetType="avalonia:Minimap">
+        <Setter Property="Padding"
+                Value="10" />
+        <Setter Property="Background"
+                Value="{DynamicResource Minimap.BackgroundBrush}" />
+        <Setter Property="ViewportStyle"
+                Value="{StaticResource ViewportRectStyle}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="avalonia:Minimap">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            CornerRadius="3">
+                        <Viewbox Stretch="Uniform"
+                                 Margin="{TemplateBinding Padding}">
+                            <Grid>
+                                <ItemsPresenter Name="PART_ItemsPresenter">
+                                    <ItemsPresenter.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <avalonia:MinimapPanel
+                                                ViewportSize="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=avalonia:Minimap}, Path=ViewportSize}"
+                                                ViewportLocation="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=avalonia:Minimap}, Path=ViewportLocation}"
+                                                ResizeToViewport="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=avalonia:Minimap}, Path=ResizeToViewport}"
+                                                Extent="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=avalonia:Minimap}, Path=Extent, Mode=OneWayToSource}"
+                                                ItemsExtent="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=avalonia:Minimap}, Path=ItemsExtent, Mode=OneWayToSource}" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsPresenter.ItemsPanel>
+                                </ItemsPresenter>
+
+                                <Canvas>
+                                    <Rectangle Theme="{TemplateBinding ViewportStyle}"
+                                               Width="{Binding ViewportSize.Width, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Height="{Binding ViewportSize.Height, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <Canvas.Top>
+                                            <MultiBinding Converter="{StaticResource SubtractConverter}">
+                                                <Binding Path="ViewportLocation.Y"
+                                                         RelativeSource="{RelativeSource TemplatedParent}" />
+                                                <Binding Path="Extent.Position.Y"
+                                                         RelativeSource="{RelativeSource TemplatedParent}" />
+                                            </MultiBinding>
+                                        </Canvas.Top>
+                                        <Canvas.Left>
+                                            <MultiBinding Converter="{StaticResource SubtractConverter}">
+                                                <Binding Path="ViewportLocation.X"
+                                                         RelativeSource="{RelativeSource TemplatedParent}" />
+                                                <Binding Path="Extent.Position.X"
+                                                         RelativeSource="{RelativeSource TemplatedParent}" />
+                                            </MultiBinding>
+                                        </Canvas.Left>
+                                    </Rectangle>
+                                </Canvas>
+                            </Grid>
+                        </Viewbox>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type avalonia:MinimapItem}"
+                  TargetType="avalonia:MinimapItem">
+        <Setter Property="Background"
+                Value="{DynamicResource MinimapItem.BackgroundBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="avalonia:MinimapItem">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="3">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </ControlTheme>
+
+</ResourceDictionary>

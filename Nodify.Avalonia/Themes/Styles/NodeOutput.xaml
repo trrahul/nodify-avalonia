@@ -10,19 +10,25 @@
                  Fill="{TemplateBinding Background}"
                  StrokeThickness="2" />
     </ControlTemplate>
-    <ControlTemplate x:Key="FlowConnectorThumbTemplate"
-                     TargetType="{x:Type TemplatedControl}">
-        <Path Data="M 0,0 0,100 86,50 0,0" StrokeLineCap="Round" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2"
-              Fill="{TemplateBinding Background}" Width="14" Stretch="Uniform" Height="14"></Path>
-    </ControlTemplate>
-
 	<LinearGradientBrush x:Key="FadeOpacityMask"
-                         StartPoint="0%,0%" EndPoint="90%,80%">
-        <GradientStop Color="#11FFFFFF"
+                         StartPoint="0%,0%" EndPoint="100%,0%">
+        <GradientStop Color="#22FFFFFF"
                       Offset="0" />
-        <GradientStop Color="#66FFFFFF"
+        <GradientStop Color="#88FFFFFF"
                       Offset="0.3" />
-        <GradientStop Color="#44FFFFFF"
+        <GradientStop Color="#88FFFFFF"
+                      Offset="0.7" />
+        <GradientStop Color="#22FFFFFF"
+                      Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="FadeOpacityMaskVertical"
+                         StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Color="#22FFFFFF"
+                      Offset="0" />
+        <GradientStop Color="#88FFFFFF"
+                      Offset="0.3" />
+        <GradientStop Color="#88FFFFFF"
                       Offset="0.7" />
         <GradientStop Color="#22FFFFFF"
                       Offset="1" />
@@ -50,18 +56,19 @@
                                 OpacityMask="{StaticResource FadeOpacityMask}"
                                 Background="{TemplateBinding BorderBrush}" />
 
-						<DockPanel 
-                            Margin="{TemplateBinding Padding}">
-                            <ContentPresenter DockPanel.Dock="Left" Content="{TemplateBinding Header}"  VerticalAlignment="Center"
+			                        <StackPanel Orientation="{TemplateBinding Orientation}"
+                                    HorizontalAlignment="Right"
+                                    Margin="{TemplateBinding Padding}">
+                            <ContentPresenter Content="{TemplateBinding Header}" VerticalAlignment="Center"
                                               ContentTemplate="{TemplateBinding HeaderTemplate}"/>
-                            <TemplatedControl DockPanel.Dock="Right" x:Name="PART_Connector"
-                                              Focusable="False" HorizontalAlignment="Right"
+                            <TemplatedControl x:Name="PART_Connector"
+                                              Focusable="False" HorizontalAlignment="Center"
                                               Margin="5 0 0 0"
                                               VerticalAlignment="Center"
                                               Background="Transparent"
                                               BorderBrush="{TemplateBinding BorderBrush}"
                                               Template="{TemplateBinding ConnectorTemplate}" />
-                        </DockPanel>
+                        </StackPanel>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -82,10 +89,15 @@
             <Setter Property="IsVisible"
                     Value="true" />
         </Style>
-        <Style Selector="^[IsFlow=True]">
-            <Setter Property="ConnectorTemplate"
-                    Value="{StaticResource FlowConnectorThumbTemplate}" />
-            <Setter Property="BorderBrush" Value="#26bf08"></Setter>
+        <Style Selector="^[Orientation=Vertical] /template/ TemplatedControl#PART_Connector">
+            <Setter Property="Margin" Value="0 5 0 0" />
+        </Style>
+        <Style Selector="^[Orientation=Vertical]">
+            <Setter Property="Padding" Value="2 4" />
+        </Style>
+        <Style Selector="^[Orientation=Vertical] /template/ Border#Highlight">
+            <Setter Property="OpacityMask"
+                    Value="{StaticResource FadeOpacityMaskVertical}" />
         </Style>
     </ControlTheme>
 </ResourceDictionary>

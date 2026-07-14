@@ -2,7 +2,19 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:connections="clr-namespace:Nodify.Avalonia.Connections">
 
-    <ControlTheme x:Key="{x:Type connections:Connection}" TargetType="connections:Connection">
+    <ControlTheme x:Key="{x:Type connections:BaseConnection}" TargetType="connections:BaseConnection">
+        <Style Selector="^[(connections|CuttingLine.IsOverElement)=true]">
+            <Setter Property="Opacity"
+                    Value="0.4" />
+        </Style>
+        <Style Selector="^[(connections|BaseConnection.IsSelectable)=true]">
+            <Setter Property="Cursor"
+                    Value="Hand" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type connections:Connection}" TargetType="connections:Connection"
+                  BasedOn="{StaticResource {x:Type connections:BaseConnection}}">
         <Setter Property="StrokeThickness"
                 Value="3" />
         <Setter Property="Stroke"
@@ -13,7 +25,8 @@
                 Value="20" />
     </ControlTheme>
 
-    <ControlTheme x:Key="{x:Type connections:LineConnection}" TargetType="connections:LineConnection">
+    <ControlTheme x:Key="{x:Type connections:LineConnection}" TargetType="connections:LineConnection"
+                  BasedOn="{StaticResource {x:Type connections:BaseConnection}}">
         <Setter Property="StrokeThickness"
                 Value="3" />
         <Setter Property="Spacing"
@@ -24,7 +37,8 @@
                 Value="{DynamicResource LineConnection.StrokeBrush}" />
     </ControlTheme>
 
-    <ControlTheme x:Key="{x:Type connections:CircuitConnection}" TargetType="connections:CircuitConnection">
+    <ControlTheme x:Key="{x:Type connections:CircuitConnection}" TargetType="connections:CircuitConnection"
+                  BasedOn="{StaticResource {x:Type connections:BaseConnection}}">
         <Setter Property="StrokeThickness"
                 Value="3" />
         <Setter Property="Spacing"
@@ -33,6 +47,18 @@
                 Value="{DynamicResource CircuitConnection.StrokeBrush}" />
         <Setter Property="Fill"
                 Value="{DynamicResource CircuitConnection.StrokeBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type connections:StepConnection}" TargetType="connections:StepConnection"
+                  BasedOn="{StaticResource {x:Type connections:BaseConnection}}">
+        <Setter Property="StrokeThickness"
+                Value="3" />
+        <Setter Property="Spacing"
+                Value="30" />
+        <Setter Property="Stroke"
+                Value="{DynamicResource StepConnection.StrokeBrush}" />
+        <Setter Property="Fill"
+                Value="{DynamicResource StepConnection.StrokeBrush}" />
     </ControlTheme>
 
 </ResourceDictionary>

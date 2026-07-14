@@ -5,12 +5,6 @@ using Avalonia.Interactivity;
 namespace Nodify.Avalonia.Events
 {
     /// <summary>
-    /// Represents the method that will handle resize related routed events.
-    /// </summary>
-    /// <param name="sender">The sender of this event.</param>
-    /// <param name="e">The event data.</param>
-
-    /// <summary>
     /// Provides data for resize related routed events.
     /// </summary>
     public class ResizeEventArgs : RoutedEventArgs

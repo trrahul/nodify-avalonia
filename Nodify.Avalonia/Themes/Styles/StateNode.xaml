@@ -41,16 +41,15 @@
                                 <Setter Property="Background"
                                         Value="{Binding BorderBrush, RelativeSource={RelativeSource TemplatedParent}}" />
                             </Style>
-                            <Style Selector="Border#Border[IsPointerOver=true]">
-                                <!--todo was direcltyover-->
-                                <Setter Property="Background"
-                                        Value="{Binding HighlightBrush, RelativeSource={RelativeSource TemplatedParent}}" />
-                            </Style>
                         </Border.Styles>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Style Selector="^:ringpointerover /template/ Border#Border">
+            <Setter Property="Background"
+                    Value="{Binding HighlightBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+        </Style>
         <Style Selector="^[(connections|PendingConnection.IsOverElement)=true] /template/ Border#Border">
             <Setter Property="Background"
                     Value="{Binding HighlightBrush, RelativeSource={RelativeSource TemplatedParent}}" />

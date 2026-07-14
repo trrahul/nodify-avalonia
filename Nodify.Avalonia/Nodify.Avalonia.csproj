@@ -4,21 +4,32 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
         <Description>An MVVM Node editor for Avalonia.</Description>
         <PackageProjectUrl>https://github.com/trrahul/nodify-avalonia</PackageProjectUrl>
         <RepositoryUrl>https://github.com/trrahul/nodify-avalonia</RepositoryUrl>
-        <PackageTags>avalonia;node-editor;</PackageTags>
+        <PackageTags>avalonia;node-editor;nodify;graph;nodes;editor;mvvm</PackageTags>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <IncludeSymbols>True</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-	    <Version>1.0.2</Version>
+        <Version>2.0.0</Version>
+        <Authors>Rahul TR</Authors>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PackageReleaseNotes>See CHANGELOG.md</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
         <AvaloniaResource Include="Themes\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,7 +42,13 @@
 
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="12.0.5" />
-        <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+            <_Parameter1>Nodify.Avalonia.Tests</_Parameter1>
+        </AssemblyAttribute>
     </ItemGroup>
 
 
@@ -87,7 +104,13 @@
         <None Update="Themes\Styles\PendingConnection.xaml">
             <Generator>MSBuild:Compile</Generator>
         </None>
+        <None Update="Themes\Styles\HotKeyControl.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
         <None Update="Themes\Styles\StateNode.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </None>
+        <None Update="Themes\Styles\Minimap.xaml">
             <Generator>MSBuild:Compile</Generator>
         </None>
     </ItemGroup>

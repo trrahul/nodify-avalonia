@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -13,6 +14,7 @@ using Avalonia.VisualTree;
 using Nodify.Avalonia.Events;
 using Nodify.Avalonia.Extensions;
 using Nodify.Avalonia.Helpers;
+using Nodify.Avalonia.Interactivity;
 
 namespace Nodify.Avalonia.Connections
 {
@@ -34,14 +36,14 @@ namespace Nodify.Avalonia.Connections
         public static readonly RoutedEvent PendingConnectionDragEvent = RoutedEvent.Register<Connector, PendingConnectionEventArgs>(nameof(PendingConnectionDrag), RoutingStrategies.Bubble);
         public static readonly RoutedEvent DisconnectEvent = RoutedEvent.Register<Connector, ConnectorEventArgs>(nameof(Disconnect), RoutingStrategies.Bubble);
 
-        /// <summary>Triggered by the <see cref="EditorGestures.Connector.Connect"/> gesture.</summary>
+        /// <summary>Triggered by the <see cref="EditorGestures.ConnectorGestures.Connect"/> gesture.</summary>
         public event EventHandler<PendingConnectionEventArgs> PendingConnectionStarted
         {
             add => AddHandler(PendingConnectionStartedEvent, value);
             remove => RemoveHandler(PendingConnectionStartedEvent, value);
         }
 
-        /// <summary>Triggered by the <see cref="EditorGestures.Connector.Connect"/> gesture.</summary>
+        /// <summary>Triggered by the <see cref="EditorGestures.ConnectorGestures.Connect"/> gesture.</summary>
         public event EventHandler<PendingConnectionEventArgs> PendingConnectionCompleted
         {
             add => AddHandler(PendingConnectionCompletedEvent, value);
@@ -57,7 +59,7 @@ namespace Nodify.Avalonia.Connections
             remove => RemoveHandler(PendingConnectionDragEvent, value);
         }
 
-        /// <summary>Triggered by the <see cref="EditorGestures.Connector.Disconnect"/> gesture.</summary>
+        /// <summary>Triggered by the <see cref="EditorGestures.ConnectorGestures.Disconnect"/> gesture.</summary>
         public event EventHandler<ConnectorEventArgs> Disconnect
         {
             add => AddHandler(DisconnectEvent, value);
@@ -70,8 +72,8 @@ namespace Nodify.Avalonia.Connections
 
         public static readonly StyledProperty<Point> AnchorProperty = AvaloniaProperty.Register<Connector,Point>(nameof(Anchor));
         public static readonly StyledProperty<bool> IsConnectedProperty = AvaloniaProperty.Register<Connector,bool>(nameof(IsConnected));
-        public static readonly StyledProperty<bool> IsFlowProperty = AvaloniaProperty.Register<Connector,bool>(nameof(IsFlow));
         public static readonly StyledProperty<ICommand?> DisconnectCommandProperty = AvaloniaProperty.Register<Connector,ICommand?>(nameof(DisconnectCommand));
+        public static readonly StyledProperty<bool> HasCustomContextMenuProperty = NodifyEditor.HasCustomContextMenuProperty.AddOwner<Connector>();
         public static readonly DirectProperty<Connector, bool> IsPendingConnectionProperty =
             AvaloniaProperty.RegisterDirect<Connector, bool>(nameof(IsPendingConnection), o => o.IsPendingConnection);
 
@@ -93,11 +95,6 @@ namespace Nodify.Avalonia.Connections
             get => (bool)GetValue(IsConnectedProperty);
             set => SetValue(IsConnectedProperty, value);
         }
-        public bool IsFlow
-        {
-            get => (bool)GetValue(IsFlowProperty);
-            set => SetValue(IsFlowProperty, value);
-        }
 
         /// <summary>
         /// Gets a value that indicates whether a <see cref="PendingConnection"/> is in progress for this <see cref="Connector"/>.
@@ -110,13 +107,28 @@ namespace Nodify.Avalonia.Connections
 
         /// <summary>
         /// Invoked if the <see cref="Disconnect"/> event is not handled.
-        /// Parameter is the <see cref="FrameworkElement.DataContext"/> of this control.
+        /// Parameter is the <see cref="StyledElement.DataContext"/> of this control.
         /// </summary>
         public ICommand? DisconnectCommand
         {
             get => (ICommand?)GetValue(DisconnectCommandProperty);
             set => SetValue(DisconnectCommandProperty, value);
         }
+
+        /// <summary>
+        /// Gets or sets whether this connector draws a custom context menu (not via <see cref="Control.ContextMenu"/>).
+        /// Used to suppress starting an interaction so the context menu can appear.
+        /// </summary>
+        public bool HasCustomContextMenu
+        {
+            get => (bool)GetValue(HasCustomContextMenuProperty);
+            set => SetValue(HasCustomContextMenuProperty, value);
+        }
+
+        /// <summary>
+        /// Gets whether this connector has a context menu (either a <see cref="Control.ContextMenu"/> or a <see cref="HasCustomContextMenu"/>).
+        /// </summary>
+        public bool HasContextMenu => ContextMenu != null || HasCustomContextMenu;
 
         #endregion
 
@@ -133,25 +145,38 @@ namespace Nodify.Avalonia.Connections
 
         public Connector()
         {
+            InputProcessor.AddSharedHandlers(this);
             SizeChanged += OnRenderSizeChanged;
         }
+
+        /// <summary>
+        /// The input processor that dispatches pointer/keyboard events to the shared
+        /// <see cref="ConnectorState"/> handlers (and any registered via
+        /// <see cref="InputProcessor.Shared{TElement}.RegisterHandlerFactory{THandler}"/>).
+        /// </summary>
+        protected InputProcessor InputProcessor { get; } = new InputProcessor();
 
         #region Fields
 
         /// <summary>
-        /// Gets the <see cref="FrameworkElement"/> used to calculate the <see cref="Anchor"/>.
+        /// Gets the <see cref="Control"/> used to calculate the <see cref="Anchor"/>.
         /// </summary>
         protected Control? Thumb { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="ItemContainer"/> that contains this <see cref="Connector"/>.
         /// </summary>
-        protected ItemContainer? Container { get; private set; }
+        public ItemContainer? Container { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="NodifyEditor"/> that owns this <see cref="Container"/>.
         /// </summary>
-        protected internal NodifyEditor? Editor { get; private set; }
+        public NodifyEditor? Editor { get; private set; }
+
+        /// <summary>
+        /// Gets the effective gesture mappings for this connector (per-editor override or global fallback).
+        /// </summary>
+        public EditorGestures ActualGestures => Editor?.ActualGestures ?? EditorGestures.Mappings;
 
         /// <summary>
         /// Gets or sets the safe zone outside the editor's viewport that will not trigger optimizations.
@@ -166,7 +191,7 @@ namespace Nodify.Avalonia.Connections
         /// <summary>
         /// Gets or sets if <see cref="Connector"/>s should enable optimizations based on <see cref="OptimizeSafeZone"/> and <see cref="OptimizeMinimumSelectedItems"/>.
         /// </summary>
-        public static bool EnableOptimizations = true; //todo
+        public static bool EnableOptimizations = false;
 
         /// <summary>
         /// Gets or sets whether cancelling a pending connection is allowed.
@@ -179,9 +204,10 @@ namespace Nodify.Avalonia.Connections
         public static bool EnableStickyConnections { get; set; }
 
         private Point _lastUpdatedContainerPosition;
-        private Point _thumbCenter;
+        private Point _pendingConnectionEndPosition;
         private bool _isHooked;
         private bool _isPendingConnection;
+        private IPointer? _activePointer;
 
         #endregion
 
@@ -199,12 +225,10 @@ namespace Nodify.Avalonia.Connections
 
         #region Update connector
 
-        // Toggle events that could be used to update the Anchor
         private void TrySetAnchorUpdateEvents(bool value)
         {
             if (Container != null && Editor != null)
             {
-                // If events are not already hooked and we are asked to subscribe
                 if (value && !_isHooked)
                 {
                     Container.PreviewLocationChanged += UpdateAnchorOptimized;
@@ -213,7 +237,6 @@ namespace Nodify.Avalonia.Connections
                     Editor.ViewportUpdated += OnViewportUpdated;
                     _isHooked = true;
                 }
-                // If events are already hooked and we are asked to unsubscribe
                 else if (_isHooked && !value)
                 {
                     Container.PreviewLocationChanged -= UpdateAnchorOptimized;
@@ -225,15 +248,15 @@ namespace Nodify.Avalonia.Connections
             }
         }
 
-        private void OnContainerSizeChanged(object sender, SizeChangedEventArgs e)
+        private void OnContainerSizeChanged(object? sender, SizeChangedEventArgs e)
         {
             UpdateAnchorOptimized(Container!.Location);
         }
 
-        private void OnConnectorLoaded(object sender, RoutedEventArgs? e)
+        private void OnConnectorLoaded(object? sender, RoutedEventArgs? e)
             => TrySetAnchorUpdateEvents(true);
 
-        private void OnConnectorUnloaded(object sender, RoutedEventArgs e)
+        private void OnConnectorUnloaded(object? sender, RoutedEventArgs e)
             => TrySetAnchorUpdateEvents(false);
 
         private static void OnIsConnectedChanged(Connector connector, AvaloniaPropertyChangedEventArgs<bool> args)
@@ -248,8 +271,7 @@ namespace Nodify.Avalonia.Connections
         /// <inheritdoc />
         protected void OnRenderSizeChanged(object? sender, SizeChangedEventArgs args)
         {
-            // Subscribe to events if not already subscribed 
-            // Useful for advanced connectors that start collapsed because the loaded event is not called
+            // Advanced connectors that start collapsed never fire Loaded, so subscribe here instead.
             Size newSize = args.NewSize;
             if (newSize.Width > 0d || newSize.Height > 0d)
             {
@@ -262,10 +284,10 @@ namespace Nodify.Avalonia.Connections
             }
         }
 
-        private void OnLocationChanged(object sender, RoutedEventArgs e)
+        private void OnLocationChanged(object? sender, RoutedEventArgs e)
             => UpdateAnchorOptimized(Container!.Location);
 
-        private void OnViewportUpdated(object sender, RoutedEventArgs args)
+        private void OnViewportUpdated(object? sender, RoutedEventArgs args)
         {
             if (Container != null && !Container.IsPreviewingLocation && _lastUpdatedContainerPosition != Container.Location)
             {
@@ -279,10 +301,9 @@ namespace Nodify.Avalonia.Connections
         /// <param name="location"></param>
         protected void UpdateAnchorOptimized(Point location)
         {
-            // Update only connectors that are connected
             if (Editor != null && IsConnected)
             {
-                bool shouldOptimize = EnableOptimizations && Editor.SelectedItems?.Count > OptimizeMinimumSelectedItems;
+                bool shouldOptimize = EnableOptimizations && Editor.SelectedContainersCount >= OptimizeMinimumSelectedItems;
 
                 if (shouldOptimize)
                 {
@@ -342,105 +363,84 @@ namespace Nodify.Avalonia.Connections
         #region Event Handlers
 
         /// <inheritdoc />
-        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
-        {
-            OnConnectorDragCompleted(cancel: true);
-        }
-
-        /// <inheritdoc />
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            Focus();
-            this.CaptureMouseSafe(e);
-            e.Handled = true;
-
-            if (EditorGestures.Connector.Disconnect.Matches(e.Source, e))
-            {
-                OnDisconnect();
-            }
-            else if (EditorGestures.Connector.Connect.Matches(e.Source, e))
-            {
-                if (EnableStickyConnections && IsPendingConnection)
-                {
-                    OnConnectorDragCompleted();
-                }
-                else
-                {
-                    UpdateAnchor();
-                    OnConnectorDragStarted(e);
-                }
-            }
+            _activePointer = e.Pointer;
+            InputProcessor.ProcessEvent(e);
         }
 
         /// <inheritdoc />
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            // Don't give the ItemContainer the chance to handle selection
-            e.Handled = EnableStickyConnections;
+            InputProcessor.ProcessEvent(e);
 
-            if (!EnableStickyConnections && EditorGestures.Connector.Connect.Matches(e.Source, e))
-            {
-                OnConnectorDragCompleted();
-                e.Handled = true;
-            }
-            else if (AllowPendingConnectionCancellation && EditorGestures.Connector.CancelAction.Matches(e.Source, e))
-            {
-                // Cancel pending connection
-                OnConnectorDragCompleted(cancel: true);
-                this.ReleaseMouseCapture(e);
-
-                // Don't show context menu
-                e.Handled = true;
-            }
-
-            if (e.Pointer.Captured == this && !IsPendingConnection)
+            // Release the mouse capture if all the buttons are released and there's no interaction in progress
+            var props = e.GetPointerPointProperties();
+            if (!InputProcessor.RequiresInputCapture && this.IsMouseCaptured(e)
+                && !props.IsRightButtonPressed && !props.IsLeftButtonPressed && !props.IsMiddleButtonPressed)
             {
                 this.ReleaseMouseCapture(e);
-            }
-        }
-
-        /// <inheritdoc />
-        protected override void OnKeyUp(KeyEventArgs e)
-        {
-            if (AllowPendingConnectionCancellation && EditorGestures.Connector.CancelAction.Matches(e.Source, e))
-            {
-                // Cancel pending connection
-                OnConnectorDragCompleted(cancel: true);
             }
         }
 
         /// <inheritdoc />
         protected override void OnPointerMoved(PointerEventArgs e)
+            => InputProcessor.ProcessEvent(e);
+
+        /// <inheritdoc />
+        protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+            => InputProcessor.ProcessEvent(e);
+
+        /// <inheritdoc />
+        protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+        {
+            _activePointer = null;
+            InputProcessor.ProcessEvent(e);
+        }
+
+        /// <inheritdoc />
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            InputProcessor.ProcessEvent(e);
+
+            // Release the mouse capture if there's no interaction in progress (e.g. a keyboard-driven
+            // Connect/Cancel gesture ended the drag without a PointerReleased event).
+            if (!InputProcessor.RequiresInputCapture)
+            {
+                ReleaseMouseCapture();
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void OnKeyDown(KeyEventArgs e)
+            => InputProcessor.ProcessEvent(e);
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Initiates a new pending connection from this connector (see <see cref="IsPendingConnection"/>).
+        /// </summary>
+        /// <remarks>This method has no effect if a pending connection is already in progress.</remarks>
+        public void BeginConnecting()
+            => BeginConnecting(new Vector(0, 0));
+
+        /// <summary>
+        /// Initiates a new pending connection from this connector with the specified offset (see <see cref="IsPendingConnection"/>).
+        /// </summary>
+        /// <remarks>This method has no effect if a pending connection is already in progress.</remarks>
+        public void BeginConnecting(Vector offset)
         {
             if (IsPendingConnection)
             {
-                Vector offset = e.GetPosition(Thumb) - _thumbCenter;
-                OnConnectorDrag(offset);
-            }
-        }
-
-        protected virtual void OnConnectorDrag(Vector offset)
-        {
-            var args = new PendingConnectionEventArgs(DataContext)
-            {
-                RoutedEvent = PendingConnectionDragEvent,
-                OffsetX = offset.X,
-                OffsetY = offset.Y,
-                Anchor = Anchor,
-                Source = this
-            };
-
-            RaiseEvent(args);
-        }
-
-        protected virtual void OnConnectorDragStarted(PointerPressedEventArgs e)
-        {
-            if (Thumb != null)
-            {
-                _thumbCenter = new Point(Thumb.Bounds.Width / 2, Thumb.Bounds.Height / 2);
+                return;
             }
 
-            var args = new PendingConnectionEventArgs(DataContext)
+            UpdateAnchor();
+            _pendingConnectionEndPosition = Anchor + offset;
+
+            var args = new PendingConnectionEventArgs(DataContext!)
             {
                 RoutedEvent = PendingConnectionStartedEvent,
                 Anchor = Anchor,
@@ -449,62 +449,188 @@ namespace Nodify.Avalonia.Connections
 
             RaiseEvent(args);
             IsPendingConnection = !args.Canceled;
-
-            if (e.Pointer.Captured == this && !IsPendingConnection)
-            {
-                e.Pointer.Capture(null);
-            }
         }
 
-        protected virtual void OnConnectorDragCompleted( bool cancel = false)
+        /// <summary>
+        /// Updates the endpoint of the pending connection by adjusting its position with the specified offset.
+        /// </summary>
+        /// <param name="offset">The amount to adjust the pending connection's endpoint.</param>
+        public void UpdatePendingConnection(Vector offset)
+            => UpdatePendingConnection(_pendingConnectionEndPosition + offset);
+
+        /// <summary>
+        /// Updates the endpoint of the pending connection to the specified position.
+        /// </summary>
+        /// <param name="position">The new position for the connection's endpoint.</param>
+        public void UpdatePendingConnection(Point position)
         {
+            Debug.Assert(IsPendingConnection);
+
+            _pendingConnectionEndPosition = position;
+
+            var args = new PendingConnectionEventArgs(DataContext!)
+            {
+                RoutedEvent = PendingConnectionDragEvent,
+                OffsetX = _pendingConnectionEndPosition.X - Anchor.X,
+                OffsetY = _pendingConnectionEndPosition.Y - Anchor.Y,
+                Anchor = Anchor,
+                Source = this
+            };
+
+            RaiseEvent(args);
+        }
+
+        /// <summary>
+        /// Cancels the current pending connection without completing it if <see cref="AllowPendingConnectionCancellation"/> is true.
+        /// Otherwise, it completes the pending connection by calling <see cref="EndConnecting()"/>.
+        /// </summary>
+        /// <remarks>This method has no effect if there's no pending connection.</remarks>
+        public void CancelConnecting()
+        {
+            if (!AllowPendingConnectionCancellation)
+            {
+                EndConnecting();
+                return;
+            }
+
             if (IsPendingConnection)
             {
-                Control? elem = Editor != null ? PendingConnection.GetPotentialConnector(Editor,Editor.State.CurrentPointerArgs.GetPosition(Editor.ItemsHost), PendingConnection.GetAllowOnlyConnectorsAttached(Editor)) : null;
-
-                var args = new PendingConnectionEventArgs(DataContext)
+                var args = new PendingConnectionEventArgs(DataContext!)
                 {
-                    TargetConnector = elem?.DataContext,
                     RoutedEvent = PendingConnectionCompletedEvent,
                     Anchor = Anchor,
                     Source = this,
-                    Canceled = cancel
+                    Canceled = true
                 };
+                RaiseEvent(args);
 
                 IsPendingConnection = false;
-                RaiseEvent(args);
             }
         }
 
-        protected virtual void OnDisconnect()
+        /// <summary>
+        /// Completes the current pending connection, attempting to identify a target connector near the connection's endpoint.
+        /// </summary>
+        /// <remarks>This method has no effect if there's no pending connection.</remarks>
+        public void EndConnecting()
         {
-            if (IsConnected && !IsPendingConnection)
+            if (!IsPendingConnection)
             {
-                object? connector = DataContext;
-                var args = new ConnectorEventArgs(connector)
-                {
-                    RoutedEvent = DisconnectEvent,
-                    Anchor = Anchor,
-                    Source = this
-                };
+                return;
+            }
 
-                RaiseEvent(args);
+            Control? elem = FindConnectionTarget(_pendingConnectionEndPosition);
+            EndConnecting(elem?.DataContext);
+        }
 
-                // Raise DisconnectCommand if event is Disconnect not handled
-                if (!args.Handled && (DisconnectCommand?.CanExecute(connector) ?? false))
-                {
-                    DisconnectCommand.Execute(connector);
-                }
+        /// <summary>Completes the current pending connection using the specified <paramref name="connector"/> as the target.</summary>
+        /// <param name="connector">The connector to use as the connection target.</param>
+        /// <remarks>This method has no effect if there's no pending connection.</remarks>
+        public void EndConnecting(Connector connector)
+            => EndConnecting(connector.DataContext);
+
+        private void EndConnecting(object? targetDataContext)
+        {
+            if (!IsPendingConnection)
+            {
+                return;
+            }
+
+            var args = new PendingConnectionEventArgs(DataContext!)
+            {
+                TargetConnector = targetDataContext,
+                RoutedEvent = PendingConnectionCompletedEvent,
+                Anchor = Anchor,
+                Source = this
+            };
+            RaiseEvent(args);
+
+            IsPendingConnection = false;
+            _pendingConnectionEndPosition = Anchor;
+        }
+
+        /// <summary>
+        /// Removes all connections associated with this connector.
+        /// </summary>
+        /// <remarks>This method has no effect if a pending connection is in progress or the connector is not connected (see <see cref="IsConnected"/>).</remarks>
+        public void RemoveConnections()
+        {
+            if (!IsConnected || IsPendingConnection)
+            {
+                return;
+            }
+
+            object? connector = DataContext;
+            var args = new ConnectorEventArgs(connector!)
+            {
+                RoutedEvent = DisconnectEvent,
+                Anchor = Anchor,
+                Source = this
+            };
+
+            RaiseEvent(args);
+
+            if (!args.Handled && (DisconnectCommand?.CanExecute(connector) ?? false))
+            {
+                DisconnectCommand.Execute(connector);
             }
         }
 
+        // Caller must UpdateAnchor() first if the Anchor is stale.
+        internal Point GetLocationInsideEditor(PointerEventArgs e)
+        {
+            if (Thumb == null)
+            {
+                return Anchor;
+            }
 
-        
+            Vector thumbOffset = e.GetPosition(Thumb) - new Point(Thumb.Bounds.Width / 2, Thumb.Bounds.Height / 2);
+            return Anchor + thumbOffset;
+        }
+
+        /// <summary>Searches for a <see cref="Connector"/> at the specified position.</summary>
+        /// <param name="position">The position in the editor to check for a connector.</param>
+        public Connector? FindTargetConnector(Point position)
+        {
+            if (Editor != null)
+            {
+                return (Connector?)PendingConnection.GetPotentialConnector(Editor, position, true);
+            }
+
+            return null;
+        }
+
+        /// <summary>Searches for a potential <see cref="Connector"/> or <see cref="ItemContainer"/> at the specified position within the editor.</summary>
+        /// <param name="position">The position in the editor to check for a potential connection target.</param>
+        public Control? FindConnectionTarget(Point position)
+        {
+            if (Editor != null)
+            {
+                return PendingConnection.GetPotentialConnector(Editor, position, PendingConnection.GetAllowOnlyConnectorsAttached(Editor));
+            }
+
+            return null;
+        }
+
         #endregion
+
+        internal void ReleaseMouseCapture()
+        {
+            if (_activePointer?.Captured == this)
+            {
+                _activePointer.Capture(null);
+            }
+        }
 
         public bool HitTest(Point point)
         {
-            return this.Bounds.Contains(point);
+            if (VisualRoot is not Visual root)
+            {
+                return false;
+            }
+
+            Point? localPoint = root.TranslatePoint(point, this);
+            return localPoint is Point local && new Rect(Bounds.Size).Contains(local);
         }
     }
 }

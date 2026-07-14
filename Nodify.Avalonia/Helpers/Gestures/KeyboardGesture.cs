@@ -6,6 +6,13 @@ namespace Nodify.Avalonia.Helpers.Gestures;
 public class KeyboardGesture : InputGesture
 {
     private readonly KeyGesture _internal;
+
+    /// <summary>The key this gesture matches.</summary>
+    public Key Key => _internal.Key;
+
+    /// <summary>The modifier keys required by this gesture.</summary>
+    public KeyModifiers Modifiers => _internal.KeyModifiers;
+
     public KeyboardGesture(Key key)
     {
         _internal = new KeyGesture(key);

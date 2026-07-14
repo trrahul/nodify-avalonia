@@ -4,6 +4,15 @@
                     xmlns:local="clr-namespace:Nodify" 
                     xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes">
 
+    <ControlTemplate x:Key="DefaultResizeThumbTemplate" TargetType="Thumb">
+        <!-- A Path triangle stands in for the Windows-only Marlett resize-grip glyph,
+             which has no cross-platform equivalent. -->
+        <Path Data="M 8,0 L 8,8 L 0,8 Z"
+              Fill="{TemplateBinding Foreground}"
+              Width="8"
+              Height="8" />
+    </ControlTemplate>
+
     <ControlTheme x:Key="{x:Type nodes:GroupingNode}" TargetType="nodes:GroupingNode">
         <Setter Property="Background"
                 Value="{DynamicResource GroupingNode.BackgroundBrush}" />
@@ -23,6 +32,8 @@
                 Value="30" />
         <Setter Property="MinWidth"
                 Value="150" />
+        <Setter Property="ResizeThumbTemplate"
+                Value="{StaticResource DefaultResizeThumbTemplate}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate>
@@ -46,28 +57,26 @@
                             </Border>
 
                             <Grid Grid.Row="1"
+                                  IsHitTestVisible="{TemplateBinding IsContentHitTestVisible}"
                                   Background="{TemplateBinding Background}">
                                 <ContentPresenter x:Name="PART_Content"
                                                   Content="{TemplateBinding Content}"
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"/>
-                                <Thumb x:Name="PART_ResizeThumb"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Bottom"
-                                       Margin="0 0 2 2"
-                                       MinHeight="20"
-                                       Cursor="SizeAll" 
-                                       Foreground="{TemplateBinding Foreground}"
-                                       IsVisible="{TemplateBinding CanResize}">
-                                    <!--todo cursor was sizeNSWE-->
-                                    <Thumb.Template>
-                                        <ControlTemplate>
-                                            <TextBlock Text="p"
-                                                       FontFamily="Marlett"
-                                                       FontSize="18" />
-                                        </ControlTemplate>
-                                    </Thumb.Template>
-                                </Thumb>
                             </Grid>
+
+                            <!-- Resize thumb is a sibling of the content Grid (not nested inside it) so
+                                 IsContentHitTestVisible=False keeps content click-through without disabling
+                                 group resizing. -->
+                            <Thumb Grid.Row="1"
+                                   x:Name="PART_ResizeThumb"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Bottom"
+                                   Margin="0 0 2 2"
+                                   MinHeight="20"
+                                   Cursor="BottomRightCorner"
+                                   Foreground="{TemplateBinding Foreground}"
+                                   IsVisible="{TemplateBinding CanResize}"
+                                   Template="{TemplateBinding ResizeThumbTemplate}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>

@@ -12,18 +12,25 @@
                  Fill="{TemplateBinding Background}"
                  StrokeThickness="2" />
     </ControlTemplate>
-    <ControlTemplate x:Key="FlowConnectorThumbTemplate"
-                     TargetType="{x:Type TemplatedControl}">
-        <Path Data="M 0,0 0,100 86,50 0,0" StrokeLineCap="Round" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="2"
-              Fill="{TemplateBinding Background}" Width="14" Stretch="Uniform" Height="14"></Path>
-    </ControlTemplate>
     <LinearGradientBrush x:Key="FadeOpacityMask"
-                         StartPoint="10%,20%" EndPoint="90%,80%">
-        <GradientStop Color="#11FFFFFF"
+                         StartPoint="0%,0%" EndPoint="100%,0%">
+        <GradientStop Color="#22FFFFFF"
                       Offset="0" />
-        <GradientStop Color="#66FFFFFF"
+        <GradientStop Color="#88FFFFFF"
                       Offset="0.3" />
-        <GradientStop Color="#44FFFFFF"
+        <GradientStop Color="#88FFFFFF"
+                      Offset="0.7" />
+        <GradientStop Color="#22FFFFFF"
+                      Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="FadeOpacityMaskVertical"
+                         StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Color="#22FFFFFF"
+                      Offset="0" />
+        <GradientStop Color="#88FFFFFF"
+                      Offset="0.3" />
+        <GradientStop Color="#88FFFFFF"
                       Offset="0.7" />
         <GradientStop Color="#22FFFFFF"
                       Offset="1" />
@@ -51,13 +58,14 @@
                                 OpacityMask="{StaticResource FadeOpacityMask}"
                                 Background="{TemplateBinding BorderBrush}" />
 
-                        <StackPanel Orientation="Horizontal"
+                        <StackPanel Orientation="{TemplateBinding Orientation}"
                                     Margin="{TemplateBinding Padding}">
 
 							<TemplatedControl x:Name="PART_Connector"
                                               Focusable="False"
                                               Margin="0 0 5 0"
                                               VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"
                                               Background="Transparent"
                                               BorderBrush="{TemplateBinding BorderBrush}"
                                               Template="{TemplateBinding ConnectorTemplate}" />
@@ -85,11 +93,15 @@
             <Setter Property="IsVisible"
                     Value="True" />
         </Style>
-        <Style Selector="^[IsFlow=True]">
-            <Setter Property="ConnectorTemplate"
-                    Value="{StaticResource FlowConnectorThumbTemplate}" />
-            <Setter Property="BorderBrush"
-                    Value="#26bf08" />
+        <Style Selector="^[Orientation=Vertical] /template/ TemplatedControl#PART_Connector">
+            <Setter Property="Margin" Value="0 0 0 5" />
+        </Style>
+        <Style Selector="^[Orientation=Vertical]">
+            <Setter Property="Padding" Value="2 4" />
+        </Style>
+        <Style Selector="^[Orientation=Vertical] /template/ Border#Highlight">
+            <Setter Property="OpacityMask"
+                    Value="{StaticResource FadeOpacityMaskVertical}" />
         </Style>
     </ControlTheme>
 

@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Nodify.Avalonia.Connections;
 
 namespace Nodify.Avalonia.Nodes
@@ -11,27 +12,41 @@ namespace Nodify.Avalonia.Nodes
     /// <summary>
     /// Represents a control that has a list of <see cref="Input"/> <see cref="Connector"/>s and a list of <see cref="Output"/> <see cref="Connector"/>s.
     /// </summary>
+    /// <remarks>
+    /// Grouped collection views and group-container styling for the input/output connectors
+    /// are not supported.
+    /// </remarks>
     public class Node : HeaderedContentControl
     {
         #region Dependency Properties
 
         public static readonly StyledProperty<IBrush> ContentBrushProperty = AvaloniaProperty.Register<Node,IBrush>(nameof(ContentBrush));
+        public static readonly StyledProperty<Thickness> ContentPaddingProperty = AvaloniaProperty.Register<Node,Thickness>(nameof(ContentPadding), new Thickness(16, 0, 16, 0));
         public static readonly StyledProperty<IBrush> HeaderBrushProperty = AvaloniaProperty.Register<Node,IBrush>(nameof(HeaderBrush));
         public static readonly StyledProperty<IBrush> FooterBrushProperty = AvaloniaProperty.Register<Node,IBrush>(nameof(FooterBrush));
         public static readonly StyledProperty<object?> FooterProperty = AvaloniaProperty.Register<Node, object?>(nameof(Footer));
         public static readonly StyledProperty<DataTemplate> FooterTemplateProperty = AvaloniaProperty.Register<Node,DataTemplate>(nameof(FooterTemplate));
         public static readonly StyledProperty<DataTemplate> InputConnectorTemplateProperty = AvaloniaProperty.Register<Node,DataTemplate>(nameof(InputConnectorTemplate));
-        public static readonly StyledProperty<DataTemplate> FlowInputConnectorTemplateProperty = AvaloniaProperty.Register<Node,DataTemplate>(nameof(FlowInputConnectorTemplate));
         public static readonly DirectProperty<Node,bool> HasFooterProperty =
             AvaloniaProperty.RegisterDirect<Node, bool>(nameof(HasFooter), o => o.HasFooter);
         public static readonly DirectProperty<Node,bool> HasHeaderProperty =
             AvaloniaProperty.RegisterDirect<Node, bool>(nameof(HasHeader), o => o.HasHeader);
         public static readonly StyledProperty<DataTemplate> OutputConnectorTemplateProperty = AvaloniaProperty.Register<Node,DataTemplate>(nameof(OutputConnectorTemplate));
-        public static readonly StyledProperty<DataTemplate> FlowOutputConnectorTemplateProperty = AvaloniaProperty.Register<Node,DataTemplate>(nameof(FlowOutputConnectorTemplate));
         public static readonly StyledProperty<IEnumerable> InputProperty = AvaloniaProperty.Register<Node,IEnumerable>(nameof(Input));
-        public static readonly StyledProperty<IEnumerable> FlowInputProperty = AvaloniaProperty.Register<Node,IEnumerable>(nameof(FlowInput));
         public static readonly StyledProperty<IEnumerable> OutputProperty = AvaloniaProperty.Register<Node,IEnumerable>(nameof(Output));
-        public static readonly StyledProperty<IEnumerable> FlowOutputProperty = AvaloniaProperty.Register<Node,IEnumerable>(nameof(FlowOutput));
+
+        /// <summary>Identifies the <see cref="HeaderContainerStyle"/> property.</summary>
+        public static readonly StyledProperty<ControlTheme?> HeaderContainerStyleProperty =
+            AvaloniaProperty.Register<Node, ControlTheme?>(nameof(HeaderContainerStyle));
+
+        /// <summary>Identifies the <see cref="ContentContainerStyle"/> property.</summary>
+        public static readonly StyledProperty<ControlTheme?> ContentContainerStyleProperty =
+            AvaloniaProperty.Register<Node, ControlTheme?>(nameof(ContentContainerStyle));
+
+        /// <summary>Identifies the <see cref="FooterContainerStyle"/> property.</summary>
+        public static readonly StyledProperty<ControlTheme?> FooterContainerStyleProperty =
+            AvaloniaProperty.Register<Node, ControlTheme?>(nameof(FooterContainerStyle));
+
         private bool _hasHeader;
         private bool _hasFooter;
 
@@ -42,6 +57,15 @@ namespace Nodify.Avalonia.Nodes
         {
             get => GetValue(ContentBrushProperty);
             set => SetValue(ContentBrushProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the padding applied to the <see cref="ContentControl.Content"/> area of this <see cref="Node"/>.
+        /// </summary>
+        public Thickness ContentPadding
+        {
+            get => GetValue(ContentPaddingProperty);
+            set => SetValue(ContentPaddingProperty, value);
         }
 
         /// <summary>
@@ -98,18 +122,6 @@ namespace Nodify.Avalonia.Nodes
             set => SetValue(OutputConnectorTemplateProperty, value);
         }
 
-        public DataTemplate FlowInputConnectorTemplate
-        {
-            get => GetValue(FlowInputConnectorTemplateProperty);
-            set => SetValue(FlowInputConnectorTemplateProperty, value);
-        }
-
-        public DataTemplate FlowOutputConnectorTemplate
-        {
-            get => GetValue(FlowOutputConnectorTemplateProperty);
-            set => SetValue(FlowOutputConnectorTemplateProperty, value);
-        }
-        
         /// <summary>
         /// Gets or sets the data for the input <see cref="Connector"/>s of this control.
         /// </summary>
@@ -119,12 +131,6 @@ namespace Nodify.Avalonia.Nodes
             set => SetValue(InputProperty, value);
         }
 
-        public IEnumerable FlowInput
-        {
-            get => GetValue(FlowInputProperty);
-            set => SetValue(FlowInputProperty, value);
-        }
-        
         /// <summary>
         /// Gets or sets the data for the output <see cref="Connector"/>s of this control.
         /// </summary>
@@ -132,12 +138,6 @@ namespace Nodify.Avalonia.Nodes
         {
             get => GetValue(OutputProperty);
             set => SetValue(OutputProperty, value);
-        }
-
-        public IEnumerable FlowOutput
-        {
-            get => GetValue(FlowOutputProperty);
-            set => SetValue(FlowOutputProperty, value);
         }
 
         /// <summary>
@@ -155,6 +155,55 @@ namespace Nodify.Avalonia.Nodes
             private set => this.SetAndRaise(HasHeaderProperty, ref _hasHeader, value);
         }
 
+        /// <summary>
+        /// Gets or sets the theme applied to the header container (the <c>PART_HeaderContainer</c>
+        /// <see cref="Border"/> in the control template). Use a <see cref="ControlTheme"/> whose
+        /// <see cref="ControlTheme.TargetType"/> is <see cref="Border"/>.
+        /// </summary>
+        /// <remarks>
+        /// Consumer setters override the template's default <c>CornerRadius</c> and <c>Padding</c>.
+        /// <c>Background</c> does not override the header fill: the border has
+        /// <c>Background="{TemplateBinding HeaderBrush}"</c> in the control template, which is set at
+        /// Template binding priority — higher than an unconditional theme setter (Animation
+        /// &gt; LocalValue &gt; StyleTrigger &gt; Template &gt; Style &gt; Inherited &gt; Default), so a
+        /// background setter here is inert. Use <see cref="HeaderBrush"/> to control the header fill
+        /// color instead.
+        /// </remarks>
+        public ControlTheme? HeaderContainerStyle
+        {
+            get => GetValue(HeaderContainerStyleProperty);
+            set => SetValue(HeaderContainerStyleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the theme applied to the content container (the <c>PART_ContentContainer</c>
+        /// <see cref="Border"/> in the control template) that wraps the complete input/content/output
+        /// body. Use a <see cref="ControlTheme"/> whose <see cref="ControlTheme.TargetType"/> is
+        /// <see cref="Border"/>. The
+        /// <see cref="ContentBrush"/> and <see cref="ContentPadding"/> properties remain scoped to the
+        /// center content cell and do not affect the connector columns.
+        /// </summary>
+        public ControlTheme? ContentContainerStyle
+        {
+            get => GetValue(ContentContainerStyleProperty);
+            set => SetValue(ContentContainerStyleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the theme applied to the footer container (the <c>PART_FooterContainer</c>
+        /// <see cref="Border"/> in the control template). Use a <see cref="ControlTheme"/> whose
+        /// <see cref="ControlTheme.TargetType"/> is <see cref="Border"/>. Consumer setters override
+        /// the template's default
+        /// <c>CornerRadius</c> and <c>Padding</c>. The footer fill remains controlled by
+        /// <see cref="FooterBrush"/> because the template binding has higher priority than an
+        /// unconditional theme setter.
+        /// </summary>
+        public ControlTheme? FooterContainerStyle
+        {
+            get => GetValue(FooterContainerStyleProperty);
+            set => SetValue(FooterContainerStyleProperty, value);
+        }
+
         #endregion
 
         static Node()
@@ -165,7 +214,8 @@ namespace Nodify.Avalonia.Nodes
 
         public Node()
         {
-            
+
         }
+
     }
 }

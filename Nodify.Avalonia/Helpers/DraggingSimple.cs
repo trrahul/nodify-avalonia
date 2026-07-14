@@ -6,6 +6,8 @@ namespace Nodify.Avalonia.Helpers
 {
     internal interface IDraggingStrategy
     {
+        IReadOnlyCollection<ItemContainer> Containers { get; }
+        Vector Offset { get; }
         void Start(Vector change);
         void Update(Vector change);
         void End(Vector change);
@@ -17,12 +19,15 @@ namespace Nodify.Avalonia.Helpers
         private readonly NodifyEditor _editor;
         private Vector _dragOffset;
         private Vector _dragAccumulator;
-        private readonly IList<ItemContainer> _selectedContainers;
+        private readonly List<ItemContainer> _selectedContainers;
 
-        public DraggingSimple(NodifyEditor editor)
+        public IReadOnlyCollection<ItemContainer> Containers => _selectedContainers;
+        public Vector Offset => _dragOffset;
+
+        public DraggingSimple(NodifyEditor editor, IEnumerable<ItemContainer> containers)
         {
             _editor = editor;
-            _selectedContainers = _editor.SelectedContainers.Where(c => c.IsDraggable).ToList();
+            _selectedContainers = containers.Where(c => c.IsDraggable).ToList();
         }
 
         public void Abort(Vector change)
@@ -30,7 +35,7 @@ namespace Nodify.Avalonia.Helpers
             for (var i = 0; i < _selectedContainers.Count; i++)
             {
                 ItemContainer container = _selectedContainers[i];
-                container.Location -= _dragOffset;
+                container.SetCurrentValue(ItemContainer.LocationProperty, container.Location - _dragOffset);
             }
 
             _selectedContainers.Clear();
@@ -43,13 +48,12 @@ namespace Nodify.Avalonia.Helpers
                 ItemContainer container = _selectedContainers[i];
                 Point result = container.Location;
 
-                // Correct the final position
                 if (NodifyEditor.EnableSnappingCorrection)
                 {
                     result = new Point((int)result.X / _editor.GridCellSize * _editor.GridCellSize,(int)result.Y / _editor.GridCellSize * _editor.GridCellSize);
                 }
 
-                container.Location = result;
+                container.SetCurrentValue(ItemContainer.LocationProperty, result);
             }
 
             _selectedContainers.Clear();
@@ -74,7 +78,9 @@ namespace Nodify.Avalonia.Helpers
                 for (var i = 0; i < _selectedContainers.Count; i++)
                 {
                     ItemContainer container = _selectedContainers[i];
-                    container.Location = new Point(container.Location.X + (delta.X), container.Location.Y + (delta.Y));
+                    container.SetCurrentValue(
+                        ItemContainer.LocationProperty,
+                        new Point(container.Location.X + delta.X, container.Location.Y + delta.Y));
                 }
             }
         }
