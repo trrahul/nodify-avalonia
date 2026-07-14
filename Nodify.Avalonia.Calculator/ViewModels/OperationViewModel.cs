@@ -1,5 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
 using Avalonia.Reactive;
@@ -12,27 +12,25 @@ namespace Nodify.Avalonia.Calculator.ViewModels
 {
     public class OperationViewModel : ViewModelBase
     {
+        // Per-connector value subscriptions: removing any input must dispose exactly that input's
+        // subscription (a single shared IDisposable would dispose whichever subscription was added last).
+        private readonly Dictionary<ConnectorViewModel, IDisposable> _inputValueSubscriptions = new Dictionary<ConnectorViewModel, IDisposable>();
+
         public OperationViewModel()
         {
-            IDisposable? d = null;
             Input.WhenAdded(x =>
             {
                 x.Operation = this;
                 x.IsInput = true;
-                d = x.WhenAnyValue(v => v.Value).Subscribe(new AnonymousObserver<double>(_ => OnInputValueChanged()));
+                _inputValueSubscriptions[x] = x.WhenAnyValue(v => v.Value).Subscribe(new AnonymousObserver<double>(_ => OnInputValueChanged()));
             })
             .WhenRemoved(x =>
             {
-                d?.Dispose();
+                if (_inputValueSubscriptions.Remove(x, out var subscription))
+                {
+                    subscription.Dispose();
+                }
             });
-        }
-
-        private void OnInputValueChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ConnectorViewModel.Value))
-            {
-                OnInputValueChanged();
-            }
         }
 
         private Point _location;

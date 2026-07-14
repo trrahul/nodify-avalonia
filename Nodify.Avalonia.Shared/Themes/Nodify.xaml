@@ -18,4 +18,7 @@
     <Color x:Key="FocusedBorderColor">#569DE5</Color>
     
     <Color x:Key="GridLinesColor">#4C3180</Color>
+
+    <!-- Playground side-panel background (purple variant). -->
+    <Color x:Key="PanelBackgroundColor">#2A1B47</Color>
 </ResourceDictionary>

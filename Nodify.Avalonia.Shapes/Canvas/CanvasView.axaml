@@ -1,0 +1,602 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Nodify.Avalonia.Shapes.Canvas"
+             xmlns:nodify="clr-namespace:Nodify.Avalonia;assembly=Nodify.Avalonia"
+             xmlns:connections="clr-namespace:Nodify.Avalonia.Connections;assembly=Nodify.Avalonia"
+             xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Controls;assembly=Nodify.Avalonia.Shared"
+             xmlns:converters="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared"
+             xmlns:controls="clr-namespace:Nodify.Avalonia.Shapes.Controls"
+             xmlns:shapesconv="clr-namespace:Nodify.Avalonia.Shapes.Converters"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Xaml.Behaviors.Interactions"
+             mc:Ignorable="d"
+             Background="#0a172a"
+             Foreground="White"
+             x:DataType="local:CanvasViewModel"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
+             x:Class="Nodify.Avalonia.Shapes.Canvas.CanvasView">
+    <UserControl.Resources>
+        <converters:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
+
+        <!-- Command targets are assigned in the constructor: ElementName bindings don't resolve
+             on resources outside the visual tree (see GridDrawingBrush below). -->
+        <nodify:TargetedRoutedCommand x:Key="ZoomInCommand"
+                                      Command="{x:Static nodify:EditorCommands.ZoomIn}" />
+        <nodify:TargetedRoutedCommand x:Key="ZoomOutCommand"
+                                      Command="{x:Static nodify:EditorCommands.ZoomOut}" />
+        <nodify:TargetedRoutedCommand x:Key="FitToScreenCommand"
+                                      Command="{x:Static nodify:EditorCommands.FitToScreen}" />
+        <nodify:TargetedRoutedCommand x:Key="BringIntoViewCommand"
+                                      Command="{x:Static nodify:EditorCommands.BringIntoView}" />
+
+        <VisualBrush x:Key="GridDrawingBrush"
+                     TileMode="Tile"
+                     DestinationRect="0,0,30,30"
+                     SourceRect="0,0,30,30"
+                     Transform="{Binding ViewportTransform, ElementName=Editor}">
+            <VisualBrush.Visual>
+                <Rectangle Width="1"
+                           Height="1"
+                           Fill="White" />
+            </VisualBrush.Visual>
+        </VisualBrush>
+
+        <!-- Nested ControlTheme.Resources are unreliable (CLAUDE.md gotcha), so these themes are
+             declared top-level and pulled in via StaticResource. -->
+        <ControlTheme x:Key="{x:Type connections:Connector}" TargetType="connections:Connector"
+                      BasedOn="{StaticResource {x:Type connections:Connector}}">
+            <Setter Property="BorderBrush"
+                    Value="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=nodify:ItemContainer}}" />
+            <Setter Property="Background"
+                    Value="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=nodify:ItemContainer}}" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="IsConnected" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Grid Background="Transparent">
+                            <Ellipse x:Name="PART_Connector"
+                                     Width="14"
+                                     Height="14"
+                                     Stroke="{TemplateBinding BorderBrush}"
+                                     Fill="{TemplateBinding Background}"
+                                     HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                                     VerticalAlignment="{TemplateBinding VerticalAlignment}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </ControlTheme>
+
+        <ControlTheme x:Key="{x:Type shared:Resizer}" TargetType="shared:Resizer"
+                      BasedOn="{StaticResource {x:Type shared:Resizer}}">
+            <Setter Property="Background"
+                    Value="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=nodify:ItemContainer}}" />
+            <Setter Property="IsEnabled">
+                <Setter.Value>
+                    <Binding Path="((local:CanvasViewModel)DataContext).CanvasToolbar.Locked"
+                             ElementName="Editor"
+                             Converter="{x:Static converters:InverseBooleanConverter.Instance}" />
+                </Setter.Value>
+            </Setter>
+        </ControlTheme>
+
+        <!-- These bindings don't work applied on the element directly, so they live in a theme. -->
+        <ControlTheme x:Key="{x:Type controls:ResizableContainer}" TargetType="controls:ResizableContainer"
+                      BasedOn="{StaticResource {x:Type shared:ResizablePanel}}">
+            <Setter Property="BorderBrush"
+                    Value="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=nodify:ItemContainer}}" />
+            <Setter Property="Padding" Value="3" />
+            <Setter Property="ResizeStartedCommand">
+                <Setter.Value>
+                    <Binding Path="((local:CanvasViewModel)DataContext).ResizeShapeStartedCommand" ElementName="Editor" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ResizeCompletedCommand">
+                <Setter.Value>
+                    <Binding Path="((local:CanvasViewModel)DataContext).ResizeShapeCompletedCommand" ElementName="Editor" />
+                </Setter.Value>
+            </Setter>
+        </ControlTheme>
+    </UserControl.Resources>
+
+    <Grid>
+        <nodify:NodifyEditor ItemsSource="{Binding Shapes}"
+                             SelectedItems="{Binding SelectedShapes}"
+                             Connections="{Binding Connections}"
+                             Decorators="{Binding Decorators}"
+                             Background="{StaticResource GridDrawingBrush}"
+                             ConnectionCompletedCommand="{Binding CreateConnectionCommand}"
+                             ItemsDragStartedCommand="{Binding MoveShapesStartedCommand}"
+                             ItemsDragCompletedCommand="{Binding MoveShapesCompletedCommand}"
+                             ItemsSelectStartedCommand="{Binding SelectShapesStartedCommand}"
+                             ItemsSelectCompletedCommand="{Binding SelectShapesCompletedCommand}"
+                             RemoveConnectionCommand="{Binding RemoveConnectionCommand}"
+                             PointerPressed="Editor_PointerPressed"
+                             PointerMoved="Editor_PointerMoved"
+                             PointerReleased="Editor_PointerReleased"
+                             GridCellSize="5"
+                             Cursor="{Binding CanvasToolbar.SelectedTool, Converter={x:Static shapesconv:CanvasToolToCursorConverter.Instance}}"
+                             x:Name="Editor">
+            <nodify:NodifyEditor.DataTemplates>
+                <DataTemplate DataType="{x:Type local:EllipseViewModel}">
+                    <Ellipse Stretch="Fill"
+                             Focusable="False"
+                             Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                             Stroke="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                             StrokeThickness="2"
+                             Opacity="0.8" />
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:RectangleViewModel}">
+                    <Rectangle Stretch="Fill"
+                               Focusable="False"
+                               Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                               Stroke="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                               StrokeThickness="2"
+                               Opacity="0.8" />
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:TriangleViewModel}">
+                    <Polygon Points="0,100 50,0 100,100"
+                             Focusable="False"
+                             Stretch="Fill"
+                             Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                             Stroke="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                             StrokeThickness="2"
+                             Opacity="0.8" />
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:ShapeToolbarViewModel}">
+                    <Grid IsVisible="{Binding Shape, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top">
+                        <shared:Swatches SelectedColor="{Binding Shape.Color}"
+                                         Colors="{x:Static local:ShapeViewModel.Colors}"
+                                         IsEnabled="{Binding ((local:CanvasViewModel)DataContext).CanvasToolbar.Locked, ElementName=Editor, Converter={x:Static converters:InverseBooleanConverter.Instance}}"
+                                         ZIndex="1" />
+                    </Grid>
+                </DataTemplate>
+
+                <DataTemplate DataType="{x:Type local:UserCursorViewModel}">
+                    <StackPanel IsHitTestVisible="False">
+                        <Viewbox Width="24"
+                                 Height="24"
+                                 Margin="0 0 0 5"
+                                 Stretch="Fill"
+                                 HorizontalAlignment="Left">
+                            <Canvas Width="20" Height="20">
+                                <Path Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                      Stroke="White"
+                                      StrokeThickness="1"
+                                      StrokeLineCap="Round"
+                                      StrokeJoin="Round"
+                                      Data="M.256.255a.874.874 0 0 0-.18.974l4.753 17.114a.875.875 0 0 0 1.603-.012L10 10l8.334-3.57a.875.875 0 0 0 .01-1.601L1.23.075a.874.874 0 0 0-.974.18Z" />
+                            </Canvas>
+                        </Viewbox>
+                        <Border CornerRadius="3"
+                                Background="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}, ConverterParameter=0.7}"
+                                Padding="6 2">
+                            <TextBlock Text="{Binding Name}" />
+                        </Border>
+                    </StackPanel>
+                </DataTemplate>
+            </nodify:NodifyEditor.DataTemplates>
+
+            <nodify:NodifyEditor.Resources>
+                <ControlTheme x:Key="{x:Type connections:PendingConnection}" TargetType="connections:PendingConnection"
+                              BasedOn="{StaticResource {x:Type connections:PendingConnection}}">
+                    <Setter Property="Stroke">
+                        <Setter.Value>
+                            <SolidColorBrush Color="White" Opacity="0.7" />
+                        </Setter.Value>
+                    </Setter>
+                </ControlTheme>
+            </nodify:NodifyEditor.Resources>
+
+            <nodify:NodifyEditor.ConnectionTemplate>
+                <DataTemplate DataType="{x:Type local:ConnectionViewModel}">
+                    <connections:StepConnection Source="{Binding Source.Anchor}"
+                                                Target="{Binding Target.Anchor}"
+                                                SourcePosition="{Binding Source.Position}"
+                                                TargetPosition="{Binding Target.Position}"
+                                                Cursor="Hand"
+                                                connections:BaseConnection.IsSelectable="True"
+                                                Fill="Transparent"
+                                                FocusVisualPadding="2"
+                                                StrokeThickness="3">
+                        <connections:StepConnection.Stroke>
+                            <SolidColorBrush Color="White" Opacity="0.7" />
+                        </connections:StepConnection.Stroke>
+                        <connections:StepConnection.Theme>
+                            <ControlTheme TargetType="connections:StepConnection"
+                                          BasedOn="{StaticResource {x:Type connections:StepConnection}}">
+                                <Setter Property="OutlineBrush" Value="Transparent" />
+                                <Style Selector="^[IsPointerOver=True]">
+                                    <Setter Property="OutlineBrush">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="White" Opacity="0.15" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                                <Style Selector="^[(connections|BaseConnection.IsSelected)=True]">
+                                    <Setter Property="OutlineBrush">
+                                        <Setter.Value>
+                                            <SolidColorBrush Color="DodgerBlue" Opacity="0.25" />
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ControlTheme>
+                        </connections:StepConnection.Theme>
+                    </connections:StepConnection>
+                </DataTemplate>
+            </nodify:NodifyEditor.ConnectionTemplate>
+
+            <nodify:NodifyEditor.DecoratorContainerTheme>
+                <ControlTheme TargetType="nodify:DecoratorContainer" x:DataType="local:ICanvasDecorator"
+                              BasedOn="{StaticResource {x:Type nodify:DecoratorContainer}}">
+                    <Setter Property="Location" Value="{Binding Location}" />
+                </ControlTheme>
+            </nodify:NodifyEditor.DecoratorContainerTheme>
+
+            <nodify:NodifyEditor.ItemContainerTheme>
+                <ControlTheme TargetType="nodify:ItemContainer" x:DataType="local:ShapeViewModel"
+                              BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
+                    <Setter Property="Location" Value="{Binding Location}" />
+                    <Setter Property="SelectedBrush" Value="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}" />
+                    <Setter Property="SelectedBorderThickness" Value="1" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="ClipToBounds" Value="False" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="nodify:ItemContainer">
+                                <controls:ResizableContainer Height="{Binding Height, Mode=TwoWay}"
+                                                             Width="{Binding Width, Mode=TwoWay}"
+                                                             Theme="{StaticResource {x:Type controls:ResizableContainer}}"
+                                                             Directions="Corners"
+                                                             GridCellSize="5"
+                                                             Focusable="False">
+                                    <Grid>
+                                        <ContentPresenter Cursor="Hand"
+                                                          Content="{TemplateBinding Content}"
+                                                          ContentTemplate="{TemplateBinding ContentTemplate}" />
+
+                                        <shared:EditableTextBlock Text="{Binding Text}"
+                                                                  IsEnabled="{Binding ((local:CanvasViewModel)DataContext).CanvasToolbar.Locked, ElementName=Editor, Converter={x:Static converters:InverseBooleanConverter.Instance}}"
+                                                                  HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"
+                                                                  FontSize="16"
+                                                                  ToolTip.Tip="Double click to edit" />
+
+                                        <DockPanel LastChildFill="False" x:Name="Connectors">
+                                            <connections:Connector DataContext="{Binding LeftConnector}"
+                                                              Theme="{StaticResource {x:Type connections:Connector}}"
+                                                              Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                                              DockPanel.Dock="Left"
+                                                              HorizontalAlignment="Left"
+                                                              Margin="-11 0 0 0"
+                                                              Opacity="0"
+                                                              IsHitTestVisible="False"
+                                                              Width="25"
+                                                              x:Name="LeftConnector" />
+
+                                            <connections:Connector DataContext="{Binding RightConnector}"
+                                                              Theme="{StaticResource {x:Type connections:Connector}}"
+                                                              Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                                              DockPanel.Dock="Right"
+                                                              HorizontalAlignment="Right"
+                                                              Margin="0 0 -11 0"
+                                                              Opacity="0"
+                                                              IsHitTestVisible="False"
+                                                              Width="25"
+                                                              x:Name="RightConnector" />
+
+                                            <connections:Connector DataContext="{Binding TopConnector}"
+                                                              Theme="{StaticResource {x:Type connections:Connector}}"
+                                                              Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                                              DockPanel.Dock="Top"
+                                                              VerticalAlignment="Top"
+                                                              Margin="0 -11 0 0"
+                                                              Opacity="0"
+                                                              IsHitTestVisible="False"
+                                                              Height="25"
+                                                              x:Name="TopConnector" />
+
+                                            <connections:Connector DataContext="{Binding BottomConnector}"
+                                                              Theme="{StaticResource {x:Type connections:Connector}}"
+                                                              Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                                              DockPanel.Dock="Bottom"
+                                                              VerticalAlignment="Bottom"
+                                                              Margin="0 0 0 -11"
+                                                              Opacity="0"
+                                                              IsHitTestVisible="False"
+                                                              Height="25"
+                                                              x:Name="BottomConnector" />
+                                        </DockPanel>
+                                    </Grid>
+                                </controls:ResizableContainer>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+
+                    <!-- Show connectors while selected or previewing selection. -->
+                    <Style Selector="^[IsSelected=True] /template/ DockPanel#Connectors > connections|Connector">
+                        <Setter Property="Opacity" Value="1" />
+                        <Setter Property="IsHitTestVisible" Value="True" />
+                    </Style>
+                    <Style Selector="^[IsPreviewingSelection=True] /template/ DockPanel#Connectors > connections|Connector">
+                        <Setter Property="Opacity" Value="1" />
+                        <Setter Property="IsHitTestVisible" Value="True" />
+                    </Style>
+                    <Style Selector="^[IsSelected=True]">
+                        <Setter Property="ZIndex" Value="1" />
+                    </Style>
+                </ControlTheme>
+            </nodify:NodifyEditor.ItemContainerTheme>
+        </nodify:NodifyEditor>
+
+        <!-- MINIMAP -->
+        <shared:ResizablePanel Directions="BottomLeft"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Width="300"
+                               Height="200"
+                               MinWidth="250"
+                               MinHeight="150"
+                               BorderBrush="{x:Null}"
+                               Focusable="False"
+                               Margin="20">
+            <shared:ResizablePanel.Resources>
+                <ControlTheme x:Key="{x:Type shared:Resizer}" TargetType="shared:Resizer">
+                    <Setter Property="Cursor" Value="BottomLeftCorner" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="shared:Resizer">
+                                <Grid Margin="-3 -6 -6 -3"
+                                      Background="Transparent">
+                                    <Rectangle Height="12"
+                                               Width="3"
+                                               Fill="#d2d4d7"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Bottom" />
+                                    <Rectangle Height="3"
+                                               Width="12"
+                                               Fill="#d2d4d7"
+                                               VerticalAlignment="Bottom"
+                                               HorizontalAlignment="Left" />
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </ControlTheme>
+            </shared:ResizablePanel.Resources>
+            <Border CornerRadius="3"
+                    BorderBrush="#1e293b"
+                    BorderThickness="3"
+                    BoxShadow="1 1 5 0 #99000000">
+                <nodify:Minimap ItemsSource="{Binding ItemsSource, ElementName=Editor}"
+                                ViewportLocation="{Binding ViewportLocation, ElementName=Editor}"
+                                ViewportSize="{Binding ViewportSize, ElementName=Editor}"
+                                ResizeToViewport="True"
+                                Zoom="Minimap_Zoom">
+                    <nodify:Minimap.DataTemplates>
+                        <DataTemplate DataType="{x:Type local:EllipseViewModel}">
+                            <Ellipse Stretch="Fill"
+                                     Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                     Stroke="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                     StrokeThickness="2"
+                                     Opacity="0.8" />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type local:RectangleViewModel}">
+                            <Rectangle Stretch="Fill"
+                                       Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                       Stroke="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                       StrokeThickness="2"
+                                       Opacity="0.8" />
+                        </DataTemplate>
+
+                        <DataTemplate DataType="{x:Type local:TriangleViewModel}">
+                            <Polygon Points="0,100 50,0 100,100"
+                                     Stretch="Fill"
+                                     Fill="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                     Stroke="{Binding BorderColor, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                     StrokeThickness="2"
+                                     Opacity="0.8" />
+                        </DataTemplate>
+                    </nodify:Minimap.DataTemplates>
+                    <nodify:Minimap.Background>
+                        <SolidColorBrush Color="#111a2d" Opacity="0.5" />
+                    </nodify:Minimap.Background>
+                    <nodify:Minimap.ItemContainerTheme>
+                        <ControlTheme TargetType="nodify:MinimapItem" x:DataType="local:ShapeViewModel">
+                            <Setter Property="Location" Value="{Binding Location}" />
+                            <Setter Property="Width" Value="{Binding Width}" />
+                            <Setter Property="Height" Value="{Binding Height}" />
+                        </ControlTheme>
+                    </nodify:Minimap.ItemContainerTheme>
+                    <nodify:Minimap.ViewportStyle>
+                        <ControlTheme TargetType="Rectangle">
+                            <Setter Property="StrokeThickness" Value="3" />
+                            <Setter Property="Fill">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="#445e87" Opacity="0.3" />
+                                </Setter.Value>
+                            </Setter>
+                        </ControlTheme>
+                    </nodify:Minimap.ViewportStyle>
+                </nodify:Minimap>
+            </Border>
+        </shared:ResizablePanel>
+
+        <!-- TOOLBARS -->
+
+        <Border VerticalAlignment="Bottom"
+                HorizontalAlignment="Center"
+                Margin="0 0 0 20"
+                CornerRadius="3"
+                Background="#1e293b"
+                BoxShadow="1 1 5 0 #99000000">
+            <StackPanel Orientation="Horizontal"
+                        KeyboardNavigation.TabNavigation="Cycle">
+                <StackPanel.Resources>
+                    <ControlTheme x:Key="{x:Type Button}" TargetType="Button" BasedOn="{StaticResource IconButton}">
+                        <Setter Property="Margin" Value="2" />
+                        <Setter Property="Width" Value="32" />
+                        <Setter Property="Height" Value="32" />
+                    </ControlTheme>
+                </StackPanel.Resources>
+
+                <ListBox BorderThickness="0"
+                         Background="Transparent"
+                         ItemsSource="{x:Static local:CanvasToolbarViewModel.AvailableTools}"
+                         SelectedValue="{Binding CanvasToolbar.SelectedTool}">
+                    <ListBox.ItemContainerTheme>
+                        <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="Margin" Value="2" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Width" Value="32" />
+                            <Setter Property="Height" Value="32" />
+                        </ControlTheme>
+                    </ListBox.ItemContainerTheme>
+
+                    <ListBox.Resources>
+                        <DataTemplate x:Key="Cursor">
+                            <Border CornerRadius="3" Padding="5">
+                                <ContentPresenter ContentTemplate="{StaticResource CursorIcon}" />
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate x:Key="Circle">
+                            <Border CornerRadius="3" Padding="5">
+                                <ContentPresenter ContentTemplate="{StaticResource CircleIcon}" />
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate x:Key="Square">
+                            <Border CornerRadius="3" Padding="5">
+                                <ContentPresenter ContentTemplate="{StaticResource SquareIcon}" />
+                            </Border>
+                        </DataTemplate>
+                        <DataTemplate x:Key="Triangle">
+                            <Border CornerRadius="3" Padding="5">
+                                <ContentPresenter ContentTemplate="{StaticResource TriangleIcon}" />
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.Resources>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="local:CanvasTool">
+                            <ContentControl Content="{Binding}" Focusable="False">
+                                <ContentControl.Theme>
+                                    <ControlTheme TargetType="ContentControl">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource Cursor}" />
+                                    </ControlTheme>
+                                </ContentControl.Theme>
+                                <i:Interaction.Behaviors>
+                                    <ia:DataTriggerBehavior Binding="{Binding}" ComparisonCondition="Equal" Value="{x:Static local:CanvasTool.Ellipse}">
+                                        <ia:ChangePropertyAction PropertyName="ContentTemplate" Value="{StaticResource Circle}" />
+                                    </ia:DataTriggerBehavior>
+                                    <ia:DataTriggerBehavior Binding="{Binding}" ComparisonCondition="Equal" Value="{x:Static local:CanvasTool.Rectangle}">
+                                        <ia:ChangePropertyAction PropertyName="ContentTemplate" Value="{StaticResource Square}" />
+                                    </ia:DataTriggerBehavior>
+                                    <ia:DataTriggerBehavior Binding="{Binding}" ComparisonCondition="Equal" Value="{x:Static local:CanvasTool.Triangle}">
+                                        <ia:ChangePropertyAction PropertyName="ContentTemplate" Value="{StaticResource Triangle}" />
+                                    </ia:DataTriggerBehavior>
+                                </i:Interaction.Behaviors>
+                            </ContentControl>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+
+                <Button Command="{Binding UndoCommand}"
+                        ContentTemplate="{StaticResource ArrowBackIcon}"
+                        ToolTip.Tip="CTRL+Z"
+                        Padding="1" />
+
+                <Button Command="{Binding RedoCommand}"
+                        ContentTemplate="{StaticResource ArrowForwardIcon}"
+                        ToolTip.Tip="CTRL+SHIFT+Z"
+                        Padding="1" />
+            </StackPanel>
+        </Border>
+
+        <Border VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                Margin="20 0 0 20"
+                CornerRadius="3"
+                Background="#1e293b"
+                BoxShadow="1 1 5 0 #99000000">
+            <StackPanel KeyboardNavigation.TabNavigation="Cycle">
+                <StackPanel.Resources>
+                    <ControlTheme x:Key="{x:Type Button}" TargetType="Button" BasedOn="{StaticResource IconButton}">
+                        <Setter Property="Margin" Value="2" />
+                        <Setter Property="Width" Value="32" />
+                        <Setter Property="Height" Value="32" />
+                    </ControlTheme>
+                </StackPanel.Resources>
+
+                <Button Command="{StaticResource ZoomInCommand}"
+                        ContentTemplate="{StaticResource PlusIcon}" />
+
+                <Button Command="{StaticResource ZoomOutCommand}"
+                        ContentTemplate="{StaticResource MinusIcon}" />
+
+                <Button Command="{StaticResource FitToScreenCommand}"
+                        ContentTemplate="{StaticResource MaximizeIcon}" />
+
+                <Button x:Name="LockButton"
+                        Command="{Binding CanvasToolbar.ToggleLockCommand}"
+                        ContentTemplate="{Binding CanvasToolbar.Locked, Converter={x:Static shapesconv:LockedToIconTemplateConverter.Instance}}" />
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="CursorBadgeStrip"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Right"
+                Margin="0 0 20 20"
+                Height="38"
+                Padding="3 0"
+                CornerRadius="3">
+            <ItemsControl ItemsSource="{Binding Cursors}"
+                          KeyboardNavigation.TabNavigation="Cycle">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:UserCursorViewModel}">
+                        <Border CornerRadius="50"
+                                Height="28"
+                                Width="28"
+                                Margin="0"
+                                Background="{Binding Color, Converter={StaticResource ColorToSolidColorBrushConverter}}"
+                                Padding="0"
+                                BoxShadow="1 1 5 0 #99000000">
+                            <Button Command="{StaticResource BringIntoViewCommand}"
+                                    CommandParameter="{Binding Location}"
+                                    Theme="{StaticResource IconButton}"
+                                    ToolTip.Tip="{Binding Name}"
+                                    Content="{Binding Name[0]}"
+                                    Foreground="White"
+                                    Width="28"
+                                    Height="28"
+                                    Padding="0"
+                                    Margin="0" />
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </Grid>
+</UserControl>

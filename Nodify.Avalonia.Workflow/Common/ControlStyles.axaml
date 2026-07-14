@@ -1,0 +1,142 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Borderless button/togglebutton control themes and a separator style.
+        Applied via Classes="Borderless" / Classes="Separator".
+    -->
+    <!-- Accent brushes derive from the OS accent color via FluentTheme's SystemAccentColor* resources. -->
+    <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="{DynamicResource SystemAccentColorLight2}" />
+    <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Opacity="0.9" Color="{DynamicResource SystemAccentColorLight2}" />
+    <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Opacity="0.8" Color="{DynamicResource SystemAccentColorLight2}" />
+    <LinearGradientBrush x:Key="AccentControlElevationBorderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+        <GradientStop Offset="0" Color="#23000000" />
+        <GradientStop Offset="1" Color="#14FFFFFF" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#0FFFFFFF" />
+    <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="#15FFFFFF" />
+    <!-- Absolute-mapped 3px gradient: the top edge of a 1px border reads as the brighter stop;
+         the remaining edges pad with the darker stop. -->
+    <LinearGradientBrush x:Key="ControlElevationBorderBrush" StartPoint="0,0" EndPoint="0,3">
+        <GradientStop Offset="0.33" Color="#18FFFFFF" />
+        <GradientStop Offset="1.0" Color="#12FFFFFF" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="#202020" />
+    <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="#1C1C1C" />
+    <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#0DFFFFFF" />
+    <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="#4C3A3A3A" />
+    <SolidColorBrush x:Key="LayerOnAcrylicFillColorDefaultBrush" Color="#09FFFFFF" />
+
+    <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#C5FFFFFF" />
+    <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="#87FFFFFF" />
+    <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#000000" />
+
+    <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+    <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+
+    <ControlTheme x:Key="BorderlessButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="10 4" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="TextButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        </Style>
+        <Style Selector="^:pressed">
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="BorderlessToggleButton" TargetType="ToggleButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="10 4" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="PART_Root"
+                        Background="{TemplateBinding Background}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        </Style>
+        <Style Selector="^:checked /template/ Border#PART_Root">
+            <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        </Style>
+        <Style Selector="^:checked">
+            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+        </Style>
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="SeparatorBorder" TargetType="Border">
+        <Setter Property="Width" Value="2" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Margin" Value="4 0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+    </ControlTheme>
+
+</ResourceDictionary>

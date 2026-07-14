@@ -1,22 +1,58 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Nodify.Avalonia.Playground"
+             xmlns:connections="clr-namespace:Nodify.Avalonia.Connections;assembly=Nodify.Avalonia"
+             xmlns:shared="clr-namespace:Nodify.Avalonia.Shared;assembly=Nodify.Avalonia.Shared"
              x:Class="Nodify.Avalonia.Playground.App"
-             RequestedThemeVariant="Light">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="{x:Static shared:ThemeManager.NodifyVariant}">
+             <!-- Launches into the Nodify variant (the purple palette, no Dark/Light layering); -->
+             <!-- ThemeManager.SetNextThemeCommand cycles Dark / Light / Nodify. -->
 
-    <Application.DataTemplates>
-        <local:ViewLocator/>
-    </Application.DataTemplates>
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="Themes/Icons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <Color x:Key="NodifyEditor.FocusVisualColor">DodgerBlue</Color>
+            <SolidColorBrush x:Key="NodifyEditor.FocusVisualBrush"
+                             Color="{DynamicResource NodifyEditor.FocusVisualColor}" />
+            <Pen x:Key="{x:Static connections:BaseConnection.FocusVisualPenKey}"
+                 Brush="{StaticResource NodifyEditor.FocusVisualBrush}"
+                 Thickness="0.75">
+                <Pen.DashStyle>
+                    <DashStyle Dashes="3,3" />
+                </Pen.DashStyle>
+            </Pen>
+
+            <ControlTheme x:Key="{x:Type connections:HotKeyControl}"
+                          TargetType="connections:HotKeyControl">
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Width" Value="20" />
+                <Setter Property="Height" Value="20" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="connections:HotKeyControl">
+                            <Border CornerRadius="3"
+                                    Background="OrangeRed"
+                                    Width="20"
+                                    Height="20">
+                                <TextBlock Text="{TemplateBinding Number}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="White" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </ControlTheme>
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme DensityStyle="Compact" />
         <StyleInclude Source="avares://Nodify.Avalonia/Themes/Controls.xaml"/>
         <StyleInclude Source="avares://Nodify.Avalonia.Shared/Themes/Styles.axaml"/>
     </Application.Styles>

@@ -9,6 +9,8 @@
              xmlns:views="clr-namespace:Nodify.Avalonia.Calculator.Views"
              xmlns:converters="clr-namespace:Nodify.Avalonia.Calculator.Converters"
              xmlns:objectModel="clr-namespace:System.Collections.ObjectModel;assembly=System.Runtime"
+             xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Controls;assembly=Nodify.Avalonia.Shared"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="viewModels:EditorViewModel"
              x:Class="Nodify.Avalonia.Calculator.Views.EditorView">
@@ -65,13 +67,42 @@
 			<Setter Property="ActualSize"
                     Value="{Binding Size, Mode=TwoWay}" />
 			<Setter Property="BorderBrush" Value="{Binding BorderBrush, Source={StaticResource AnimatedBorderPlaceholder}}" />
+			<Setter Property="BorderThickness" Value="2" />
+			<!-- Nodes render above groups (ZIndex 1); a selected node rises to the front (ZIndex 2). -->
+			<Setter Property="ZIndex" Value="1" />
+			<Style Selector="^[IsSelected=True]">
+				<Setter Property="ZIndex" Value="2" />
+			</Style>
+		</ControlTheme>
+
+		<ControlTemplate x:Key="ResizeThumbTemplate">
+			<Path Width="14" Height="14" Stretch="Fill"
+				  Stroke="#6366f1" StrokeThickness="2" Fill="Transparent"
+				  VerticalAlignment="Bottom" HorizontalAlignment="Right"
+				  Margin="2" Data="M 0,16 L 16,0 L 16,16 Z" />
+		</ControlTemplate>
+
+		<ControlTheme x:Key="GroupingNodeTheme" TargetType="nodes:GroupingNode"
+                      BasedOn="{StaticResource {x:Type nodes:GroupingNode}}">
+			<Setter Property="IsContentHitTestVisible" Value="False" />
+			<Setter Property="ResizeThumbTemplate" Value="{StaticResource ResizeThumbTemplate}" />
 		</ControlTheme>
 	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<!-- GroupingNode propagates its ZIndex to its container, so pin a selected group to 0 —
+		     selected nodes (ZIndex 2) then stay above it. -->
+		<Style Selector="nodify|ItemContainer[IsSelected=True] nodes|GroupingNode">
+			<Setter Property="ZIndex" Value="0" />
+		</Style>
+	</UserControl.Styles>
 
 	<Grid>
 		<nodify:NodifyEditor DataContext="{Binding Calculator}"
                              ItemsSource="{Binding Operations}"
                              Connections="{Binding Connections}"
+                             ViewportZoom="{Binding Zoom}"
+                             ViewportLocation="{Binding Location}"
                              SelectedItems="{Binding SelectedOperations}"
                              DisconnectConnectorCommand="{Binding DisconnectConnectorCommand}"
                              PendingConnection="{Binding PendingConnection}"
@@ -79,39 +110,11 @@
                              ConnectionTemplate="{StaticResource ConnectionTemplate}"
                              Background="{StaticResource SmallGridLinesDrawingBrush}"
                              ItemContainerTheme="{StaticResource ItemContainerTheme}"
-                             GridCellSize="15" 
+                             HasCustomContextMenu="True"
+                             GridCellSize="15"
+                             DragDrop.AllowDrop="True"
                              x:Name="Editor">
 			<nodify:NodifyEditor.Styles>
-				<!--<Style Selector="^[IsLoaded=True]">
-					<Style.Animations>
-		--><!--<Storyboard x:Key="AnimateBorder" RepeatBehavior="Forever">
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}"
-                                    Duration="0:0:2" To="1 0" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
-                                    Duration="0:0:2" To="1 1" BeginTime="0:0:2" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
-                                    Duration="0:0:2" To="0 1" BeginTime="0:0:4" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.StartPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
-                                    Duration="0:0:2" To="0 0" BeginTime="0:0:6" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
-                                    Duration="0:0:2" To="1 1" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)" 
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}"
-                                    Duration="0:0:2" To="0 1" BeginTime="0:0:2" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
-                                    Duration="0:0:2" To="0 0" BeginTime="0:0:4" />
-            <PointAnimation Storyboard.TargetProperty="BorderBrush.(LinearGradientBrush.EndPoint)"
-                                                    Storyboard.Target="{StaticResource AnimatedBorderPlaceholder}" 
-                                    Duration="0:0:2" To="1 0" BeginTime="0:0:6" />
-        </Storyboard>--><!--
-                    </Style.Animations>
-                </Style>-->
                 <Style Selector="nodes|NodeInput" x:DataType="viewModels:ConnectorViewModel">
 					<Setter Property="Header"
                             Value="{Binding}" />
@@ -128,7 +131,7 @@
 									<TextBlock Text="{Binding Title}"
                                                Margin="0 0 5 0" />
 									<TextBox Text="{Binding Value}"
-                                             IsVisible="{Binding IsConnected}" />
+                                             IsVisible="{Binding !IsConnected}" />
 								</StackPanel>
 							</DataTemplate>
 						</Setter.Value>
@@ -191,7 +194,8 @@
 					<nodes:GroupingNode Header="{Binding}"
                                          CanResize="{Binding IsExpanded}"
                                          ActualSize="{Binding DesiredSize, Mode=TwoWay}"
-                                         MovementMode="Self">
+                                         MovementMode="Self"
+                                         Theme="{StaticResource GroupingNodeTheme}">
 						<nodes:GroupingNode.HeaderTemplate>
 							<DataTemplate DataType="{x:Type viewModels:OperationGraphViewModel}">
 								<Grid>
@@ -213,7 +217,8 @@
 							</DataTemplate>
 						</nodes:GroupingNode.HeaderTemplate>
 						<Grid>
-							<nodify:NodifyEditor Tag="{Binding DataContext, RelativeSource={RelativeSource Self}}"
+							<ScrollViewer IsVisible="{Binding ((viewModels:OperationGraphViewModel)DataContext).IsExpanded, RelativeSource={RelativeSource AncestorType=nodes:GroupingNode}}">
+								<nodify:NodifyEditor Tag="{Binding DataContext, RelativeSource={RelativeSource Self}}"
                                                  DataContext="{Binding InnerCalculator}"
                                                  ItemsSource="{Binding Operations}"
                                                  Connections="{Binding Connections}"
@@ -223,25 +228,27 @@
                                                  PendingConnectionTemplate="{StaticResource PendingConnectionTemplate}"
                                                  ConnectionTemplate="{StaticResource ConnectionTemplate}"
                                                  ItemContainerTheme="{StaticResource ItemContainerTheme}"
+                                                 HasCustomContextMenu="True"
                                                  Background="Transparent"
-                                                 GridCellSize="15"
-                                                 IsVisible="{Binding ((viewModels:OperationGraphViewModel)DataContext).IsExpanded, RelativeSource={RelativeSource AncestorType=nodes:GroupingNode}}">
+                                                 DragDrop.AllowDrop="True"
+                                                 GridCellSize="15">
 
-								<nodify:NodifyEditor.KeyBindings>
-									<KeyBinding Gesture="Delete"
+									<nodify:NodifyEditor.KeyBindings>
+										<KeyBinding Gesture="Delete"
                                                 Command="{Binding DeleteSelectionCommand}" />
-									<KeyBinding Gesture="C"
+										<KeyBinding Gesture="C"
                                                 Command="{Binding GroupSelectionCommand}" />
-								</nodify:NodifyEditor.KeyBindings>
-								<nodify:NodifyEditor.Decorators>
-									<objectModel:Collection x:TypeArguments="nodify:DecoratorContainer">
-										<nodify:DecoratorContainer DataContext="{Binding OperationsMenu}"
+									</nodify:NodifyEditor.KeyBindings>
+									<nodify:NodifyEditor.Decorators>
+										<objectModel:Collection x:TypeArguments="nodify:DecoratorContainer">
+											<nodify:DecoratorContainer DataContext="{Binding OperationsMenu}"
                                                                    Location="{Binding Location}">
-											<views:OperationsMenuView />
-										</nodify:DecoratorContainer>
-									</objectModel:Collection >
-								</nodify:NodifyEditor.Decorators>
-							</nodify:NodifyEditor>
+												<views:OperationsMenuView />
+											</nodify:DecoratorContainer>
+										</objectModel:Collection >
+									</nodify:NodifyEditor.Decorators>
+								</nodify:NodifyEditor>
+							</ScrollViewer>
 
 							<Grid>
 								<Grid.ColumnDefinitions>
@@ -311,8 +318,14 @@
 				</DataTemplate>
 
 				<DataTemplate DataType="{x:Type viewModels:OperationGroupViewModel}">
-					<nodes:GroupingNode Header="{Binding Title}"
-                                         ActualSize="{Binding GroupSize, Mode=TwoWay}" />
+					<nodes:GroupingNode ActualSize="{Binding GroupSize, Mode=TwoWay}"
+                                         Theme="{StaticResource GroupingNodeTheme}">
+						<nodes:GroupingNode.Header>
+							<shared:EditableTextBlock Text="{Binding Title}"
+                                                      FontWeight="SemiBold"
+                                                      IsEditing="True" />
+						</nodes:GroupingNode.Header>
+					</nodes:GroupingNode>
 				</DataTemplate>
 
 				
@@ -330,15 +343,9 @@
                             Command="{Binding GroupSelectionCommand}" />
 			</nodify:NodifyEditor.KeyBindings>
 
-			<!--<nodify:NodifyEditor.Triggers> todo
-                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                    <BeginStoryboard Name="AnimateBorder" Storyboard="{StaticResource AnimateBorder}" />
-                </EventTrigger>
-            </nodify:NodifyEditor.Triggers>-->
-
-			<!--<data:CompositeCollection>
-               
-            </data:CompositeCollection>-->
+			<!-- A Style/ControlTheme animation can't target a nested brush's properties, so the
+			     looping gradient sweep runs against the "AnimatedBrush" resource from code-behind
+			     (see EditorView.axaml.cs, OnEditorViewLoaded/RunAnimatedBorderLoop). -->
 			<nodify:NodifyEditor.Decorators>
 				<objectModel:Collection x:TypeArguments="nodify:DecoratorContainer">
 					<nodify:DecoratorContainer DataContext="{Binding OperationsMenu}"
@@ -351,5 +358,46 @@
 
 		<Grid Background="{StaticResource LargeGridLinesDrawingBrush}"
               ZIndex="-2" />
+
+		<Border HorizontalAlignment="Right"
+                MinWidth="200"
+                MaxWidth="300"
+                Padding="7"
+                Margin="10"
+                CornerRadius="3"
+                BorderThickness="2">
+			<Border.Background>
+				<SolidColorBrush Color="{DynamicResource BackgroundColor}" Opacity="0.7" />
+			</Border.Background>
+			<ScrollViewer>
+				<ItemsControl ItemsSource="{Binding Calculator.OperationsMenu.AvailableOperations}"
+                              Focusable="False">
+					<ItemsControl.ItemContainerTheme>
+						<ControlTheme TargetType="ContentPresenter">
+							<Setter Property="Margin" Value="5" />
+							<Setter Property="HorizontalAlignment" Value="Left" />
+							<Setter Property="Cursor" Value="Hand" />
+							<Setter Property="ToolTip.Tip" Value="Drag and drop into the editor" />
+						</ControlTheme>
+					</ItemsControl.ItemContainerTheme>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate DataType="{x:Type viewModels:OperationInfoViewModel}">
+							<nodes:Node Content="{Binding Title}"
+                                        Input="{Binding Input}"
+                                         BorderBrush="{StaticResource AnimatedBrush}"
+                                         BorderThickness="2"
+                                         Focusable="True"
+                                         PointerPressed="OnNodeDragPressed">
+								<nodes:Node.Output>
+									<objectModel:Collection x:TypeArguments="sys:String">
+										<sys:String>Output</sys:String>
+									</objectModel:Collection>
+								</nodes:Node.Output>
+							</nodes:Node>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</ScrollViewer>
+		</Border>
 	</Grid>
 </UserControl>

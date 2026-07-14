@@ -6,13 +6,13 @@ namespace Nodify.Avalonia.Shared.Converters
 {
     public class DebugConverter : MarkupExtension, IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             Console.WriteLine($"Value: {value} :: Parameter: {parameter}");
             return value;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             Console.WriteLine($"Value: {value} :: Parameter: {parameter}");
             return value;

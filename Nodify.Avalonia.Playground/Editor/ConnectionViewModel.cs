@@ -22,7 +22,6 @@ namespace Nodify.Avalonia.Playground.Editor
         }
 
         private ConnectorViewModel _output = default!;
-        private bool _isFlow;
 
         public ConnectorViewModel Output
         {
@@ -30,10 +29,11 @@ namespace Nodify.Avalonia.Playground.Editor
             set => this.RaiseAndSetIfChanged(ref _output, value);
         }
 
-        public bool IsFlow
+        private bool _isSelected;
+        public bool IsSelected
         {
-            get => _isFlow;
-            set => this.RaiseAndSetIfChanged(ref _isFlow, value);
+            get => _isSelected;
+            set => this.RaiseAndSetIfChanged(ref _isSelected, value);
         }
 
         public void Split(Point point)

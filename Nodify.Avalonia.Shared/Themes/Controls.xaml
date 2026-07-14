@@ -56,7 +56,7 @@
                     Value="{DynamicResource FocusedBorderBrush}" />
         </Style>
         <Style Selector="^:not(:checked) /template/ Path#PART_CheckMark">
-            <Setter Property="IsVisible" Value="True"/>
+            <Setter Property="IsVisible" Value="False"/>
         </Style>
         <Style Selector="^[IsEnabled=False]">
             <Setter Property="BorderBrush"
@@ -139,100 +139,64 @@
                 Value="{DynamicResource BorderBrush}" />
         <Setter Property="BorderThickness"
                 Value="1" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBox}">
-                    <Grid>
-                        <ToggleButton Focusable="False"
-                                      IsThreeState="False"
-                                      IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
-                                      IsEnabled="{TemplateBinding IsEnabled}"
-                                      ClickMode="Press" />
-
-                        <ContentPresenter x:Name="PART_Content"
-                                          IsHitTestVisible="False"
-                                          Content="{TemplateBinding SelectionBoxItem}"
-                                          ContentTemplate="{TemplateBinding ItemTemplate}"
-                                          Margin="4 2 24 2"
-                                          VerticalAlignment="Center"
-                                          HorizontalAlignment="Left" />
-
-                        <TextBox x:Name="PART_EditableTextBox"
-                                 HorizontalAlignment="Left"
-                                 VerticalAlignment="Center"
-                                 Margin="4 2 24 2"
-                                 Focusable="True"
-                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                 Background="{TemplateBinding Background}"
-                                 Foreground="{TemplateBinding Foreground}"
-                                  Opacity="0"/>
-                        <!--IsReadOnly="{TemplateBinding IsReadOnly}"todo-->
-
-                        <Popup Placement="Bottom"
-                               IsOpen="{TemplateBinding IsDropDownOpen}"
-                               Focusable="False" 
-                               x:Name="PART_Popup">
-                            <!--AllowsTransparency="True"
-                            PopupAnimation="Slide"-->
-                            <Grid UseLayoutRounding="True" 
-                                  MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
-                                  MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                                <Border x:Name="PART_DropDown"
-                                        Background="{TemplateBinding Background}"
-                                        BorderBrush="{TemplateBinding BorderBrush}"
-                                        BorderThickness="{TemplateBinding BorderThickness}"
-                                        MinHeight="15"
-                                        Margin="0 2 0 0" />
-                                <ScrollViewer Margin="2 3"
-                                              UseLayoutRounding="True">
-                                    <ItemsPresenter/>
-                                </ScrollViewer>
-                            </Grid>
-                        </Popup>
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Style Selector="^[IsEnabled=False]">
-            <Setter Property="Foreground"
-                    Value="{DynamicResource DisabledForegroundBrush}" />
-        </Style>
-        <!--<Style Selector="^[IsEditable=True]">
-            <Setter Property="IsTabStop"
-                    Value="False" />
-        </Style>
-        <Style Selector="^[IsEditable=True] /template/ TextBox#PART_EditableTextBox">
-            <Setter Property="Opacity"
-                    Value="1" />
-        </Style>
-        <Style Selector="^[IsEditable=True] /template/ ContentPresenter#PART_Content">
-            <Setter Property="Opacity"
-                    Value="0" />
-        </Style>todo--> 
+        <!-- Use the Fluent default ComboBox template and only override the brushes/alignment:
+             a fully custom template placed an invisible, hit-test-visible editable TextBox over
+             the control, so the arrow was not clickable. -->
+        <Setter Property="HorizontalAlignment"
+                Value="Stretch" />
+        <Setter Property="Padding"
+                Value="6,3,5,3" />
+        <!-- Fluent's default ComboBox carries a large MinWidth — enough for two ComboBoxes plus
+             other columns to overflow a fixed-width sidebar. Let it shrink to fit its
+             container/content instead. -->
+        <Setter Property="MinWidth"
+                Value="0" />
     </ControlTheme>
-    <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}"
-           BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+
+    <ControlTheme x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem"
+                  BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+        <Setter Property="VerticalContentAlignment"
+                Value="Center" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Left" />
         <Setter Property="Background"
-                Value="{DynamicResource BackgroundBrush}" />
+                Value="Transparent" />
         <Setter Property="BorderBrush"
                 Value="{DynamicResource HighlightedBackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource ForegroundBrush}" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
-                    <Border Name="Border"
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="Border"
                             Padding="4 2"
-                            UseLayoutRounding="True">
-                        <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            Background="{TemplateBinding Background}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Style Selector="^:ispointerover /template/ Border#Border"> <!--todo was ishighlighted-->
+        <!-- highlighted = pointer-over or keyboard-selected -->
+        <Style Selector="^:pointerover /template/ Border#Border">
             <Setter Property="Background"
-                    Value="{Binding BorderBrush, RelativeSource={RelativeSource TemplatedParent}}" />
+                    Value="{DynamicResource HighlightedBackgroundBrush}" />
         </Style>
-        <Style Selector="^[IsEnabled=False]">
+        <Style Selector="^:selected /template/ Border#Border">
+            <Setter Property="Background"
+                    Value="{DynamicResource HighlightedBackgroundBrush}" />
+        </Style>
+        <!-- Fluent's own ComboBoxItem chrome (this theme keeps the stock Fluent ComboBox, only
+             restyling ComboBoxItem) bleeds a second, text-tight :selected highlight behind the
+             ContentPresenter's TextBlock. Suppress it so only our full-row Border#Border band
+             shows. -->
+        <Style Selector="^ /template/ ContentPresenter TextBlock">
+            <Setter Property="Background"
+                    Value="Transparent" />
+        </Style>
+        <Style Selector="^:disabled">
             <Setter Property="Foreground"
                     Value="{DynamicResource DisabledForegroundBrush}" />
         </Style>
@@ -260,7 +224,7 @@
                                                 Content="{TemplateBinding Content}" />
                         <!--CanContentScroll="{TemplateBinding CanContentScroll}"-->
                         <ScrollBar x:Name="PART_VerticalScrollBar"
-                                   Value="{Binding Offset.Y, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Value="{Binding Offset.Y, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                    Maximum="{Binding ScrollBarMaximum.Y, RelativeSource={RelativeSource TemplatedParent}}"
                                    ViewportSize="{Binding Viewport.Height, RelativeSource={RelativeSource TemplatedParent}}"
                                    Visibility="{TemplateBinding VerticalScrollBarVisibility}"
@@ -269,7 +233,7 @@
                                    Grid.Column="1"
                                    Grid.Row="0" />
                         <ScrollBar x:Name="PART_HorizontalScrollBar"
-                                   Value="{Binding Offset.X, RelativeSource={RelativeSource TemplatedParent}}"
+                                   Value="{Binding Offset.X, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                                    Maximum="{Binding ScrollBarMaximum.X, RelativeSource={RelativeSource TemplatedParent}}"
                                    ViewportSize="{Binding Viewport.Width, RelativeSource={RelativeSource TemplatedParent}}"
                                    Visibility="{TemplateBinding HorizontalScrollBarVisibility}"
@@ -370,9 +334,16 @@
         <Setter Property="Width"
                 Value="2" />
         <Setter Property="Background"
-                Value="{DynamicResource BackgroundBrush}" />
+                Value="Transparent" />
         <Setter Property="BorderBrush"
-                Value="{DynamicResource BorderBrush}" />
+                Value="{DynamicResource BackgroundBrush}" />
+        <Setter Property="BorderThickness"
+                Value="0 0 0 1" />
+        <!-- A thin filled-Background rectangle renders invisible at this height, so draw the line
+             via BorderThickness instead - a crisper, more reliable primitive for a 1-2px line.
+             BorderThickness is a pass-through (TemplateBinding) so callers can flip it to a vertical
+             divider (e.g. "0 0 1 0"); the default above keeps the 4 existing horizontal usages
+             rendering identically. -->
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Separator}">
@@ -411,7 +382,16 @@
                                           VerticalAlignment="Center"
                                           UseLayoutRounding="True"
                                           Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                          ContentTemplate="{TemplateBinding ContentTemplate}">
+                            <!-- Icon resources are shared DrawingBrush instances (see Icons.xaml);
+                                 render them as a sized Rectangle instead of falling back to their
+                                 type name. -->
+                            <ContentPresenter.DataTemplates>
+                                <DataTemplate x:DataType="DrawingBrush">
+                                    <Rectangle Fill="{Binding}" Width="16" Height="16" />
+                                </DataTemplate>
+                            </ContentPresenter.DataTemplates>
+                        </ContentPresenter>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -458,9 +438,18 @@
                                           Margin="{TemplateBinding Padding}"
                                           UseLayoutRounding="{TemplateBinding UseLayoutRounding}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                          ContentTemplate="{TemplateBinding ContentTemplate}">
+                            <!-- Icon resources are shared DrawingBrush instances (see Icons.xaml);
+                                 render them as a sized Rectangle instead of falling back to their
+                                 type name. -->
+                            <ContentPresenter.DataTemplates>
+                                <DataTemplate x:DataType="DrawingBrush">
+                                    <Rectangle Fill="{Binding}" Width="16" Height="16" />
+                                </DataTemplate>
+                            </ContentPresenter.DataTemplates>
+                        </ContentPresenter>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -601,15 +590,13 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <!--<Style Selector="^[Role=SubmenuItem]"> todo role
-            <Setter Property="DockPanel.Dock"
-                    Value="Top" />
+        <!-- Hide the submenu arrow for leaf menu items (no sub-items).
+             Avalonia exposes :empty on the items collection when there are no sub-items. -->
+        <Style Selector="^:empty /template/ Grid#ArrowPanel">
+            <Setter Property="IsVisible"
+                    Value="False" />
         </Style>
-        <Style Selector="^[Role=SubmenuItem] /template/ Grid#ArrowPanel">
-            <Setter Property="Visibility"
-                    Value="Collapsed" />
-        </Style>-->
-        <Style Selector="^:ispointerover"> <!--todo was ishighlighted-->
+        <Style Selector="^:pointerover, ^:selected">
             <Setter Property="Background">
                 <Setter.Value>
                     <SolidColorBrush Opacity="0.2"
@@ -617,7 +604,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style Selector="^:ispointerover /template/ Border#PART_Border"> <!--todo was ishighlighted-->
+        <Style Selector="^:pointerover /template/ Border#PART_Border, ^:selected /template/ Border#PART_Border">
             <Setter Property="BorderBrush"
                     Value="{DynamicResource HighlightedBorderBrush}" />
             <Setter Property="BorderThickness"
@@ -667,6 +654,10 @@
                 Value="Transparent" />
         <Setter Property="Foreground"
                 Value="{DynamicResource ForegroundBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Expander}">
@@ -674,6 +665,10 @@
                             Padding="{TemplateBinding Padding}"
                             UseLayoutRounding="True">
                         <DockPanel LastChildFill="True">
+                            <!-- Wrapper so ExpandDirection=Right can rotate the header with a
+                                 true layout transform; DockPanel.Dock for the header is applied
+                                 here, the DockPanel's direct child. -->
+                            <LayoutTransformControl x:Name="PART_HeaderLayout">
                             <CheckBox ContentTemplate="{TemplateBinding HeaderTemplate}"
                                       Content="{TemplateBinding Header}"
                                       FontStyle="{TemplateBinding FontStyle}"
@@ -689,7 +684,7 @@
                                       Background="{TemplateBinding Background}"
                                       BorderThickness="{TemplateBinding BorderThickness}"
                                       BorderBrush="{TemplateBinding BorderBrush}"
-                                      Cursor="Hand" DockPanel.Dock="Top"
+                                      Cursor="Hand"
                                       x:Name="PART_Header">
                                 <CheckBox.Template>
                                     <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -697,8 +692,18 @@
                                                 Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}">
-                                            <StackPanel Orientation="Horizontal">
-                                                <ContentPresenter Content="{TemplateBinding Tag}" />
+                                            <StackPanel Orientation="Horizontal"
+                                                        VerticalAlignment="Center">
+                                                <ContentPresenter Content="{TemplateBinding Tag}">
+                                                    <!-- Icon resources are shared DrawingBrush instances (see Icons.xaml); render them as a
+                                                         sized Rectangle instead of falling back to their type name, matching
+                                                         IconButton/IconCheckBox above. -->
+                                                    <ContentPresenter.DataTemplates>
+                                                        <DataTemplate x:DataType="DrawingBrush">
+                                                            <Rectangle Fill="{Binding}" Width="16" Height="16" />
+                                                        </DataTemplate>
+                                                    </ContentPresenter.DataTemplates>
+                                                </ContentPresenter>
                                                 <ContentPresenter UseLayoutRounding="True"
                                                                   VerticalAlignment="Center" 
                                                                   Content="{TemplateBinding Content}"
@@ -708,6 +713,7 @@
                                     </ControlTemplate>
                                 </CheckBox.Template>
                             </CheckBox>
+                            </LayoutTransformControl>
                             <ContentPresenter x:Name="PART_Content" DockPanel.Dock="Bottom"
                                               Focusable="False"
                                               Content="{TemplateBinding Content}"
@@ -731,13 +737,14 @@
             <Setter Property="Foreground"
                                     Value="{DynamicResource DisabledForegroundBrush}" />
         </Style>
-        <Style Selector="^[ExpandDirection=Right] /template/ CheckBox#PART_Header" >
-            <Setter Property="RenderTransform"> <!--todo was layout transform-->
+        <Style Selector="^[ExpandDirection=Right] /template/ LayoutTransformControl#PART_HeaderLayout">
+            <!-- True layout rotation: the rotated header takes its rotated bounds in layout,
+                 unlike a RenderTransform approximation. -->
+            <Setter Property="LayoutTransform">
                 <Setter.Value>
                     <RotateTransform Angle="90" />
                 </Setter.Value>
             </Setter>
-            <Setter Property="RenderTransformOrigin" Value="0,0"/>
             <Setter Property="DockPanel.Dock"
                                     Value="Left" />
         </Style>
@@ -745,13 +752,30 @@
             <Setter Property="DockPanel.Dock"
                     Value="Right" />
         </Style>
-        <Style Selector="^[ExpandDirection=Down] /template/ CheckBox#PART_Header">
+        <Style Selector="^[ExpandDirection=Down] /template/ LayoutTransformControl#PART_HeaderLayout">
             <Setter Property="DockPanel.Dock"
                     Value="Top" />
         </Style>
         <Style Selector="^[ExpandDirection=Down] /template/ ContentPresenter#PART_Content">
             <Setter Property="DockPanel.Dock"
                     Value="Bottom" />
+        </Style>
+        <!-- For ExpandDirection=Left the header docks to the opposite edge from the content and is
+             not rotated (unlike Right, which rotates 90deg). Made explicit here since Left has no
+             default-value fallback that reliably renders. -->
+        <Style Selector="^[ExpandDirection=Left] /template/ LayoutTransformControl#PART_HeaderLayout">
+            <Setter Property="DockPanel.Dock"
+                    Value="Left" />
+            <Setter Property="VerticalAlignment"
+                    Value="Stretch" />
+        </Style>
+        <Style Selector="^[ExpandDirection=Left] /template/ CheckBox#PART_Header">
+            <Setter Property="VerticalAlignment"
+                    Value="Stretch" />
+        </Style>
+        <Style Selector="^[ExpandDirection=Left] /template/ ContentPresenter#PART_Content">
+            <Setter Property="DockPanel.Dock"
+                    Value="Right" />
         </Style>
     </ControlTheme>
 

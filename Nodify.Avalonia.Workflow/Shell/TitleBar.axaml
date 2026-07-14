@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nodify.Avalonia.Workflow.Shell"
+             xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+             x:Class="Nodify.Avalonia.Workflow.Shell.TitleBar"
+             x:DataType="local:ApplicationViewModel">
+
+    <Grid Height="32" Margin="0 0 140 0" Background="Transparent"
+          ColumnDefinitions="*,Auto"
+          WindowDecorationProperties.ElementRole="TitleBar">
+
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center"
+                    MinWidth="0" ClipToBounds="True">
+            <Path Width="16" Height="16" Stretch="Uniform" Margin="10 0 8 0"
+                  StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                  Stroke="{DynamicResource AccentFillColorSecondaryBrush}"
+                  VerticalAlignment="Center"
+                  Data="{StaticResource Icon.Flow}" />
+
+            <TextBlock VerticalAlignment="Center" FontWeight="SemiBold"
+                       TextTrimming="CharacterEllipsis"
+                       Text="{Binding Title}" />
+
+            <Border Classes="Separator" Theme="{StaticResource SeparatorBorder}" Margin="12 2 4 0" />
+
+            <!-- ElementRole=User: without it the TitleBar-role hit test turns clicks on these
+                 controls into caption drags. -->
+            <Button Classes="Breadcrumb" Theme="{StaticResource BorderlessButton}" Height="26" Padding="8 4"
+                    WindowDecorationProperties.ElementRole="User"
+                    VerticalAlignment="Center" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Text="{Binding MainWorkflow.Name}" />
+                    <Path Classes="BreadcrumbChevron"
+                          Height="10" Stretch="Uniform" Margin="8 4 0 2"
+                          StrokeThickness="1.3" StrokeLineCap="Round" StrokeJoin="Round"
+                          Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                          IsHitTestVisible="False"
+                          VerticalAlignment="Center"
+                          IsVisible="{Binding SelectedWorkflow, Converter={x:Static common:NotNullConverter.Instance}}"
+                          Data="{StaticResource Icon.ChevronRight}" />
+                </StackPanel>
+            </Button>
+
+            <Button Classes="Breadcrumb" Theme="{StaticResource BorderlessButton}" Height="26" Padding="8 4"
+                    WindowDecorationProperties.ElementRole="User"
+                    VerticalAlignment="Center" HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+                    IsVisible="{Binding SelectedWorkflow, Converter={x:Static common:NotNullConverter.Instance}}">
+                <TextBlock Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Text="{Binding SelectedWorkflow.Name}" />
+            </Button>
+        </StackPanel>
+
+        <!-- Right margin keeps app buttons clear of the OS caption buttons overlaid in the
+             extended client area. -->
+        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <ContentControl Content="{Binding RunWorkflowCommand}" VerticalAlignment="Center"
+                            WindowDecorationProperties.ElementRole="User" />
+            <ContentControl Content="{Binding SaveChangesCommand}" VerticalAlignment="Center"
+                            WindowDecorationProperties.ElementRole="User" />
+            <ContentControl Content="{Binding ToggleZenModeCommand}" VerticalAlignment="Center"
+                            WindowDecorationProperties.ElementRole="User" />
+            <Border Classes="Separator" Theme="{StaticResource SeparatorBorder}" />
+            <ContentControl Content="{Binding OpenSettingsCommand}" VerticalAlignment="Center"
+                            WindowDecorationProperties.ElementRole="User" />
+            <Border Classes="Separator" Theme="{StaticResource SeparatorBorder}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -11,7 +11,18 @@ namespace Nodify.Avalonia.Calculator.ViewModels
         public Size DesiredSize
         {
             get => _size;
-            set => this.RaiseAndSetIfChanged(ref _size, value);
+            set
+            {
+                // Size equality uses == where NaN never equals itself.
+                // Without this guard the TwoWay ActualSize binding echoes the collapsed
+                // (NaN, NaN) value back forever and overflows the stack.
+                if (_size.Width.Equals(value.Width) && _size.Height.Equals(value.Height))
+                {
+                    return;
+                }
+
+                this.RaiseAndSetIfChanged(ref _size, value);
+            }
         }
         
         private Size _prevSize;
@@ -32,7 +43,7 @@ namespace Nodify.Avalonia.Calculator.ViewModels
                     {
                         _prevSize = Size;
                         // Fit content
-                        DesiredSize = new Size(600, 600);
+                        DesiredSize = new Size(double.NaN, double.NaN);
                     }
                 }
             }

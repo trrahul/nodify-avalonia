@@ -7,11 +7,11 @@ namespace Nodify.Avalonia.Calculator.ViewModels
     {
         public ExpandoOperationViewModel()
         {
-            AddInputCommand = ReactiveCommand.Create( //todo was requery
+            AddInputCommand = ReactiveCommand.Create(
                 () => Input.Add(new ConnectorViewModel()),
                 this.WhenAnyValue(v => v.Input.Count,v => v.MaxInput,(c,m) => c < m));
 
-            RemoveInputCommand = ReactiveCommand.Create( // todo was requery
+            RemoveInputCommand = ReactiveCommand.Create(
                 () => Input.RemoveAt(Input.Count - 1),
                 this.WhenAnyValue(v => v.Input.Count, v => v.MinInput, (c, m) => c > m));
         }

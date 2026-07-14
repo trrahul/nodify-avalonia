@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Nodify.Avalonia.Shapes"
+        xmlns:canvas="clr-namespace:Nodify.Avalonia.Shapes.Canvas"
+        x:Class="Nodify.Avalonia.Shapes.MainWindow"
+        x:DataType="local:AppShellViewModel"
+        Title="Canvas"
+        Height="650"
+        Width="1200">
+    <Window.KeyBindings>
+        <KeyBinding Command="{Binding Canvas.RedoCommand}"
+                    Gesture="Ctrl+Y" />
+        <KeyBinding Command="{Binding Canvas.RedoCommand}"
+                    Gesture="Ctrl+Shift+Z" />
+        <KeyBinding Command="{Binding Canvas.UndoCommand}"
+                    Gesture="Ctrl+Z" />
+        <KeyBinding Command="{Binding Canvas.DeleteSelectionCommand}"
+                    Gesture="Delete" />
+    </Window.KeyBindings>
+
+    <Window.DataContext>
+        <local:AppShellViewModel />
+    </Window.DataContext>
+
+    <Grid>
+        <canvas:CanvasView DataContext="{Binding Canvas}" />
+    </Grid>
+</Window>

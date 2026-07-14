@@ -1,65 +1,53 @@
 using System;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Rendering.Composition;
+using Avalonia.Media;
+using Avalonia.Threading;
 using Nodify.Avalonia.Playground.Editor;
 using Nodify.Avalonia.Playground.ViewModels;
+using Nodify.Avalonia.Shared;
 
 namespace Nodify.Avalonia.Playground.Views
 {
     public partial class MainWindow : Window
     {
-        public static class CompositionTargetEx
-        {
-            private static TimeSpan _last = TimeSpan.Zero;
-            private static event Action<double>? FrameUpdating;
-
-            public static event Action<double> Rendering
-            {
-                add
-                {
-                    if (FrameUpdating == null)
-                    {
-                        //CompositionTarget.Rendering += OnRendering;
-                    }
-                    FrameUpdating += value;
-                }
-                remove
-                {
-                    FrameUpdating -= value;
-                    if (FrameUpdating == null)
-                    {
-                        //CompositionTarget.Rendering -= OnRendering;
-                    }
-                }
-            }
-
-            //private static void OnRendering(object? sender, EventArgs e)
-            //{
-            //    RenderingEventArgs args = (RenderingEventArgs)e;
-            //    var renderingTime = args.RenderingTime;
-            //    if (renderingTime == _last)
-            //        return;
-
-            //    double fps = 1000 / (renderingTime - _last).TotalMilliseconds;
-            //    _last = renderingTime;
-            //    FrameUpdating?.Invoke(fps);
-            //}
-        }
-
+        private readonly Stopwatch _frameWatch = new Stopwatch();
         private readonly Random _rand = new Random();
 
         public MainWindow()
         {
             InitializeComponent();
-            //CompositionTargetEx.Rendering += OnRendering;
+
+            FitToScreenButton.Command = new TargetedRoutedCommand
+            {
+                Command = EditorCommands.FitToScreen,
+                Target = EditorView.Editor
+            };
+
+            AddHandler(InputElement.GotFocusEvent,
+                (_, e) => Title = e.Source?.ToString() ?? Title,
+                RoutingStrategies.Bubble,
+                handledEventsToo: true);
         }
 
-        //private void OnRendering(double fps)
-        //{
-        //    FPSText.Text = fps.ToString("0");
-        //}
+        public override void Render(DrawingContext context)
+        {
+            base.Render(context);
+
+            if (_frameWatch.IsRunning)
+            {
+                double fps = FrameRateEstimator.FromFrameDuration(_frameWatch.Elapsed);
+                Dispatcher.UIThread.Post(() => FPSText.Text = fps.ToString("###"));
+            }
+
+            _frameWatch.Restart();
+            // Schedule the next root render after the current pass, so the sampled interval
+            // reflects the scene's actual render cadence.
+            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Send);
+        }
 
         private void BringIntoView_Click(object sender, RoutedEventArgs e)
         {
@@ -76,12 +64,9 @@ namespace Nodify.Avalonia.Playground.Views
             }
         }
 
-        private void FitToScreen_Click(object? sender, RoutedEventArgs e)
+        private void AnimateConnections_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is PlaygroundViewModel model)
-            {
-                EditorCommands.FitToScreen.Execute(null,EditorView.Editor);
-            }
+            EditorSettings.Instance.IsAnimatingConnections = !EditorSettings.Instance.IsAnimatingConnections;
         }
     }
 }

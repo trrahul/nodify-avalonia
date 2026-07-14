@@ -11,14 +11,15 @@
         x:DataType="viewModels:ApplicationViewModel"
         Background="{DynamicResource NodifyEditor.BackgroundBrush}"
         Foreground="{DynamicResource ForegroundBrush}"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Nodify.Calculator">
+        Width="1200" Height="650"
+        Title="MainWindow">
     <Window.DataContext>
         <viewModels:ApplicationViewModel />
     </Window.DataContext>
     <Window.KeyBindings>
-        <!--<KeyBinding Gesture="Ctrl + T"
-                    Command="{Binding Source={x:Static shared:ThemeManager.SetNextThemeCommand}}" />-->
+        <!-- Cycles all three themes (Dark, Light, Nodify), not a two-way toggle. -->
+        <KeyBinding Gesture="Ctrl+T"
+                    Command="{Binding Source={x:Static shared:ThemeManager.SetNextThemeCommand}}" />
         <KeyBinding Gesture="Ctrl + N"
                     Command="{Binding AddEditorCommand}" />
         <KeyBinding Gesture="Ctrl + W"
@@ -38,24 +39,16 @@
                              AutoScrollToEnd="{Binding AutoSelectNewEditor}">
             <controls:TabControlEx.ItemContainerTheme>
                 <ControlTheme BasedOn="{StaticResource {x:Type controls:TabItemEx}}" TargetType="controls:TabItemEx" x:DataType="viewModels:EditorViewModel">
-                    <Setter Property="Header" 
-                            Value="{Binding Header}"/>
+                    <Setter Property="ToolTip.Tip"
+                            Value="Double click to edit"/>
+                    <Setter Property="Header"
+                            Value="{Binding Name}"/>
                     <Setter Property="CloseTabCommand" 
                             Value="{Binding ((viewModels:ApplicationViewModel)DataContext).CloseEditorCommand ,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=controls:TabControlEx}}"/>
                     <Setter Property="CloseTabCommandParameter" 
                             Value="{Binding Id}"/>
                 </ControlTheme>
             </controls:TabControlEx.ItemContainerTheme>
-            <!--<controls:TabControlEx.Styles>
-                <Style Selector="controls|TabItemEx" x:DataType="viewModels:EditorViewModel">
-                    <Setter Property="Header" 
-                            Value="{Binding Name}"/>
-                    <Setter Property="CloseTabCommand" 
-                            Value="{Binding ((viewModels:ApplicationViewModel)DataContext).CloseEditorCommand ,RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=controls:TabControlEx}}"/>
-                    <Setter Property="CloseTabCommandParameter" 
-                            Value="{Binding Id}"/>
-                </Style>
-            </controls:TabControlEx.Styles>-->
         </controls:TabControlEx>
         
         <Expander Header="Click to hide/show"
@@ -64,11 +57,13 @@
                   HorizontalAlignment="Left"
                   VerticalAlignment="Bottom">
             <Border MaxWidth="325"
+                    MaxHeight="300"
                     CornerRadius="3">
                 <Border.Background>
                     <SolidColorBrush Color="{DynamicResource BackgroundColor}"
                                      Opacity="0.7" />
                 </Border.Background>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="10"
                             IsHitTestVisible="False">
                     <StackPanel.Styles>
@@ -79,19 +74,16 @@
                     </StackPanel.Styles>
 
                     <StackPanel Margin="0 0 0 20">
-                        <TextBlock Text="(New) Drag a connection and drop it on the editor"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource NodeInput.BorderBrush}"
-                               FontWeight="Bold"/>
-                        <TextBlock Text="(New) CTRL + N : open new editor"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource NodeInput.BorderBrush}"
-                               FontWeight="Bold"/>
-                        <TextBlock Text="(New) CTRL + W : close current editor"
+                        <TextBlock Text="(New) Drag and drop nodes from the toolbox"
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource NodeInput.BorderBrush}"
                                FontWeight="Bold"/>
                     </StackPanel>
+                    <TextBlock TextWrapping="Wrap">
+                <Run Foreground="Red"
+                        FontWeight="Bold">CTRL + N/W</Run>
+                <Run>: open/close editor</Run>
+                    </TextBlock>
                     <TextBlock TextWrapping="Wrap">
                 <Run Foreground="Red"
                         FontWeight="Bold">ALT + Click</Run>
@@ -117,6 +109,9 @@
                         FontWeight="Bold">C</Run>
                 <Run>: group selection (hold SHIFT and mouse drag the header to move the group node alone)</Run>
                     </TextBlock>
+                    <TextBlock Text="Drag a connection and drop it on the editor"
+                               TextWrapping="Wrap"
+                               FontWeight="Bold" />
                     <TextBlock Text="Hover over a connector to see its value"
                                TextWrapping="Wrap"
                                FontWeight="Bold" />
@@ -127,6 +122,7 @@
                                TextWrapping="Wrap"
                                FontWeight="Bold" />
                 </StackPanel>
+                </ScrollViewer>
             </Border>
         </Expander>
     </Grid>

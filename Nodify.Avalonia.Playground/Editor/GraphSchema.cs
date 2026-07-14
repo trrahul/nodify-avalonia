@@ -20,12 +20,11 @@ namespace Nodify.Avalonia.Playground.Editor
                     && source.AllowsNewConnections()
                     && con.AllowsNewConnections()
                     && (source.Flow != con.Flow || con.Node is KnotNodeViewModel)
-                    && !source.IsConnectedTo(con)
-                    && source.IsFlow == con.IsFlow;
+                    && !source.IsConnectedTo(con);
             }
             else if (source.AllowsNewConnections() && target is FlowNodeViewModel node)
             {
-                var allConnectors = source.Flow == ConnectorFlow.Input ? (source.IsFlow ? node.FlowOutput : node.Output) : (source.IsFlow ? node.FlowInput : node.Input);
+                var allConnectors = source.Flow == ConnectorFlow.Input ? node.Output : node.Input;
                 return allConnectors.Any(c => c.AllowsNewConnections());
             }
 
@@ -64,11 +63,32 @@ namespace Nodify.Avalonia.Playground.Editor
 
         private void AddConnection(ConnectorViewModel source, FlowNodeViewModel target)
         {
-            var allConnectors = source.Flow == ConnectorFlow.Input ? (source.IsFlow ? target.FlowOutput : target.Output) : (source.IsFlow ? target.FlowInput : target.Input);
+            var allConnectors = source.Flow == ConnectorFlow.Input ? target.Output : target.Input;
 
             var connector = allConnectors.First(c => c.AllowsNewConnections());
 
             AddConnection(source, connector);
+        }
+
+        /// <summary>
+        /// Rewires all connections from the <paramref name="source"/> input connector to the
+        /// <paramref name="target"/> connector when allowed.
+        /// </summary>
+        /// <remarks>The source must be an input connector.</remarks>
+        public void Rewire(ConnectorViewModel source, ConnectorViewModel target)
+        {
+            if (source == target || source.Flow != ConnectorFlow.Input)
+                return;
+
+            var connectionsToRewire = source.Connections.ToList();
+            foreach (var connection in connectionsToRewire)
+            {
+                if (CanAddConnection(connection.Output, target))
+                {
+                    source.Node.Graph.Connections.Remove(connection);
+                    AddConnection(connection.Output, target);
+                }
+            }
         }
 
         #endregion
@@ -84,11 +104,10 @@ namespace Nodify.Avalonia.Playground.Editor
         {
             var connector = connection.Output;
 
-            var knot = new KnotNodeViewModel
+            var knot = new KnotNodeViewModel(connection.Output.Node.Orientation)
             {
                 Location = location,
                 Flow = connector.Flow,
-                IsFlow = connector.IsFlow,
                 Connector = new ConnectorViewModel
                 {
                     MaxConnections = connection.Output.MaxConnections + connection.Input.MaxConnections,

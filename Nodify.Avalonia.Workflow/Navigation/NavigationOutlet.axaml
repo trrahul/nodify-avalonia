@@ -1,0 +1,6 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Nodify.Avalonia.Workflow.Navigation.NavigationOutlet"
+             ClipToBounds="True">
+    <ContentControl x:Name="ContentHost" Focusable="False" />
+</UserControl>

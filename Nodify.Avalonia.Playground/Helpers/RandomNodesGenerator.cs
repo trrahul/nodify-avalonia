@@ -50,10 +50,6 @@ namespace Nodify.Avalonia.Playground.Helpers
         public uint MaxInputCount;
         public uint MinOutputCount;
         public uint MaxOutputCount;
-        public uint MinFlowInputCount = 1;
-        public uint MaxFlowInputCount = 1;
-        public uint MinFlowOutputCount = 1;
-        public uint MaxFlowOutputCount = 1;
 
         public Func<NodesGeneratorSettings, uint, string?> ConnectorNameGenerator;
         public Func<NodesGeneratorSettings, uint, string?> NodeNameGenerator;
@@ -84,8 +80,6 @@ namespace Nodify.Avalonia.Playground.Helpers
                 nodes.Add(node);
                 node.Input.AddRange(GenerateConnectors(settings, _rand.Next((int)settings.MinInputCount, (int)settings.MaxInputCount + 1)));
                 node.Output.AddRange(GenerateConnectors(settings, _rand.Next((int)settings.MinOutputCount, (int)settings.MaxOutputCount + 1)));
-                node.FlowInput.AddRange(GenerateConnectors(settings, _rand.Next((int)settings.MinFlowInputCount, (int)settings.MaxFlowInputCount + 1)));
-                node.FlowOutput.AddRange(GenerateConnectors(settings, _rand.Next((int)settings.MinFlowOutputCount, (int)settings.MaxFlowOutputCount + 1)));
             }
 
             return nodes;

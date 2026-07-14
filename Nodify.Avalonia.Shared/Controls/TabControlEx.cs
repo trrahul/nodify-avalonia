@@ -29,7 +29,6 @@ namespace Nodify.Avalonia.Shared.Controls
 
         static TabControlEx()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(TabControlEx), new FrameworkPropertyMetadata(typeof(TabControlEx)));
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -45,9 +44,13 @@ namespace Nodify.Avalonia.Shared.Controls
 
         private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
-            if (e.ExtentDelta.Length > 0 && e.ViewportDelta.Length < e.ExtentDelta.Length && AutoScrollToEnd)
+            // Scroll to the end only when the content grew wider than the viewport (a new tab was
+            // added off-screen). A 2D-magnitude comparison could misfire on vertical extent changes.
+            if (AutoScrollToEnd && ScrollViewer != null
+                && e.ExtentDelta.X > 0
+                && ScrollViewer.Viewport.Width < ScrollViewer.Extent.Width)
             {
-                ScrollViewer.Offset = new Vector(double.PositiveInfinity, double.PositiveInfinity); //todo double check
+                ScrollViewer.Offset = new Vector(double.PositiveInfinity, ScrollViewer.Offset.Y);
             }
         }
 

@@ -17,8 +17,8 @@ namespace Nodify.Avalonia.Playground.Helpers
             for (int i = 0; i < nodes.Count; i++)
             {
                 var node = nodes[i];
-                var width = 200;    //node.Width
-                var height = 200;   //node.Height
+                var width = 200;
+                var height = 200;
 
                 if (node.Location.X < minX)
                 {

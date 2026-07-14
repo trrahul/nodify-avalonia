@@ -1,9 +1,19 @@
-﻿using ReactiveUI;
+﻿using global::Avalonia.Layout;
+using ReactiveUI;
 
 namespace Nodify.Avalonia.Playground.Editor
 {
     public class KnotNodeViewModel : NodeViewModel
     {
+        public KnotNodeViewModel(Orientation orientation)
+        {
+            Orientation = orientation;
+        }
+
+        public KnotNodeViewModel() : this(Orientation.Horizontal)
+        {
+        }
+
         private ConnectorViewModel _connector = default!;
         public ConnectorViewModel Connector
         {
@@ -19,7 +29,5 @@ namespace Nodify.Avalonia.Playground.Editor
         }
 
         public ConnectorFlow Flow { get; set; }
-
-        public bool IsFlow { get; set; }
     }
 }

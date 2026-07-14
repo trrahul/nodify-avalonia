@@ -1,0 +1,202 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:Nodify.Avalonia.Workflow.Designer"
+                    xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+                    xmlns:nodify="clr-namespace:Nodify.Avalonia;assembly=Nodify.Avalonia"
+                    xmlns:connections="clr-namespace:Nodify.Avalonia.Connections;assembly=Nodify.Avalonia"
+                    xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared">
+
+    <!-- Item container theme shared by both designers. -->
+    <ControlTheme x:Key="StepItemContainerTheme"
+                  TargetType="nodify:ItemContainer"
+                  BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
+        <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="SelectedBorderThickness" Value="1" />
+        <Setter Property="Location" Value="{Binding Position, Mode=TwoWay}" />
+        <Setter Property="ActualSize" Value="{Binding Size, Mode=OneWayToSource}" />
+
+        <Style Selector="^:pointerover">
+            <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+        </Style>
+        <Style Selector="^[IsSelected=True]:ispreviewingselectable">
+            <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+        </Style>
+        <Style Selector="^[IsPreviewingSelection=true]">
+            <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}" />
+        </Style>
+    </ControlTheme>
+
+    <!-- Accent-colored interaction visuals: cutting a connection and box-pushing items render in
+         the app's Accent brushes instead of the library defaults. -->
+    <ControlTheme x:Key="AccentCuttingLineTheme" TargetType="connections:CuttingLine">
+        <Setter Property="StrokeDashArray" Value="1,5" />
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="Stroke" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="AccentPushedAreaTheme" TargetType="Rectangle">
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Stroke" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource ControlFillColorDefaultBrush}" />
+    </ControlTheme>
+
+    <!-- There is no default theme keyed by the abstract BaseConnection, only by the concrete
+         connection types (LineConnection/StepConnection). The sub-workflow designer uses
+         StepConnection (horizontal flow) and the main-workflow designer uses LineConnection
+         (vertical flow), so each gets its own theme based on its own concrete default. -->
+    <ControlTheme x:Key="SubStepConnectionTheme"
+                  TargetType="connections:StepConnection"
+                  BasedOn="{StaticResource {x:Type connections:StepConnection}}">
+        <Setter Property="SourceOffset" Value="8,0" />
+        <Setter Property="TargetOffset" Value="8,0" />
+        <Setter Property="Stroke" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="MainStepConnectionTheme"
+                  TargetType="connections:LineConnection"
+                  BasedOn="{StaticResource {x:Type connections:LineConnection}}">
+        <Setter Property="SourceOffset" Value="8,0" />
+        <Setter Property="TargetOffset" Value="8,0" />
+        <Setter Property="Stroke" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+        <Setter Property="Fill" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+    </ControlTheme>
+
+    <!-- =============================== Sub workflow =============================== -->
+
+    <ControlTheme x:Key="SubStepConnectorThemeLeft"
+                  TargetType="connections:Connector"
+                  BasedOn="{StaticResource {x:Type connections:Connector}}">
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Width="12">
+                    <Border Name="PART_Connector"
+                            Background="{TemplateBinding Background}"
+                            HorizontalAlignment="Left"
+                            Width="3"
+                            CornerRadius="1" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="SubStepConnectorThemeRight"
+                  TargetType="connections:Connector"
+                  BasedOn="{StaticResource {x:Type connections:Connector}}">
+        <Setter Property="Height" Value="16" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Width="12">
+                    <Border Name="PART_Connector"
+                            Background="{TemplateBinding Background}"
+                            HorizontalAlignment="Right"
+                            Width="3"
+                            CornerRadius="1" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <DataTemplate x:Key="SubWorkflowStepTemplate" DataType="local:WorkflowStepViewModel">
+        <Border CornerRadius="4">
+            <StackPanel Orientation="Horizontal">
+                <connections:Connector Anchor="{Binding InAnchorPosition, Mode=OneWayToSource}"
+                                       IsConnected="True"
+                                       Theme="{StaticResource SubStepConnectorThemeLeft}" />
+
+                <Grid Margin="8" ColumnDefinitions="Auto,*">
+                    <Border Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
+                            CornerRadius="{DynamicResource OverlayCornerRadius}"
+                            Padding="6"
+                            Margin="0 0 8 0">
+                        <!-- 16px layout box with ~13px of centered glyph ink (stretched ink anchors top-left). -->
+                        <Border Width="16" Height="16" Padding="1.5"
+                                IsVisible="{Binding Icon, Converter={x:Static common:IconNotNoneConverter.Instance}}">
+                            <Path Stretch="Uniform" StrokeThickness="1.2"
+                                  StrokeLineCap="Round" StrokeJoin="Round"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Data="{Binding Icon, Converter={x:Static common:IconToGeometryConverter.Instance}}"
+                                  Stroke="{Binding IconColor, Converter={StaticResource ColorToBrush}}" />
+                        </Border>
+                    </Border>
+
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding Name}"
+                               VerticalAlignment="Center"
+                               Margin="0 0 0 4"
+                               FontWeight="SemiBold" />
+                </Grid>
+
+                <connections:Connector Anchor="{Binding OutAnchorPosition, Mode=OneWayToSource}"
+                                       IsConnected="True"
+                                       Theme="{StaticResource SubStepConnectorThemeRight}" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- =============================== Main workflow =============================== -->
+
+    <ControlTheme x:Key="MainStepConnectorThemeTop"
+                  TargetType="connections:Connector"
+                  BasedOn="{StaticResource {x:Type connections:Connector}}">
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Height="12">
+                    <Border Name="PART_Connector"
+                            Background="{TemplateBinding Background}"
+                            VerticalAlignment="Top"
+                            Height="3"
+                            CornerRadius="1" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MainStepConnectorThemeBottom"
+                  TargetType="connections:Connector"
+                  BasedOn="{StaticResource {x:Type connections:Connector}}">
+        <Setter Property="Width" Value="16" />
+        <Setter Property="Background" Value="{DynamicResource AccentFillColorDefaultBrush}" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="Transparent" Height="12">
+                    <Border Name="PART_Connector"
+                            Background="{TemplateBinding Background}"
+                            VerticalAlignment="Bottom"
+                            Height="3"
+                            CornerRadius="1" />
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </ControlTheme>
+
+    <DataTemplate x:Key="MainWorkflowStepTemplate" DataType="local:WorkflowStepViewModel">
+        <Border CornerRadius="4">
+            <StackPanel Orientation="Vertical">
+                <connections:Connector Anchor="{Binding InAnchorPosition, Mode=OneWayToSource}"
+                                       IsConnected="True"
+                                       Theme="{StaticResource MainStepConnectorThemeTop}" />
+
+                <TextBlock Margin="12 0"
+                           Text="{Binding Name}"
+                           VerticalAlignment="Center"
+                           FontWeight="SemiBold" />
+
+                <connections:Connector Anchor="{Binding OutAnchorPosition, Mode=OneWayToSource}"
+                                       IsConnected="True"
+                                       Theme="{StaticResource MainStepConnectorThemeBottom}" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+</ResourceDictionary>

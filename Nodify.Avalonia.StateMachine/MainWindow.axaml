@@ -1,0 +1,711 @@
+<Window x:Class="Nodify.StateMachine.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Nodify.StateMachine"
+        xmlns:nodify="clr-namespace:Nodify.Avalonia;assembly=Nodify.Avalonia"
+        xmlns:nodes="clr-namespace:Nodify.Avalonia.Nodes;assembly=Nodify.Avalonia"
+        xmlns:connections="clr-namespace:Nodify.Avalonia.Connections;assembly=Nodify.Avalonia"
+        xmlns:sharedControls="clr-namespace:Nodify.Avalonia.Shared.Controls;assembly=Nodify.Avalonia.Shared"
+        xmlns:sharedConverters="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared"
+        xmlns:shared="clr-namespace:Nodify.Avalonia.Shared;assembly=Nodify.Avalonia.Shared"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+        xmlns:behaviours="clr-namespace:Nodify.Avalonia.StateMachine.Behaviours"
+        mc:Ignorable="d"
+        CanResize="True"
+        Background="{DynamicResource NodifyEditor.BackgroundBrush}"
+        Foreground="{DynamicResource ForegroundBrush}"
+        Title="State Machine Editor"
+        Height="500"
+        Width="930">
+    <Window.DataContext>
+        <local:StateMachineViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <shared:BindingProxy x:Key="EditorProxy"
+                             DataContext="{Binding}" />
+        <!--Explicit editor target for routed commands-->
+        <nodify:TargetedRoutedCommand x:Key="ZoomInCommand"
+                                      Command="{x:Static nodify:EditorCommands.ZoomIn}"
+                                      Target="{Binding #Editor}" />
+        <nodify:TargetedRoutedCommand x:Key="ZoomOutCommand"
+                                      Command="{x:Static nodify:EditorCommands.ZoomOut}"
+                                      Target="{Binding #Editor}" />
+        <nodify:TargetedRoutedCommand x:Key="SelectAllCommand"
+                                      Command="{x:Static nodify:EditorCommands.SelectAll}"
+                                      Target="{Binding #Editor}" />
+        <nodify:TargetedRoutedCommand x:Key="LockSelectionCommand"
+                                      Command="{x:Static nodify:EditorCommands.LockSelection}"
+                                      Target="{Binding #Editor}" />
+        <nodify:TargetedRoutedCommand x:Key="UnlockSelectionCommand"
+                                      Command="{x:Static nodify:EditorCommands.UnlockSelection}"
+                                      Target="{Binding #Editor}" />
+        <nodify:TargetedRoutedCommand x:Key="AlignCommand"
+                                      Command="{x:Static nodify:EditorCommands.Align}"
+                                      Target="{Binding #Editor}" />
+        <nodify:TargetedRoutedCommand x:Key="BringIntoViewCommand"
+                                      Command="{x:Static nodify:EditorCommands.BringIntoView}"
+                                      Target="{Binding #Editor}" />
+        <local:ConnectorOffsetConverter x:Key="ConnectorOffsetConverter" />
+        <local:BlackboardKeyEditorConverter x:Key="BlackboardKeyEditorConverter.Input" CanChangeInputType="True" />
+        <local:BlackboardKeyEditorConverter x:Key="BlackboardKeyEditorConverter.Output" CanChangeInputType="False" />
+        <sharedConverters:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="MenuItem">
+            <Setter Property="Icon">
+                <Template>
+                    <Rectangle Width="16" Height="16" Fill="{Binding $parent[MenuItem].Tag}" />
+                </Template>
+            </Setter>
+        </Style>
+        <Style Selector="nodes|StateNode.readonly">
+            <Setter Property="BorderBrush" Value="{DynamicResource ReadOnlyStateBrush}" />
+        </Style>
+        <Style Selector="nodes|StateNode.active">
+            <Setter Property="BorderBrush" Value="{DynamicResource ActiveStateBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer x:Name="PART_ScrollViewer"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      Grid.Column="1">
+            <nodify:NodifyEditor x:Name="Editor"
+                                 ItemsSource="{Binding States}"
+                                 SelectedItem="{Binding SelectedState}"
+                                 SelectedItems="{Binding SelectedStates}"
+                                 Connections="{Binding Transitions}"
+                                 PendingConnection="{Binding PendingTransition}"
+                                 DisconnectConnectorCommand="{Binding DisconnectStateCommand}"
+                                 ConnectionCompletedCommand="{Binding CreateTransitionCommand}"
+                                 RemoveConnectionCommand="{Binding DeleteTransitionCommand}">
+                <nodify:NodifyEditor.PendingConnectionTemplate>
+                    <DataTemplate DataType="{x:Type local:TransitionViewModel}">
+                        <connections:PendingConnection Source="{Binding Source, Mode=OneWayToSource}"
+                                                  Target="{Binding Target, Mode=OneWayToSource}"
+                                                  StrokeDashArray="0"
+                                                  EnablePreview="True">
+                            <connections:PendingConnection.Template>
+                                <ControlTemplate TargetType="{x:Type connections:PendingConnection}">
+                                    <connections:LineConnection Source="{TemplateBinding SourceAnchor}"
+                                                           Target="{TemplateBinding TargetAnchor}"
+                                                           StrokeThickness="{TemplateBinding StrokeThickness}"
+                                                           StrokeDashArray="{TemplateBinding StrokeDashArray}"
+                                                           SourceOffset="{Binding Source.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=5}"
+                                                           Spacing="0"
+                                                           SourceOffsetMode="Edge"
+                                                           TargetOffsetMode="None" />
+                                </ControlTemplate>
+                            </connections:PendingConnection.Template>
+                        </connections:PendingConnection>
+                    </DataTemplate>
+                </nodify:NodifyEditor.PendingConnectionTemplate>
+
+                <nodify:NodifyEditor.ConnectionTemplate>
+                    <DataTemplate DataType="{x:Type local:TransitionViewModel}">
+                        <connections:LineConnection Source="{Binding Source.Anchor}"
+                                               Target="{Binding Target.Anchor}"
+                                               SourceOffset="{Binding Source.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=5}"
+                                               TargetOffset="{Binding Target.Size, Converter={StaticResource ConnectorOffsetConverter}, ConverterParameter=5}"
+                                               Spacing="0"
+                                               SourceOffsetMode="Edge"
+                                               TargetOffsetMode="Edge"
+                                               OutlineThickness="5"
+                                               Tag="{Binding}">
+                            <connections:LineConnection.Styles>
+                                <Style Selector="connections|LineConnection">
+                                    <Setter Property="OutlineBrush" Value="Transparent" />
+                                    <Setter Property="StrokeThickness" Value="3" />
+                                </Style>
+                                <Style Selector="connections|LineConnection:pointerover">
+                                    <Setter Property="OutlineBrush">
+                                        <SolidColorBrush Color="{StaticResource LineConnection.StrokeColor}"
+                                                         Opacity="0.15" />
+                                    </Setter>
+                                </Style>
+                            </connections:LineConnection.Styles>
+                            <i:Interaction.Behaviors>
+                                <behaviours:DataTrigger Property="IsActive" Value="True">
+                                    <behaviours:PropertySetter Property="Stroke" Value="{DynamicResource ActiveStateBrush}" />
+                                    <behaviours:PropertySetter Property="StrokeThickness" Value="6" />
+                                </behaviours:DataTrigger>
+                            </i:Interaction.Behaviors>
+                            <connections:LineConnection.ContextMenu>
+                                <!--The menu inherits the transition as DataContext, so the command comes from the proxy.-->
+                                <ContextMenu>
+                                    <MenuItem Header="_Delete"
+                                              Tag="{StaticResource DeleteIcon}"
+                                              Command="{Binding DataContext.DeleteTransitionCommand, Source={StaticResource EditorProxy}}"
+                                              CommandParameter="{Binding}" />
+                                </ContextMenu>
+                            </connections:LineConnection.ContextMenu>
+                        </connections:LineConnection>
+                    </DataTemplate>
+                </nodify:NodifyEditor.ConnectionTemplate>
+
+                <nodify:NodifyEditor.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:StateViewModel}">
+                        <!--If IsConnected is false, Anchor won't be updated-->
+                        <nodes:StateNode Content="{Binding}"
+                                          IsConnected="True"
+                                          Anchor="{Binding Anchor, Mode=OneWayToSource}"
+                                          Classes.readonly="{Binding IsEditable, Converter={StaticResource InverseBooleanConverter}}"
+                                          Classes.active="{Binding IsActive}">
+                            <nodes:StateNode.ContentTemplate>
+                                <DataTemplate DataType="{x:Type local:StateViewModel}">
+                                    <sharedControls:EditableTextBlock Text="{Binding Name}"
+                                                              IsEditing="{Binding IsRenaming}"
+                                                              IsEditable="{Binding IsEditable}"
+                                                              MaxLength="30" />
+                                </DataTemplate>
+                            </nodes:StateNode.ContentTemplate>
+                        </nodes:StateNode>
+                    </DataTemplate>
+                </nodify:NodifyEditor.ItemTemplate>
+
+                <nodify:NodifyEditor.ItemContainerTheme>
+                    <ControlTheme TargetType="{x:Type nodify:ItemContainer}"
+                           BasedOn="{StaticResource {x:Type nodify:ItemContainer}}">
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="Location" Value="{Binding Location}" />
+                        <Setter Property="ActualSize" Value="{Binding Size, Mode=OneWayToSource}" />
+                        <Setter Property="ContextMenu">
+                            <Setter.Value>
+                                <ContextMenu DataContext="{Binding DataContext, Source={StaticResource EditorProxy}}">
+                                    <MenuItem Header="_Delete"
+                                              Tag="{StaticResource DeleteIcon}"
+                                              Command="{Binding DeleteSelectionCommand}" />
+                                    <MenuItem Header="Di_sconnect"
+                                              Tag="{StaticResource DisconnectIcon}"
+                                              Command="{Binding DisconnectSelectionCommand}" />
+                                    <MenuItem Header="_Rename"
+                                              Tag="{StaticResource RenameIcon}"
+                                              Command="{Binding RenameStateCommand}" />
+                                    <MenuItem Header="_Lock"
+                                              Tag="{StaticResource LockIcon}"
+                                              Command="{StaticResource LockSelectionCommand}" />
+                                    <MenuItem Header="_Unlock"
+                                              Tag="{StaticResource UnlockIcon}"
+                                              Command="{StaticResource UnlockSelectionCommand}" />
+                                    <MenuItem Header="_Alignment"
+                                              Tag="{StaticResource AlignTopIcon}">
+                                        <MenuItem Header="_Top"
+                                                  Tag="{StaticResource AlignTopIcon}"
+                                                  Command="{StaticResource AlignCommand}"
+                                                  CommandParameter="Top" />
+                                        <MenuItem Header="_Left"
+                                                  Tag="{StaticResource AlignLeftIcon}"
+                                                  Command="{StaticResource AlignCommand}"
+                                                  CommandParameter="Left" />
+                                        <MenuItem Header="_Bottom"
+                                                  Tag="{StaticResource AlignBottomIcon}"
+                                                  Command="{StaticResource AlignCommand}"
+                                                  CommandParameter="Bottom" />
+                                        <MenuItem Header="_Right"
+                                                  Tag="{StaticResource AlignRightIcon}"
+                                                  Command="{StaticResource AlignCommand}"
+                                                  CommandParameter="Right" />
+                                        <MenuItem Header="_Middle"
+                                                  Tag="{StaticResource AlignMiddleIcon}"
+                                                  Command="{StaticResource AlignCommand}"
+                                                  CommandParameter="Middle" />
+                                        <MenuItem Header="_Center"
+                                                  Tag="{StaticResource AlignCenterIcon}"
+                                                  Command="{StaticResource AlignCommand}"
+                                                  CommandParameter="Center" />
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Setter.Value>
+                        </Setter>
+                    </ControlTheme>
+                </nodify:NodifyEditor.ItemContainerTheme>
+
+                <nodify:NodifyEditor.ContextMenu>
+                    <ContextMenu DataContext="{Binding DataContext, Source={StaticResource EditorProxy}}">
+                        <MenuItem Header="_Add State"
+                                  Tag="{StaticResource AddStateIcon}"
+                                  InputGesture="Shift+A"
+                                  Command="{Binding AddStateCommand}"
+                                  CommandParameter="{Binding #Editor.MouseLocation}" />
+                        <MenuItem Header="_Delete"
+                                  Tag="{StaticResource DeleteIcon}"
+                                  InputGesture="Delete"
+                                  Command="{Binding DeleteSelectionCommand}" />
+                        <Separator Background="{DynamicResource BorderBrush}" />
+                        <MenuItem Header="_Select All"
+                                  Tag="{StaticResource SelectAllIcon}"
+                                  InputGesture="Ctrl+A"
+                                  Command="{StaticResource SelectAllCommand}" />
+                    </ContextMenu>
+                </nodify:NodifyEditor.ContextMenu>
+
+                <nodify:NodifyEditor.KeyBindings>
+                    <KeyBinding Gesture="Delete"
+                                Command="{Binding DeleteSelectionCommand}" />
+                    <KeyBinding Gesture="Shift+A"
+                                Command="{Binding AddStateCommand}"
+                                CommandParameter="{Binding #Editor.MouseLocation}" />
+                </nodify:NodifyEditor.KeyBindings>
+            </nodify:NodifyEditor>
+        </ScrollViewer>
+
+        <!--TOOLBAR-->
+        <Border CornerRadius="2"
+                Background="{DynamicResource PanelBackgroundBrush}"
+                BorderThickness="0 0 0 1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="10 0"
+                Grid.Column="1">
+            <StackPanel Orientation="Horizontal">
+                <Button Command="{Binding PauseCommand}"
+                        Theme="{StaticResource IconButton}">
+                    <Button.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Content" Value="{StaticResource PauseIcon}" />
+                            <Setter Property="(ToolTip.Tip)" Value="Pause" />
+                        </Style>
+                    </Button.Styles>
+                    <i:Interaction.Behaviors>
+                        <behaviours:DataTrigger Property="Runner.State" Value="Stopped">
+                            <behaviours:PropertySetter Property="IsVisible" Value="False" />
+                        </behaviours:DataTrigger>
+                        <behaviours:DataTrigger Property="Runner.State" Value="Paused">
+                            <behaviours:PropertySetter Property="Content" Value="{StaticResource UnpauseIcon}" />
+                            <behaviours:PropertySetter Property="(ToolTip.Tip)" Value="Continue" />
+                        </behaviours:DataTrigger>
+                    </i:Interaction.Behaviors>
+                </Button>
+
+                <Button Command="{Binding RunCommand}"
+                        Theme="{StaticResource IconButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <ContentControl Margin="0 0 4 0">
+                            <ContentControl.Styles>
+                                <Style Selector="ContentControl">
+                                    <Setter Property="Content" Value="{StaticResource StopIcon}" />
+                                    <Setter Property="(ToolTip.Tip)" Value="Stop" />
+                                </Style>
+                            </ContentControl.Styles>
+                            <i:Interaction.Behaviors>
+                                <behaviours:DataTrigger Property="Runner.State" Value="Stopped">
+                                    <behaviours:PropertySetter Property="Content" Value="{StaticResource RunIcon}" />
+                                    <behaviours:PropertySetter Property="(ToolTip.Tip)" Value="Run" />
+                                </behaviours:DataTrigger>
+                            </i:Interaction.Behaviors>
+                        </ContentControl>
+                        <TextBlock Text="{Binding Name}" />
+                    </StackPanel>
+                </Button>
+
+                <Separator Width="1" Height="20" BorderThickness="0 0 1 0" />
+
+                <Button Content="{StaticResource ZoomInIcon}"
+                        Command="{StaticResource ZoomInCommand}"
+                        ToolTip.Tip="Zoom In"
+                        Theme="{StaticResource IconButton}" />
+
+                <Button Content="{StaticResource ZoomOutIcon}"
+                        Command="{StaticResource ZoomOutCommand}"
+                        ToolTip.Tip="Zoom Out"
+                        Theme="{StaticResource IconButton}" />
+
+                <Button Theme="{StaticResource IconButton}"
+                        Content="{StaticResource ThemeIcon}"
+                        Command="{Binding Source={x:Static shared:ThemeManager.SetNextThemeCommand}}"
+                        ToolTip.Tip="Change theme" />
+            </StackPanel>
+        </Border>
+
+        <!--Settings-->
+        <Expander HorizontalContentAlignment="Left"
+                  VerticalContentAlignment="Center"
+                  HorizontalAlignment="Left"
+                  Background="{DynamicResource PanelBackgroundBrush}"
+                  Padding="0 1 4 3"
+                  IsExpanded="True"
+                  ExpandDirection="Left">
+            <Expander.Styles>
+                <Style Selector="Expander">
+                    <Setter Property="Tag" Value="{StaticResource ExpandRightIcon}" />
+                </Style>
+            </Expander.Styles>
+            <i:Interaction.Behaviors>
+                <behaviours:DataTrigger Property="IsExpanded" UseDataContext="False" Value="True">
+                    <behaviours:PropertySetter Property="Tag" Value="{StaticResource ExpandLeftIcon}" />
+                </behaviours:DataTrigger>
+            </i:Interaction.Behaviors>
+            <Border BorderBrush="{DynamicResource BackgroundBrush}"
+                    BorderThickness="1"
+                    Width="300"
+                    Padding="10"
+                    HorizontalAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="2*" />
+                    </Grid.RowDefinitions>
+
+                    <!--TRANSITIONS-->
+                    <ScrollViewer IsVisible="{Binding SelectedState, Converter={x:Static ObjectConverters.IsNull}}"
+                                  VerticalScrollBarVisibility="Auto"
+                                  Grid.Row="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Transitions"
+                                       Foreground="{DynamicResource ForegroundBrush}"
+                                       FontWeight="Bold"
+                                       FontSize="16" />
+
+                            <Separator Height="2"
+                                       Margin="0 2 0 5"
+                                       Grid.Row="1" />
+
+                            <ItemsControl ItemsSource="{Binding Transitions}"
+                                          Grid.Row="2">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:TransitionViewModel}">
+                                        <Expander BorderThickness="0 0 0 1"
+                                                  Padding="0 5 0 0"
+                                                  IsExpanded="True"
+                                                  BorderBrush="{DynamicResource BackgroundBrush}">
+                                            <Expander.Styles>
+                                                <Style Selector="Expander">
+                                                    <Setter Property="Tag" Value="{StaticResource ExpandRightIcon}" />
+                                                </Style>
+                                            </Expander.Styles>
+                                            <i:Interaction.Behaviors>
+                                                <behaviours:DataTrigger Property="IsExpanded" UseDataContext="False" Value="True">
+                                                    <behaviours:PropertySetter Property="Tag" Value="{StaticResource ExpandDownIcon}" />
+                                                </behaviours:DataTrigger>
+                                            </i:Interaction.Behaviors>
+                                            <Expander.Header>
+                                                <TextBlock Foreground="{DynamicResource ForegroundBrush}">
+                                                    <i:Interaction.Behaviors>
+                                                        <behaviours:DataTrigger Property="IsActive" Value="True">
+                                                            <behaviours:PropertySetter Property="Foreground" Value="{DynamicResource ActiveStateBrush}" />
+                                                        </behaviours:DataTrigger>
+                                                    </i:Interaction.Behaviors>
+                                                    <Run Text="{Binding Source.Name, Mode=OneWay}" />
+                                                    <Run Text="🠚" />
+                                                    <Run Text="{Binding Target.Name, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </Expander.Header>
+
+                                            <Border HorizontalAlignment="Stretch">
+                                                <Grid IsSharedSizeScope="True">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"
+                                                                          SharedSizeGroup="ConditionName" />
+                                                        <ColumnDefinition />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition />
+                                                        <RowDefinition />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!--CONDITION-->
+                                                    <TextBlock Text="Condition"
+                                                               Margin="0 0 10 0"
+                                                               VerticalAlignment="Center" />
+
+                                                    <ComboBox ItemsSource="{Binding $parent[Window].DataContext.Blackboard.Conditions}"
+                                                              SelectedItem="{Binding ConditionReference}"
+                                                              DisplayMemberBinding="{Binding Name}"
+                                                              Grid.Column="1" />
+
+                                                    <!--INPUT-->
+                                                    <ItemsControl ItemsSource="{Binding Condition.Input}"
+                                                                  Padding="0 5 0 0"
+                                                                  Grid.Row="1"
+                                                                  Grid.ColumnSpan="2">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate DataType="{x:Type local:BlackboardKeyViewModel}">
+                                                                <local:BlackboardKeyEditorView Margin="0 0 0 2">
+                                                                    <local:BlackboardKeyEditorView.DataContext>
+                                                                        <MultiBinding Converter="{StaticResource BlackboardKeyEditorConverter.Input}">
+                                                                            <Binding Path="$parent[Window].DataContext.Blackboard.Keys" />
+                                                                            <Binding Path="$parent.DataContext" />
+                                                                        </MultiBinding>
+                                                                    </local:BlackboardKeyEditorView.DataContext>
+                                                                </local:BlackboardKeyEditorView>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+
+                                                    <Grid Grid.Row="2"
+                                                          Grid.ColumnSpan="2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="From: "
+                                                                       VerticalAlignment="Center" />
+                                                            <Button Theme="{StaticResource IconButton}"
+                                                                    Command="{StaticResource BringIntoViewCommand}"
+                                                                    CommandParameter="{Binding Source.Location}"
+                                                                    Foreground="DodgerBlue">
+                                                                <TextBlock Text="{Binding Source.Name}"
+                                                                           TextDecorations="Underline" />
+                                                            </Button>
+                                                        </StackPanel>
+
+                                                        <StackPanel Orientation="Horizontal"
+                                                                    Grid.Column="1">
+                                                            <TextBlock Text="To: "
+                                                                       VerticalAlignment="Center" />
+                                                            <Button Theme="{StaticResource IconButton}"
+                                                                    Command="{StaticResource BringIntoViewCommand}"
+                                                                    CommandParameter="{Binding Target.Location}"
+                                                                    Foreground="DodgerBlue">
+                                                                <TextBlock Text="{Binding Target.Name}"
+                                                                           TextDecorations="Underline" />
+                                                            </Button>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </Expander>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </ScrollViewer>
+
+                    <!--STATES-->
+                    <Grid IsVisible="{Binding SelectedState, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <!--STATE NAME-->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <sharedControls:EditableTextBlock Text="{Binding SelectedState.Name}"
+                                                      IsEditing="{Binding IsChecked, ElementName=EditStateName}"
+                                                      IsEditable="{Binding SelectedState.IsEditable}"
+                                                      Foreground="{DynamicResource ForegroundBrush}"
+                                                      FontWeight="Bold"
+                                                      FontSize="16"
+                                                      MaxLength="20" />
+                            <CheckBox x:Name="EditStateName"
+                                      IsVisible="{Binding SelectedState.IsEditable}"
+                                      Content="{StaticResource EditIcon}"
+                                      Theme="{StaticResource IconCheckBox}"
+                                      Grid.Column="1" />
+                        </Grid>
+
+                        <Separator Height="2"
+                                   Margin="0 2 0 10"
+                                   Grid.Row="1" />
+
+                        <ScrollViewer IsVisible="{Binding SelectedState.Action, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                      VerticalScrollBarVisibility="Auto"
+                                      Grid.Row="2">
+                            <Grid IsSharedSizeScope="True">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+
+                                <!--ACTION-->
+                                <TextBlock Text="Action"
+                                           Margin="0 0 10 0"
+                                           VerticalAlignment="Center" />
+                                <ComboBox ItemsSource="{Binding Blackboard.Actions}"
+                                          SelectedItem="{Binding SelectedState.ActionReference}"
+                                          IsEnabled="{Binding SelectedState.IsEditable}"
+                                          DisplayMemberBinding="{Binding Name}"
+                                          Grid.Column="1" />
+
+                                <!--INPUT-->
+                                <Expander Margin="0 5 0 0"
+                                          Padding="0 5 0 0"
+                                          Grid.Row="1"
+                                          Grid.ColumnSpan="2"
+                                          BorderThickness="0 0 0 1"
+                                          Header="Input"
+                                          FontWeight="Bold"
+                                          IsExpanded="True"
+                                          BorderBrush="{DynamicResource BackgroundBrush}"
+                                          IsVisible="{Binding SelectedState.Action.Input.Count}">
+                                    <Expander.Styles>
+                                        <Style Selector="Expander">
+                                            <Setter Property="Tag" Value="{StaticResource ExpandRightIcon}" />
+                                        </Style>
+                                    </Expander.Styles>
+                                    <i:Interaction.Behaviors>
+                                        <behaviours:DataTrigger Property="IsExpanded" UseDataContext="False" Value="True">
+                                            <behaviours:PropertySetter Property="Tag" Value="{StaticResource ExpandDownIcon}" />
+                                        </behaviours:DataTrigger>
+                                    </i:Interaction.Behaviors>
+                                    <ItemsControl ItemsSource="{Binding SelectedState.Action.Input}"
+                                                  FontWeight="Normal">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type local:BlackboardKeyViewModel}">
+                                                <local:BlackboardKeyEditorView Margin="0 0 0 2">
+                                                    <local:BlackboardKeyEditorView.DataContext>
+                                                        <MultiBinding Converter="{StaticResource BlackboardKeyEditorConverter.Input}">
+                                                            <Binding Path="$parent[Window].DataContext.Blackboard.Keys" />
+                                                            <Binding Path="$parent.DataContext" />
+                                                        </MultiBinding>
+                                                    </local:BlackboardKeyEditorView.DataContext>
+                                                </local:BlackboardKeyEditorView>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+
+                                <!--OUTPUT-->
+                                <Expander Margin="0 5 0 0"
+                                          Padding="0 5 0 0"
+                                          Grid.Row="2"
+                                          Grid.ColumnSpan="2"
+                                          Header="Output"
+                                          FontWeight="Bold"
+                                          BorderThickness="0 0 0 1"
+                                          IsExpanded="True"
+                                          BorderBrush="{DynamicResource BackgroundBrush}"
+                                          IsVisible="{Binding SelectedState.Action.Output.Count}">
+                                    <Expander.Styles>
+                                        <Style Selector="Expander">
+                                            <Setter Property="Tag" Value="{StaticResource ExpandRightIcon}" />
+                                        </Style>
+                                    </Expander.Styles>
+                                    <i:Interaction.Behaviors>
+                                        <behaviours:DataTrigger Property="IsExpanded" UseDataContext="False" Value="True">
+                                            <behaviours:PropertySetter Property="Tag" Value="{StaticResource ExpandDownIcon}" />
+                                        </behaviours:DataTrigger>
+                                    </i:Interaction.Behaviors>
+                                    <ItemsControl ItemsSource="{Binding SelectedState.Action.Output}"
+                                                  FontWeight="Normal">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type local:BlackboardKeyViewModel}">
+                                                <local:BlackboardKeyEditorView Margin="0 0 0 2">
+                                                    <local:BlackboardKeyEditorView.DataContext>
+                                                        <MultiBinding Converter="{StaticResource BlackboardKeyEditorConverter.Output}">
+                                                            <Binding Path="$parent[Window].DataContext.Blackboard.Keys" />
+                                                            <Binding Path="$parent.DataContext" />
+                                                        </MultiBinding>
+                                                    </local:BlackboardKeyEditorView.DataContext>
+                                                </local:BlackboardKeyEditorView>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Expander>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!--BLACKBOARD-->
+                    <Grid IsSharedSizeScope="True">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition />
+                        </Grid.RowDefinitions>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <sharedControls:EditableTextBlock Text="{Binding Name}"
+                                                      IsEditing="{Binding IsChecked, ElementName=EditName}"
+                                                      Foreground="{DynamicResource ForegroundBrush}"
+                                                      FontWeight="Bold"
+                                                      FontSize="16"
+                                                      MaxLength="20" />
+
+                            <StackPanel Orientation="Horizontal"
+                                        Grid.Column="1">
+                                <CheckBox x:Name="EditName"
+                                          Content="{StaticResource EditIcon}"
+                                          ToolTip.Tip="Edit Name"
+                                          Theme="{StaticResource IconCheckBox}" />
+                                <Button Content="{StaticResource AddKeyIcon}"
+                                        Command="{Binding Blackboard.AddKeyCommand}"
+                                        ToolTip.Tip="Add New Key"
+                                        Theme="{StaticResource IconButton}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Separator Height="2"
+                                   Margin="0 2 0 10"
+                                   Grid.Row="1" />
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      Grid.Row="2">
+                            <ItemsControl ItemsSource="{Binding Blackboard.Keys}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type local:BlackboardKeyViewModel}">
+                                        <Grid Margin="0 0 0 2">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition />
+                                                <ColumnDefinition SharedSizeGroup="Actions" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <local:BlackboardKeyEditorView>
+                                                <local:BlackboardKeyEditorView.DataContext>
+                                                    <MultiBinding Converter="{StaticResource BlackboardKeyEditorConverter.Output}">
+                                                        <Binding Path="$parent[Window].DataContext.Blackboard.Keys" />
+                                                        <Binding Path="$parent.DataContext" />
+                                                        <Binding ElementName="EditKeyName"
+                                                                 Path="IsChecked" />
+                                                    </MultiBinding>
+                                                </local:BlackboardKeyEditorView.DataContext>
+                                            </local:BlackboardKeyEditorView>
+
+                                            <StackPanel Orientation="Horizontal"
+                                                        Grid.Column="1">
+                                                <CheckBox x:Name="EditKeyName"
+                                                          Content="{StaticResource EditIcon}"
+                                                          ToolTip.Tip="Edit Name"
+                                                          Theme="{StaticResource IconCheckBox}" />
+                                                <Button Content="{StaticResource RemoveKeyIcon}"
+                                                        Command="{Binding $parent[Window].DataContext.Blackboard.RemoveKeyCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        Theme="{StaticResource IconButton}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Expander>
+    </Grid>
+</Window>

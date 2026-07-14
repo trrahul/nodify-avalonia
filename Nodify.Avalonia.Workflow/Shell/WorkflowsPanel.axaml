@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Nodify.Avalonia.Workflow.Shell"
+             xmlns:wf="clr-namespace:Nodify.Avalonia.Workflow.Designer"
+             x:Class="Nodify.Avalonia.Workflow.Shell.WorkflowsPanel"
+             x:DataType="local:ApplicationViewModel">
+
+    <Grid RowDefinitions="*,Auto">
+        <ListBox ItemsSource="{Binding Workflows}"
+                 SelectedItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                 HorizontalAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="wf:SubWorkflowDesignerViewModel">
+                    <TextBlock Margin="8 4" Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Button Grid.Row="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="0 8 0 0">
+            <StackPanel Orientation="Horizontal">
+                <Path Width="14" Height="14" Stretch="Uniform"
+                      StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                      Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+                      VerticalAlignment="Center"
+                      Data="{StaticResource Icon.Add}" />
+                <TextBlock Text="New Workflow" Margin="6 0 0 0" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
+    </Grid>
+</UserControl>

@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:Nodify.Avalonia.Playground"
+             xmlns:views="clr-namespace:Nodify.Avalonia.Playground.Views"
+             xmlns:converters="clr-namespace:Nodify.Avalonia.Playground.Converters"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="300"
+             x:Class="Nodify.Avalonia.Playground.Views.SettingsView"
+             x:DataType="views:SettingsView"
+             x:Name="Root">
+    <ItemsControl ItemsSource="{Binding #Root.Items}"
+                  Grid.IsSharedSizeScope="True">
+        <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="{x:Type local:ISettingViewModel}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="PropertyName" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Name}"
+                               ToolTip.Tip="{Binding Description}"
+                               VerticalAlignment="Center"
+                               Margin="0 5 5 0"
+                               Grid.Column="0" />
+                    <ContentControl Content="{Binding}"
+                                    Margin="5 5 5 0"
+                                    Grid.Column="1">
+                        <ContentControl.ContentTemplate>
+                            <local:SettingTemplateSelector>
+                                <local:SettingTemplateSelector.Boolean>
+                                    <DataTemplate DataType="{x:Type local:ISettingViewModel}">
+                                        <CheckBox IsChecked="{Binding Value}" />
+                                    </DataTemplate>
+                                </local:SettingTemplateSelector.Boolean>
+                                <local:SettingTemplateSelector.Number>
+                                    <DataTemplate DataType="{x:Type local:ISettingViewModel}">
+                                        <TextBox Text="{Binding Value}" />
+                                    </DataTemplate>
+                                </local:SettingTemplateSelector.Number>
+                                <local:SettingTemplateSelector.Text>
+                                    <DataTemplate DataType="{x:Type local:ISettingViewModel}">
+                                        <TextBox Text="{Binding Value}"
+                                                 AcceptsReturn="True"
+                                                 TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </local:SettingTemplateSelector.Text>
+                                <local:SettingTemplateSelector.Point>
+                                    <DataTemplate DataType="{x:Type local:ISettingViewModel}">
+                                        <views:PointEditorView DataContext="{Binding Value}" />
+                                    </DataTemplate>
+                                </local:SettingTemplateSelector.Point>
+                                <local:SettingTemplateSelector.Option>
+                                    <DataTemplate DataType="{x:Type local:ISettingViewModel}">
+                                        <ComboBox DisplayMemberBinding="{Binding Name}"
+                                                  SelectedValueBinding="{Binding Value}"
+                                                  SelectedValue="{Binding Value, Mode=TwoWay}"
+                                                  ItemsSource="{Binding Value, Converter={converters:EnumValuesConverter}}" />
+                                    </DataTemplate>
+                                </local:SettingTemplateSelector.Option>
+                            </local:SettingTemplateSelector>
+                        </ContentControl.ContentTemplate>
+                    </ContentControl>
+                </Grid>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+</UserControl>

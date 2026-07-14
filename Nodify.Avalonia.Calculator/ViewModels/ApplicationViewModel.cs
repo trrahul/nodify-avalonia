@@ -17,8 +17,9 @@ namespace Nodify.Avalonia.Calculator.ViewModels
             {
                 Name = $"Editor {Editors.Count + 1}"
             }));
-            CloseEditorCommand = ReactiveCommand.Create<Guid>(
-                id => Editors.RemoveOne(editor => editor.Id == id),this.WhenAnyValue(v => v.Editors,v => v.SelectedEditor,(e,se)=>e.Count > 0 && se != null));
+            CloseEditorCommand = new DelegateCommand<Guid>(
+                id => Editors.RemoveOne(editor => editor.Id == id),
+                _ => Editors.Count > 0 && SelectedEditor != null);
             Editors.WhenAdded((editor) =>
             {
                 if (AutoSelectNewEditor || Editors.Count == 1)

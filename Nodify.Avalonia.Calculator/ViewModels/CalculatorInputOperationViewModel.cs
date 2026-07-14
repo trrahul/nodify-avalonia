@@ -8,12 +8,12 @@ namespace Nodify.Avalonia.Calculator.ViewModels
     {
         public CalculatorInputOperationViewModel()
         {
-            AddOutputCommand = ReactiveCommand.Create( //todo was requery
+            AddOutputCommand = ReactiveCommand.Create(
                 () => Output.Add(new ConnectorViewModel
                 {
                     Title = $"In {Output.Count}"
                 }), this.WhenAnyValue(v => v.Output.Count, (c) => c < 10));
-            RemoveOutputCommand = ReactiveCommand.Create( //todo was requery
+            RemoveOutputCommand = ReactiveCommand.Create(
                 () => Output.RemoveAt(Output.Count - 1), this.WhenAnyValue(v => v.Output.Count, (o) => o > 1));
 
             Output.Add(new ConnectorViewModel

@@ -14,8 +14,8 @@ namespace Nodify.Avalonia.Calculator
             var maxX = double.MinValue;
             var maxY = double.MinValue;
 
-            const int width = 200; //node.Width
-            const int height = 100; //node.Height
+            const int width = 200;
+            const int height = 100;
 
             foreach (var node in nodes)
             {

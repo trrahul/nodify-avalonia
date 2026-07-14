@@ -11,7 +11,7 @@ namespace Nodify.Avalonia.Calculator.ViewModels
         public CalculatorViewModel()
         {
             CreateConnectionCommand =  ReactiveCommand.Create<ConnectorViewModel>(_ => CreateConnection(PendingConnection.Source, PendingConnection.Target), this.WhenAnyValue(v => v.PendingConnection.Source,v => v.PendingConnection.Target,CanCreateConnection));
-            StartConnectionCommand = ReactiveCommand.Create<ConnectorViewModel>(_ => PendingConnection.IsVisible = true); // (c) => !(c.IsConnected && c.IsInput) todo
+            StartConnectionCommand = new DelegateCommand<ConnectorViewModel>(_ => PendingConnection.IsVisible = true, c => !(c.IsConnected && c.IsInput));
             DisconnectConnectorCommand = ReactiveCommand.Create<ConnectorViewModel>(DisconnectConnector);
             DeleteSelectionCommand = ReactiveCommand.Create(DeleteSelection);
             GroupSelectionCommand = ReactiveCommand.Create(GroupSelectedOperations,  this.WhenAnyValue(v => v.SelectedOperations.Count,(s) => s > 0));
@@ -91,6 +91,20 @@ namespace Nodify.Avalonia.Calculator.ViewModels
         public NodifyObservableCollection<ConnectionViewModel> Connections { get; } = new NodifyObservableCollection<ConnectionViewModel>();
         public PendingConnectionViewModel PendingConnection { get; set; } = new PendingConnectionViewModel();
         public OperationsMenuViewModel OperationsMenu { get; set; }
+
+        private double _zoom = 1.0;
+        public double Zoom
+        {
+            get => _zoom;
+            set => this.RaiseAndSetIfChanged(ref _zoom, value);
+        }
+
+        private Point _location;
+        public Point Location
+        {
+            get => _location;
+            set => this.RaiseAndSetIfChanged(ref _location, value);
+        }
 
         public ICommand StartConnectionCommand { get; }
         public ICommand CreateConnectionCommand { get; }

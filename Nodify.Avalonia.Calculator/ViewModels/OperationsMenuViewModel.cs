@@ -25,8 +25,6 @@ namespace Nodify.Avalonia.Calculator.ViewModels
             }
         }
 
-        public Rect Bounds { get; set; }
-
         private Point _location;
         public Point Location
         {
@@ -51,7 +49,6 @@ namespace Nodify.Avalonia.Calculator.ViewModels
         public NodifyObservableCollection<OperationInfoViewModel> AvailableOperations { get; }
         public ICommand CreateOperationCommand { get; }
         private readonly CalculatorViewModel _calculator;
-        private Rect _bounds;
 
         public OperationsMenuViewModel(CalculatorViewModel calculator)
         {
@@ -61,7 +58,7 @@ namespace Nodify.Avalonia.Calculator.ViewModels
                 new OperationInfoViewModel
                 {
                     Type = OperationType.Graph,
-                    Title = "(New) Operation Graph",
+                    Title = "Operation Graph",
                 },
                 new OperationInfoViewModel
                 {

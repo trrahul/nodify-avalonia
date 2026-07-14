@@ -1,0 +1,294 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+             xmlns:wf="clr-namespace:Nodify.Avalonia.Workflow.Designer"
+             xmlns:nav="clr-namespace:Nodify.Avalonia.Workflow.Navigation"
+             xmlns:settings="clr-namespace:Nodify.Avalonia.Workflow.Settings"
+             xmlns:nodify="clr-namespace:Nodify.Avalonia;assembly=Nodify.Avalonia"
+             xmlns:connections="clr-namespace:Nodify.Avalonia.Connections;assembly=Nodify.Avalonia"
+             x:Class="Nodify.Avalonia.Workflow.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="/Themes/Icons.axaml"/>
+                <ResourceInclude Source="/Common/ControlStyles.axaml"/>
+                <ResourceInclude Source="/Common/CommonDataTemplates.axaml"/>
+                <ResourceInclude Source="/Designer/WorkflowDataTemplates.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <Color x:Key="NodifyEditor.FocusVisualColor">DodgerBlue</Color>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.DataTemplates>
+        <!-- ================= Common command view models ================= -->
+        <DataTemplate DataType="common:ToggleCommandViewModel">
+            <ToggleButton Theme="{StaticResource BorderlessToggleButton}"
+                          ToolTip.Tip="{Binding ToolTip}"
+                          Command="{Binding Command}"
+                          IsChecked="{Binding IsChecked, Mode=TwoWay}">
+                <StackPanel Orientation="Horizontal">
+                    <Grid Width="12" Height="12" IsVisible="{Binding !IsChecked}">
+                        <Path Stretch="Uniform" StrokeThickness="1.3"
+                              StrokeLineCap="Round" StrokeJoin="Round"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Stroke="{Binding IconColor, Converter={x:Static common:IconColorToBrushConverter.Instance}}"
+                              IsVisible="{Binding !IsChecked}"
+                              Data="{Binding Icon, Converter={x:Static common:IconToGeometryConverter.Instance}}">
+                            <Path.Fill>
+                                <MultiBinding Converter="{x:Static common:FilledIconBrushConverter.Instance}">
+                                    <Binding Path="IconVariant" />
+                                    <Binding Path="Stroke" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </Path.Fill>
+                        </Path>
+                    </Grid>
+                    <Grid Width="12" Height="12" IsVisible="{Binding IsChecked}">
+                        <Path Stretch="Uniform" StrokeThickness="1.3"
+                              StrokeLineCap="Round" StrokeJoin="Round"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Stroke="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                              IsVisible="{Binding IsChecked}"
+                              Data="{Binding IconChecked, Converter={x:Static common:IconToGeometryConverter.Instance}}">
+                            <Path.Fill>
+                                <MultiBinding Converter="{x:Static common:FilledIconBrushConverter.Instance}">
+                                    <Binding Path="IconVariant" />
+                                    <Binding Path="Stroke" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </Path.Fill>
+                        </Path>
+                    </Grid>
+                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center"
+                               Margin="{Binding Icon, Converter={x:Static common:IconToLabelMarginConverter.Instance}}"
+                               IsVisible="{Binding Label, Converter={x:Static common:NotNullConverter.Instance}}" />
+                </StackPanel>
+            </ToggleButton>
+        </DataTemplate>
+
+        <DataTemplate DataType="common:CommandViewModel">
+            <Button Theme="{StaticResource BorderlessButton}"
+                    ToolTip.Tip="{Binding ToolTip}"
+                    Command="{Binding Command}">
+                <StackPanel Orientation="Horizontal">
+                    <Grid Width="12" Height="12"
+                          IsVisible="{Binding Icon, Converter={x:Static common:IconNotNoneConverter.Instance}}">
+                        <Path Stretch="Uniform" StrokeThickness="1.3"
+                              StrokeLineCap="Round" StrokeJoin="Round"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              IsVisible="{Binding Icon, Converter={x:Static common:IconNotNoneConverter.Instance}}"
+                              Data="{Binding Icon, Converter={x:Static common:IconToGeometryConverter.Instance}}"
+                              Stroke="{Binding IconColor, Converter={x:Static common:IconColorToBrushConverter.Instance}}">
+                            <Path.Fill>
+                                <MultiBinding Converter="{x:Static common:FilledIconBrushConverter.Instance}">
+                                    <Binding Path="IconVariant" />
+                                    <Binding Path="Stroke" RelativeSource="{RelativeSource Self}" />
+                                </MultiBinding>
+                            </Path.Fill>
+                        </Path>
+                    </Grid>
+                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center"
+                               Margin="{Binding Icon, Converter={x:Static common:IconToLabelMarginConverter.Instance}}"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               IsVisible="{Binding Label, Converter={x:Static common:NotNullConverter.Instance}}" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+
+        <!-- ================= Designer surfaces ================= -->
+        <DataTemplate DataType="wf:SubWorkflowDesignerViewModel">
+            <Grid>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <nodify:NodifyEditor x:Name="Editor"
+                                         ItemsSource="{Binding Steps}"
+                                         SelectedItem="{Binding SelectedStep, Mode=TwoWay}"
+                                         Connections="{Binding Connections}"
+                                         InputGestures="{Binding EditorGestures}"
+                                         ViewportLocation="{Binding ViewportPosition, Mode=TwoWay}"
+                                         ViewportSize="{Binding ViewportSize, Mode=OneWayToSource}"
+                                         ItemTemplate="{StaticResource SubWorkflowStepTemplate}"
+                                         ItemContainerTheme="{StaticResource StepItemContainerTheme}"
+                                         CuttingLineTheme="{StaticResource AccentCuttingLineTheme}"
+                                         PushedAreaTheme="{StaticResource AccentPushedAreaTheme}"
+                                         Background="Transparent">
+                        <nodify:NodifyEditor.Resources>
+                            <!-- Override the pending connection stroke to the accent color on this editor only. -->
+                            <ControlTheme x:Key="{x:Type connections:PendingConnection}"
+                                          TargetType="connections:PendingConnection"
+                                          BasedOn="{StaticResource {x:Type connections:PendingConnection}}">
+                                <Setter Property="Stroke" Value="{DynamicResource AccentFillColorTertiaryBrush}" />
+                            </ControlTheme>
+                        </nodify:NodifyEditor.Resources>
+                        <nodify:NodifyEditor.ConnectionTemplate>
+                            <DataTemplate DataType="wf:WorkflowStepConnectionViewModel">
+                                <connections:StepConnection Source="{Binding From.OutAnchorPosition}"
+                                                            Target="{Binding To.InAnchorPosition}"
+                                                            Theme="{StaticResource SubStepConnectionTheme}" />
+                            </DataTemplate>
+                        </nodify:NodifyEditor.ConnectionTemplate>
+                    </nodify:NodifyEditor>
+                </ScrollViewer>
+
+                <wf:WorkflowToolBar Editor="{Binding #Editor}"
+                                    VerticalAlignment="Bottom"
+                                    HorizontalAlignment="Center"
+                                    Margin="32" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate DataType="wf:MainWorkflowDesignerViewModel">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <nodify:NodifyEditor ItemsSource="{Binding Steps}"
+                                     SelectedItem="{Binding SelectedStep, Mode=TwoWay}"
+                                     Connections="{Binding Connections}"
+                                     InputGestures="{Binding EditorGestures}"
+                                     ViewportLocation="{Binding ViewportPosition, Mode=TwoWay}"
+                                     ViewportSize="{Binding ViewportSize, Mode=OneWayToSource}"
+                                     ItemTemplate="{StaticResource MainWorkflowStepTemplate}"
+                                     ItemContainerTheme="{StaticResource StepItemContainerTheme}"
+                                     Background="Transparent">
+                    <nodify:NodifyEditor.ConnectionTemplate>
+                        <DataTemplate DataType="wf:WorkflowStepConnectionViewModel">
+                            <connections:LineConnection Source="{Binding From.OutAnchorPosition}"
+                                                        Target="{Binding To.InAnchorPosition}"
+                                                        SourceOrientation="Vertical"
+                                                        TargetOrientation="Vertical"
+                                                        Theme="{StaticResource MainStepConnectionTheme}" />
+                        </DataTemplate>
+                    </nodify:NodifyEditor.ConnectionTemplate>
+                </nodify:NodifyEditor>
+            </ScrollViewer>
+        </DataTemplate>
+
+        <!-- ================= Settings / keybindings ================= -->
+        <DataTemplate DataType="nav:NavigationBreadcrumbsViewModel">
+            <ItemsControl ItemsSource="{Binding Breadcrumbs}" MaxWidth="900" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="nav:NavigationBreadcrumbViewModel">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Path Height="16" Stretch="Uniform" Margin="6 0"
+                                  StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                                  Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                                  VerticalAlignment="Center"
+                                  IsVisible="{Binding !IsRoot}"
+                                  Data="{StaticResource Icon.ChevronRight}" />
+                            <Button Command="{Binding Command}"
+                                    Theme="{StaticResource TextButton}"
+                                    Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                    Padding="0"
+                                    IsVisible="{Binding !IsCurrent}">
+                                <TextBlock Text="{Binding RouteKey}" FontSize="18" FontWeight="SemiBold" />
+                            </Button>
+                            <Button Theme="{StaticResource TextButton}"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Padding="0"
+                                    IsVisible="{Binding IsCurrent}">
+                                <TextBlock Text="{Binding RouteKey}" FontSize="18" FontWeight="SemiBold" />
+                            </Button>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="settings:KeybindingsSettingsViewModel">
+            <ItemsControl ItemsSource="{Binding Categories}" MaxWidth="900" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="settings:KeybindingCategoryViewModel">
+                        <settings:KeybindingsCategory Icon="{Binding Icon}"
+                                                      Label="{Binding Name}"
+                                                      Description="{Binding Description}"
+                                                      Command="{Binding SelectCommand}"
+                                                      Margin="0 0 0 8" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="settings:KeybindingsListViewModel">
+            <ItemsControl ItemsSource="{Binding Keybindings}" MaxWidth="900" Focusable="False">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="settings:KeybindingsGroupViewModel">
+                        <StackPanel Margin="0 0 0 24">
+                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0 0 0 8" />
+                            <ItemsControl ItemsSource="{Binding}" Focusable="False">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="settings:KeybindingViewModel">
+                                        <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                                                CornerRadius="4" HorizontalAlignment="Stretch"
+                                                Padding="16" Margin="0 0 0 8">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                                <!-- Opacity, not IsVisible: keeps the icon column's layout space reserved when the icon is missing. -->
+                                                <Grid Grid.Column="0" Margin="0 0 12 0"
+                                                      Width="20" Height="20" VerticalAlignment="Center">
+                                                    <Path Stretch="Uniform"
+                                                          StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                                                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                          Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+                                                          Opacity="{Binding Icon, Converter={x:Static common:IconToOpacityConverter.Instance}}"
+                                                          Data="{Binding Icon, Converter={x:Static common:IconToGeometryConverter.Instance}}" />
+                                                </Grid>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Label}" />
+                                                    <TextBlock Text="{Binding Description}" FontSize="12"
+                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                                                </StackPanel>
+                                                <ContentControl Grid.Column="2" VerticalAlignment="Center"
+                                                                Focusable="False" Content="{Binding GestureEditor}" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+
+        <DataTemplate DataType="settings:MouseGestureSelectorViewModel">
+            <StackPanel Orientation="Horizontal">
+                <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                        CornerRadius="4" Padding="6" Margin="0 0 8 0"
+                        IsVisible="{Binding Modifier, Converter={x:Static common:ModifierNotNoneConverter.Instance}}">
+                    <TextBlock Text="{Binding Modifier, Converter={StaticResource ToStringConverter}}"
+                               Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                               FontWeight="SemiBold" />
+                </Border>
+                <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                        CornerRadius="4" Padding="6" Margin="0 0 8 0"
+                        IsVisible="{Binding Key, Converter={x:Static common:KeyNotNoneConverter.Instance}}">
+                    <TextBlock Text="{Binding Key, Converter={StaticResource ToStringConverter}}"
+                               Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                               FontWeight="SemiBold" />
+                </Border>
+                <ComboBox SelectedValue="{Binding SelectedMouseAction}"
+                          ItemsSource="{Binding Source={x:Static settings:MouseGestureSelectorViewModel.AvailableOptions}}"
+                          SelectedValueBinding="{Binding Action}"
+                          MinWidth="130">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="settings:MouseActionViewModel">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="settings:KeyGestureSelectorViewModel">
+            <settings:EditKeybinding />
+        </DataTemplate>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme DensityStyle="Compact" />
+        <StyleInclude Source="avares://Nodify.Avalonia/Themes/Controls.xaml"/>
+        <StyleInclude Source="avares://Nodify.Avalonia.Shared/Themes/Styles.axaml"/>
+    </Application.Styles>
+</Application>

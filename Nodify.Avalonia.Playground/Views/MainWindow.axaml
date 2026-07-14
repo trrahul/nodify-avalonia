@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:Nodify.Avalonia.Playground.Converters"
+        xmlns:sharedConverters="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared"
         xmlns:editor="clr-namespace:Nodify.Avalonia.Playground.Editor"
         xmlns:views="clr-namespace:Nodify.Avalonia.Playground.Views"
         xmlns:local="clr-namespace:Nodify.Avalonia.Playground"
@@ -11,12 +12,14 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Nodify.Avalonia.Playground.Views.MainWindow"
         x:DataType="vm:PlaygroundViewModel"
-        Icon="/Assets/avalonia-logo.ico" 
-        Title="Nodify.Avalonia.Playground">
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Nodify.Avalonia.Playground"
+        Width="1300" Height="700">
 
     <Window.Resources>
-        <converters:DebugConverter x:Key="DebugConverter" />
-        <converters:ToStringConverter x:Key="ToStringConverter" />
+        <sharedConverters:DebugConverter x:Key="DebugConverter" />
+        <sharedConverters:ToStringConverter x:Key="ToStringConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
     </Window.Resources>
 
     <Window.DataContext>
@@ -36,7 +39,8 @@
 
         <!--ACTIONS-->
         <Border VerticalAlignment="Top"
-                Padding="10">
+                Padding="10"
+                Background="{DynamicResource PanelBackgroundBrush}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -44,39 +48,50 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <Button Command="{Binding GenerateRandomNodesCommand}"
-                            Content="GENERATE RANDOM NODES"
+                            Content="GENERATE NODES"
                             ToolTip.Tip="Generate nodes using the specified settings."
+                            Theme="{StaticResource HollowButton}"
                             />
-                    <!--Classes="HollowButton"--> 
                     <Button Command="{Binding PerformanceTestCommand}"
                             Content="PERFORMANCE TEST"
                             ToolTip.Tip="You will encounter rendering performance issues. Try disabling the connections to see the difference."
+                            Theme="{StaticResource HollowButton}"
                             />
                     <Button Command="{Binding ToggleConnectionsCommand}"
-                            Content="CONNECT / DISCONNECT"
+                            Content="{Binding ConnectNodesText}"
                             ToolTip.Tip="Will add new connections if Connect Nodes is checked, otherwise it will disconnect nodes."
+                            Theme="{StaticResource HollowButton}"
                              />
                     <Button Command="{Binding ResetCommand}"
                             Content="RESET PLAYGROUND"
                             ToolTip.Tip="Reset the Location, Zoom, Nodes and Connections."
+                            Theme="{StaticResource HollowButton}"
                             />
                     <Button Click="BringIntoView_Click"
                             Content="BRING INTO VIEW"
-                            ToolTip.Tip="Bring a random node into view." />
-                    <Button Click="FitToScreen_Click"
+                            ToolTip.Tip="Bring a random node into view."
+                            Theme="{StaticResource HollowButton}" />
+                    <Button x:Name="FitToScreenButton"
                             Content="FIT TO SCREEN"
                             ToolTip.Tip="Scales the viewport to fit all nodes if that's possible."
+                            Theme="{StaticResource HollowButton}"
                     />
-                    <!--CommandTarget="{Binding EditorInstance, ElementName=EditorView}"
-                    Style="{StaticResource HollowButton}"-->
                     <Button Command="{Binding GraphViewModel.CommentSelectionCommand}"
                             Content="COMMENT SELECTION"
                             ToolTip.Tip="Creates a comment node containing the selected nodes."
+                            Theme="{StaticResource HollowButton}"
+                    />
+                    <Button Click="AnimateConnections_Click"
+                            Content="TOGGLE CONNECTIONS ANIMATION"
+                            ToolTip.Tip="Starts or stops animating the directional arrows on all connections (see DirectionalArrowsCount)"
+                            Theme="{StaticResource HollowButton}"
                     />
                 </StackPanel>
 
-                <ToggleSwitch IsChecked="{Binding CurrentThemeToggle}" OffContent="Light" OnContent="Dark"
-                        ToolTip.Tip="Change theme"
+                <Button Command="{Binding SetNextThemeCommand}"
+                        Content="{StaticResource ThemeIcon}"
+                        ToolTip.Tip="Change theme (cycles Dark / Light / Nodify)"
+                        Theme="{StaticResource IconButton}"
                         Grid.Column="1" />
 
             </Grid>
@@ -103,9 +118,18 @@
                 </Style>
             </Expander.Styles>
 
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top"
+                           Margin="10 6 10 4">
+                    <TextBlock Text="Search: "
+                               VerticalAlignment="Center"
+                               Margin="0 0 4 0" />
+                    <TextBox Text="{Binding SearchText, Source={x:Static local:PlaygroundSettings.Instance}}"
+                             PlaceholderText="Filter settings…" />
+                </DockPanel>
             <ScrollViewer>
                 <Grid IsSharedSizeScope="True"
-                      Width="330">
+                      Width="380">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -151,6 +175,7 @@
                     </Expander>
                 </Grid>
             </ScrollViewer>
+            </DockPanel>
         </Expander>
 
         <!--INFORMATION-->
@@ -168,27 +193,44 @@
                         <Setter Property="Foreground"
                                 Value="{DynamicResource ForegroundBrush}" />
                         <Setter Property="Margin"
-                                Value="0 0 10 0" />
+                                Value="0 0 15 0" />
                     </Style>
                 </Grid.Styles>
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock ToolTip.Tip="The number of selected items.">
                         <TextBlock.Inlines>
-                            <Run Text="Selected: " />
+                            <Run Text="Selected nodes: " />
                             <Run Foreground="YellowGreen"
                                  Text="{Binding GraphViewModel.SelectedNodes.Count, Mode=OneWay}" />
                             <Run Text="/" />
                             <Run Text="{Binding GraphViewModel.Nodes.Count, Mode=OneWay}" />
                         </TextBlock.Inlines>
                     </TextBlock>
-                    <TextBlock ToolTip.Tip="The number of connections.">
+                    <TextBlock ToolTip.Tip="The number of selected connections.">
                         <TextBlock.Inlines>
-                            <Run Text="Connections: " />
+                            <Run Text="Selected connections: " />
                             <Run Foreground="YellowGreen"
-                                 Text="{Binding GraphViewModel.Connections.Count, Mode=OneWay}" />
+                                 Text="{Binding GraphViewModel.SelectedConnections.Count, Mode=OneWay}" />
+                            <Run Text="/" />
+                            <Run Text="{Binding GraphViewModel.Connections.Count, Mode=OneWay}" />
                         </TextBlock.Inlines>
                     </TextBlock>
+
+                    <Border IsVisible="{Binding GraphViewModel.KeyboardNavigationLayer, Converter={StaticResource StringToVisibilityConverter}}"
+                            ToolTip.Tip="Press CTRL+[ or CTRL+] in the editor to change the keyboard navigation layer."
+                            Padding="14 0 0 0"
+                            Height="16"
+                            CornerRadius="3"
+                            Background="{DynamicResource PanelBackgroundBrush}"
+                            BorderThickness="1"
+                            BorderBrush="{DynamicResource BorderBrush}">
+                        <TextBlock>
+                            <Run Text="Navigating: " />
+                            <Run Foreground="{DynamicResource ForegroundBrush}"
+                                 Text="{Binding GraphViewModel.KeyboardNavigationLayer, Mode=OneWay}" />
+                        </TextBlock>
+                    </Border>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal"

@@ -19,4 +19,6 @@
     <Color x:Key="FocusedBorderColor">#569DE5</Color>
     
     <Color x:Key="GridLinesColor">#333337</Color>
+
+    <Color x:Key="PanelBackgroundColor">#1A1A1A</Color>
 </ResourceDictionary>

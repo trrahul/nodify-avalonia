@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+             xmlns:local="clr-namespace:Nodify.Avalonia.Workflow.Settings"
+             xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared"
+             x:Class="Nodify.Avalonia.Workflow.Settings.EditKeybinding"
+             x:DataType="local:KeyGestureSelectorViewModel">
+    <!-- Focusable=False: pressing the button must not steal focus from the recording UserControl
+         (its bubbled LostFocus would immediately stop editing). -->
+    <Button x:Name="EditButton"
+            Theme="{StaticResource BorderlessButton}"
+            Padding="4"
+            BorderThickness="2"
+            Height="NaN"
+            Focusable="False"
+            Click="OnEditClick">
+        <StackPanel Orientation="Horizontal">
+            <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                    CornerRadius="4" Padding="6" Margin="0 0 8 0"
+                    IsVisible="{Binding ComboTriggerKey, Converter={x:Static common:KeyNotNoneConverter.Instance}}">
+                <TextBlock Text="{Binding ComboTriggerKey, Converter={StaticResource ToStringConverter}}"
+                           Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                           FontWeight="SemiBold" />
+            </Border>
+            <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                    CornerRadius="4" Padding="6" Margin="0 0 8 0"
+                    IsVisible="{Binding Modifier, Converter={x:Static common:ModifierNotNoneConverter.Instance}}">
+                <TextBlock Text="{Binding Modifier, Converter={StaticResource ToStringConverter}}"
+                           Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                           FontWeight="SemiBold" />
+            </Border>
+            <Border Background="{DynamicResource AccentFillColorDefaultBrush}"
+                    CornerRadius="4" Padding="6" Margin="0 0 8 0"
+                    IsVisible="{Binding Key, Converter={x:Static common:KeyNotNoneConverter.Instance}}">
+                <TextBlock Text="{Binding Key, Converter={StaticResource ToStringConverter}}"
+                           Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                           FontWeight="SemiBold" />
+            </Border>
+            <Path x:Name="EditIcon"
+                  Width="13" Height="13" Stretch="Uniform"
+                  StrokeThickness="1.4" StrokeLineCap="Round" StrokeJoin="Round"
+                  Margin="4 0"
+                  Stroke="{DynamicResource TextFillColorTertiaryBrush}"
+                  VerticalAlignment="Center"
+                  Data="{StaticResource Icon.Edit}" />
+        </StackPanel>
+    </Button>
+</UserControl>

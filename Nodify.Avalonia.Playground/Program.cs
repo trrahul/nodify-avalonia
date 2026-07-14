@@ -1,5 +1,5 @@
 ﻿using Avalonia;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 using System;
 
 namespace Nodify.Avalonia.Playground
@@ -18,6 +18,6 @@ namespace Nodify.Avalonia.Playground
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
-                .UseReactiveUI();
+                .UseReactiveUI(_ => { });
     }
 }

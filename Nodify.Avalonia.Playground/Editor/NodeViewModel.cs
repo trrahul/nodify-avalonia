@@ -1,4 +1,6 @@
-﻿using Avalonia;
+﻿using System.Windows.Input;
+using Avalonia;
+using global::Avalonia.Layout;
 using ReactiveUI;
 
 namespace Nodify.Avalonia.Playground.Editor
@@ -17,6 +19,15 @@ namespace Nodify.Avalonia.Playground.Editor
         {
             get => _location;
             set => this.RaiseAndSetIfChanged(ref _location, value);
+        }
+
+        public Orientation Orientation { get; protected set; }
+
+        public ICommand DeleteCommand { get; }
+
+        protected NodeViewModel()
+        {
+            DeleteCommand = ReactiveCommand.Create(() => Graph.Nodes.Remove(this));
         }
     }
 }

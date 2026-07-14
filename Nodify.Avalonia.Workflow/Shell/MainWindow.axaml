@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:Nodify.Avalonia.Workflow.Shell"
+        xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+        xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared"
+        x:Class="Nodify.Avalonia.Workflow.Shell.MainWindow"
+        x:DataType="shell:ApplicationViewModel"
+        Title="{Binding Title}"
+        WindowStartupLocation="CenterScreen"
+        Height="720" Width="1280"
+        FontSize="14"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="32"
+        Padding="{Binding $self.OffScreenMargin}"
+        Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+
+    <!-- Extended client area: chrome caption buttons overlay top-right (the TitleBar reserves
+         space for them) with OffScreenMargin padding so maximized content isn't clipped. -->
+    <Grid RowDefinitions="Auto,*">
+        <shell:TitleBar Grid.Row="0" />
+
+        <Grid Grid.Row="1" Margin="12" x:Name="LayoutGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="0" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <shell:WorkflowsPanel x:Name="WorkflowsPanelControl"
+                                  Grid.Column="0"
+                                  IsEnabled="{Binding IsZenMode, Converter={x:Static shared:InverseBooleanConverter.Instance}}"
+                                  Opacity="0"
+                                  Margin="0 0 8 0" />
+
+            <!-- Selected sub-workflow -->
+            <Border Grid.Column="1"
+                    IsVisible="{Binding SelectedWorkflow, Converter={x:Static common:NotNullConverter.Instance}}"
+                    CornerRadius="4"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <ContentControl Content="{Binding SelectedWorkflow}" />
+            </Border>
+
+            <GridSplitter x:Name="ColumnSplitter" Grid.Column="2" IsVisible="False" Width="4" />
+
+            <Border x:Name="MainWorkflowChrome"
+                    Grid.Column="3"
+                    CornerRadius="4"
+                    Opacity="0"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <ContentControl Content="{Binding MainWorkflow}" />
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

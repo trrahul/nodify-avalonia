@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Nodify.Avalonia.Workflow.Settings"
+        xmlns:nav="clr-namespace:Nodify.Avalonia.Workflow.Navigation"
+        xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+        x:Class="Nodify.Avalonia.Workflow.Settings.ApplicationSettingsWindow"
+        x:DataType="local:ApplicationSettingsViewModel"
+        Title="Application Settings"
+        WindowStartupLocation="CenterScreen"
+        Height="600" Width="960"
+        FontSize="14"
+        BorderThickness="8"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="32"
+        Padding="{Binding $self.OffScreenMargin}"
+        Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+
+    <!-- The 32px header strip is the caption (extended client area, like the main window). -->
+    <Grid RowDefinitions="32,*" ColumnDefinitions="250,*">
+
+        <Border Grid.Row="0" Grid.ColumnSpan="2"
+                Padding="12 0"
+                WindowDecorationProperties.ElementRole="TitleBar"
+                Background="{DynamicResource LayerFillColorDefaultBrush}">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 0 140 0">
+                <ContentControl Content="{Binding NavigateBackCommand}" Margin="0 0 4 0"
+                                WindowDecorationProperties.ElementRole="User" />
+                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="Workflow Designer" />
+                <Border Classes="Separator" Theme="{StaticResource SeparatorBorder}" Margin="12 0" />
+                <TextBlock VerticalAlignment="Center"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           Text="Settings" />
+            </StackPanel>
+        </Border>
+
+        <ListBox Grid.Row="1" Grid.Column="0"
+                 ItemsSource="{Binding SettingsList}"
+                 SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                 Margin="0 12 16 12">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="local:SettingsEntryViewModel">
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="16" Height="16" VerticalAlignment="Center">
+                            <Path Stretch="Uniform"
+                                  StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+                                  Data="{Binding Icon, Converter={x:Static common:IconToGeometryConverter.Instance}}" />
+                        </Grid>
+                        <TextBlock Margin="16 4" Text="{Binding Name}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Grid Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,*">
+            <ContentControl Grid.Row="0"
+                            Content="{Binding Breadcrumbs}"
+                            Focusable="False"
+                            MaxWidth="900"
+                            Margin="0 12 16 16" />
+
+            <ScrollViewer Grid.Row="1" Padding="0 12 16 0">
+                <nav:NavigationOutlet NavigationService="{Binding NavigationService}" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>

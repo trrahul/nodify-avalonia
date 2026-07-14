@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Reactive;
 using Nodify.Avalonia.Helpers;
@@ -22,10 +23,13 @@ namespace Nodify.Avalonia.Shared.Controls
         public static readonly StyledProperty<bool> AcceptsReturnProperty = TextBox.AcceptsReturnProperty.AddOwner<EditableTextBlock>(new StyledPropertyMetadata<bool>(false));
         public static readonly AttachedProperty<TextWrapping> TextWrappingProperty = TextBlock.TextWrappingProperty.AddOwner<EditableTextBlock>(new StyledPropertyMetadata<TextWrapping>(TextWrapping.Wrap));
         public static readonly AttachedProperty<TextTrimming> TextTrimmingProperty = TextBlock.TextTrimmingProperty.AddOwner<EditableTextBlock>(new StyledPropertyMetadata<TextTrimming>(TextTrimming.CharacterEllipsis));
+        // Default 1: the template's MaxLines="{TemplateBinding MinLines}" quirk depends on it.
         public static readonly StyledProperty<int> MinLinesProperty =
-            AvaloniaProperty.Register<EditableTextBlock, int>(nameof(MinLines));
+            TextBox.MinLinesProperty.AddOwner<EditableTextBlock>(new StyledPropertyMetadata<int>(1));
         public static readonly StyledProperty<int> MaxLinesProperty = TextBox.MaxLinesProperty.AddOwner<EditableTextBlock>();
         public static readonly StyledProperty<int> MaxLengthProperty = TextBox.MaxLengthProperty.AddOwner<EditableTextBlock>();
+        public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty = ContentControl.VerticalContentAlignmentProperty.AddOwner<EditableTextBlock>(new StyledPropertyMetadata<VerticalAlignment>(VerticalAlignment.Center));
+        public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty = ContentControl.HorizontalContentAlignmentProperty.AddOwner<EditableTextBlock>(new StyledPropertyMetadata<HorizontalAlignment>(HorizontalAlignment.Stretch));
 
         private static void OnIsEditingChanged(EditableTextBlock editableTextBlock, AvaloniaPropertyChangedEventArgs<bool> avaloniaPropertyChangedEventArgs) { }
 
@@ -93,11 +97,24 @@ namespace Nodify.Avalonia.Shared.Controls
             set => SetValue(TextTrimmingProperty, value);
         }
 
+        public VerticalAlignment VerticalContentAlignment
+        {
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
+        }
+
+        public HorizontalAlignment HorizontalContentAlignment
+        {
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
+        }
+
         protected TextBox? TextBox { get; private set; }
+
+        private System.IDisposable? _textBoxVisibilitySubscription;
 
         static EditableTextBlock()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(EditableTextBlock), new FrameworkPropertyMetadata(typeof(EditableTextBlock)));
             FocusableProperty.OverrideMetadata<EditableTextBlock>(new StyledPropertyMetadata<bool>(true));
             IsEditableProperty.Changed.AddClassHandler<EditableTextBlock, bool>(OnIsEditingChanged);
         }
@@ -106,13 +123,22 @@ namespace Nodify.Avalonia.Shared.Controls
         {
             base.OnApplyTemplate(e);
 
+            // Detach from the previous template's TextBox so re-templating doesn't
+            // accumulate handlers/subscriptions.
+            if (TextBox != null)
+            {
+                TextBox.LostFocus -= OnLostFocus;
+            }
+
+            _textBoxVisibilitySubscription?.Dispose();
+            _textBoxVisibilitySubscription = null;
+
             TextBox = e.NameScope.Find<TextBox>(ElementTextBox);
 
             if (TextBox != null)
             {
                 TextBox.LostFocus += OnLostFocus;
-                //TextBox.LostKeyboardFocus += OnLostFocus;
-                TextBox.GetBindingObservable(IsVisibleProperty).Subscribe(new AnonymousObserver<BindingValue<bool>>(OnTextBoxVisiblityChanged));
+                _textBoxVisibilitySubscription = TextBox.GetBindingObservable(IsVisibleProperty).Subscribe(new AnonymousObserver<BindingValue<bool>>(OnTextBoxVisiblityChanged));
 
                 if (IsEditing)
                 {
@@ -127,7 +153,7 @@ namespace Nodify.Avalonia.Shared.Controls
             if (IsEditing && TextBox != null)
             {
                 TextBox.Focus();
-                if(TextBox.IsFocused) //todo maybe wrong
+                if(TextBox.IsFocused)
                 {
                     TextBox.SelectAll();
                 }

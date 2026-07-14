@@ -1,0 +1,37 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Nodify.Avalonia.Shapes.App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Standalone dictionary so headless tests can merge the SAME resources that
+                     CanvasView.axaml resolves as StaticResources against Application.Current. -->
+                <ResourceInclude Source="avares://Nodify.Avalonia.Shapes/AppResources.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Nodify.Avalonia/Themes/Controls.xaml"/>
+        <StyleInclude Source="avares://Nodify.Avalonia.Shared/Themes/Styles.axaml"/>
+        <Style Selector="Path">
+            <Setter Property="StrokeThickness" Value="1" />
+        </Style>
+        <!-- Dashed DodgerBlue focus adorner for every keyboard-focused control. -->
+        <Style Selector=":is(Control)">
+            <Setter Property="FocusAdorner">
+                <FocusAdornerTemplate>
+                    <Rectangle Stroke="DodgerBlue"
+                               StrokeThickness="1"
+                               StrokeDashArray="2"
+                               RadiusX="3"
+                               RadiusY="3"
+                               Margin="-2" />
+                </FocusAdornerTemplate>
+            </Setter>
+        </Style>
+    </Application.Styles>
+</Application>

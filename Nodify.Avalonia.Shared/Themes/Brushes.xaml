@@ -31,4 +31,8 @@
     <SolidColorBrush x:Key="GridLinesBrush"
                      Color="{DynamicResource GridLinesColor}" />
 
+    <SolidColorBrush x:Key="PanelBackgroundBrush"
+                     Color="{DynamicResource PanelBackgroundColor}"
+                     Opacity="0.8" />
+
 </ResourceDictionary>

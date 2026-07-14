@@ -1,17 +1,20 @@
-﻿//namespace Nodify.Avalonia.Shared
-////{
-////    public class BindingProxy : Freezable
-////    {
-////        public static readonly DependencyProperty DataContextProperty =
-////            DependencyProperty.Register(nameof(DataContext), typeof(object), typeof(BindingProxy), new UIPropertyMetadata(default(object)));
+using Avalonia;
 
-////        public object DataContext
-////        {
-////            get => GetValue(DataContextProperty);
-////            set => SetValue(DataContextProperty, value);
-////        }
+namespace Nodify.Avalonia.Shared
+{
+    /// <summary>
+    /// Captures a data context as a resource so detached visuals (e.g. context menus in
+    /// item container themes) can bind to it.
+    /// </summary>
+    public class BindingProxy : AvaloniaObject
+    {
+        public static readonly StyledProperty<object?> DataContextProperty =
+            AvaloniaProperty.Register<BindingProxy, object?>(nameof(DataContext));
 
-////        protected override Freezable CreateInstanceCore()
-////            => new BindingProxy();
-////    }
-////}
+        public object? DataContext
+        {
+            get => GetValue(DataContextProperty);
+            set => SetValue(DataContextProperty, value);
+        }
+    }
+}

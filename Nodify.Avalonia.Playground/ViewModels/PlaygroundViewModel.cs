@@ -3,8 +3,7 @@ using System.Collections;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia;
-using Avalonia.Data;
-using Avalonia.Styling;
+using Avalonia.Threading;
 using Nodify.Avalonia.Extensions;
 using Nodify.Avalonia.Playground.Editor;
 using Nodify.Avalonia.Playground.Helpers;
@@ -15,41 +14,37 @@ namespace Nodify.Avalonia.Playground.ViewModels
 {
     public class PlaygroundViewModel : ReactiveObject
     {
-        private bool _currentThemeToggle;
         public NodifyEditorViewModel GraphViewModel { get; } = new NodifyEditorViewModel();
 
         public PlaygroundViewModel()
         {
-            GenerateRandomNodesCommand = ReactiveCommand.Create(GenerateRandomNodes);
-            PerformanceTestCommand = ReactiveCommand.Create(PerformanceTest);
-            ToggleConnectionsCommand = ReactiveCommand.Create(ToggleConnections);
+            // CreateFromTask ties command execution to the whole async operation: post-await
+            // failures surface through the command and overlapping runs are prevented
+            // (Create + async void completed immediately and swallowed both).
+            GenerateRandomNodesCommand = ReactiveCommand.CreateFromTask(GenerateRandomNodes);
+            PerformanceTestCommand = ReactiveCommand.CreateFromTask(PerformanceTest);
+            ToggleConnectionsCommand = ReactiveCommand.CreateFromTask(ToggleConnections);
             ResetCommand = ReactiveCommand.Create(ResetGraph);
-            //BindingOperations.EnableCollectionSynchronization(GraphViewModel.Nodes, GraphViewModel.Nodes);
-            //BindingOperations.EnableCollectionSynchronization(GraphViewModel.Connections, GraphViewModel.Connections);
+
+            Settings.PropertyChanged += OnSettingsChanged;
+        }
+
+        private void OnSettingsChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(PlaygroundSettings.ShouldConnectNodes))
+            {
+                this.RaisePropertyChanged(nameof(ConnectNodesText));
+            }
         }
 
         public ICommand GenerateRandomNodesCommand { get; }
         public ICommand PerformanceTestCommand { get; }
         public ICommand ToggleConnectionsCommand { get; }
         public ICommand ResetCommand { get; }
+        public ICommand SetNextThemeCommand => ThemeManager.SetNextThemeCommand;
         public PlaygroundSettings Settings => PlaygroundSettings.Instance;
 
-        public bool CurrentThemeToggle
-        {
-            get => _currentThemeToggle;
-            set
-            {
-                if (this.IsRaiseAndSetIfChanged(ref _currentThemeToggle, value))
-                {
-                    Application.Current!.RequestedThemeVariant = value switch
-                    {
-                        true => ThemeVariant.Dark,
-                        false => ThemeVariant.Light,
-                        //null => ThemeVariant.Default
-                    };
-                }
-            }
-        }
+        public string ConnectNodesText => Settings.ShouldConnectNodes ? "CONNECT NODES" : "DISCONNECT NODES";
 
         private void ResetGraph()
         {
@@ -58,20 +53,36 @@ namespace Nodify.Avalonia.Playground.ViewModels
             EditorSettings.Instance.Zoom = 1.0d;
         }
 
-        private async void GenerateRandomNodes()
+        private async Task GenerateRandomNodes()
         {
-            var nodes = RandomNodesGenerator.GenerateNodes<FlowNodeViewModel>(new NodesGeneratorSettings(Settings.MinNodes)
+            uint minNodesByType = Settings.MinNodes / 2;
+            uint maxNodesByType = Settings.MaxNodes / 2;
+
+            var nodes = RandomNodesGenerator.GenerateNodes<FlowNodeViewModel>(new NodesGeneratorSettings(minNodesByType)
             {
-                MinNodesCount = Settings.MinNodes,
-                MaxNodesCount = Settings.MaxNodes,
+                MinNodesCount = minNodesByType,
+                MaxNodesCount = maxNodesByType,
                 MinInputCount = Settings.MinConnectors,
                 MaxInputCount = Settings.MaxConnectors,
                 MinOutputCount = Settings.MinConnectors,
                 MaxOutputCount = Settings.MaxConnectors,
                 GridSnap = EditorSettings.Instance.GridSpacing
             });
+
+            var verticalNodes = RandomNodesGenerator.GenerateNodes<VerticalNodeViewModel>(new NodesGeneratorSettings(minNodesByType)
+            {
+                MinNodesCount = minNodesByType,
+                MaxNodesCount = maxNodesByType,
+                MinInputCount = Settings.MinConnectors,
+                MaxInputCount = Settings.MaxConnectors,
+                MinOutputCount = Settings.MinConnectors,
+                MaxOutputCount = Settings.MaxConnectors,
+                GridSnap = EditorSettings.Instance.GridSpacing
+            });
+
             GraphViewModel.Nodes.Clear();
             await CopyToAsync(nodes, GraphViewModel.Nodes);
+            await CopyToAsync(verticalNodes, GraphViewModel.Nodes);
 
             if (Settings.ShouldConnectNodes)
             {
@@ -79,7 +90,7 @@ namespace Nodify.Avalonia.Playground.ViewModels
             }
         }
 
-        private async void ToggleConnections()
+        private async Task ToggleConnections()
         {
             if (Settings.ShouldConnectNodes)
             {
@@ -91,7 +102,7 @@ namespace Nodify.Avalonia.Playground.ViewModels
             }
         }
 
-        private async void PerformanceTest()
+        private async Task PerformanceTest()
         {
             uint count = Settings.PerformanceTestNodes;
             int distance = 500;
@@ -116,51 +127,72 @@ namespace Nodify.Avalonia.Playground.ViewModels
             }
         }
 
-        private async Task ConnectNodes()
+        private Task ConnectNodes()
         {
             var schema = new GraphSchema();
             var connections = RandomNodesGenerator.GenerateConnections(GraphViewModel.Nodes);
 
             if (Settings.AsyncLoading)
             {
-                await Task.Run(() =>
-                {
-                    for (int i = 0; i < connections.Count; i++)
-                    {
-                        var con = connections[i];
-                        schema.TryAddConnection(con.Input, con.Output);
-                    }
-                });
-            }
-            else
-            {
-                for (int i = 0; i < connections.Count; i++)
+                // schema.TryAddConnection mutates GraphViewModel.Connections, so the mutation
+                // must run on the UI thread even though the loading is driven off of it.
+                return AddBatchedAsync(connections.Count, i =>
                 {
                     var con = connections[i];
                     schema.TryAddConnection(con.Input, con.Output);
-                }
+                });
             }
+
+            for (int i = 0; i < connections.Count; i++)
+            {
+                var con = connections[i];
+                schema.TryAddConnection(con.Input, con.Output);
+            }
+
+            return Task.CompletedTask;
         }
 
-        private async Task CopyToAsync(IList source, IList target)
+        private Task CopyToAsync(IList source, IList target)
         {
             if (Settings.AsyncLoading)
             {
-                await Task.Run(() =>
-                {
-                    for (int i = 0; i < source.Count; i++)
-                    {
-                        target.Add(source[i]);
-                    }
-                });
+                return AddBatchedAsync(source.Count, i => target.Add(source[i]));
             }
-            else
+
+            for (int i = 0; i < source.Count; i++)
             {
-                for (int i = 0; i < source.Count; i++)
-                {
-                    target.Add(source[i]);
-                }
+                target.Add(source[i]);
             }
+
+            return Task.CompletedTask;
+        }
+
+        // Number of UI-bound mutations to apply per dispatcher hop while async loading.
+        private const int UiBatchSize = 64;
+
+        /// <summary>
+        /// Runs the loading loop off the UI thread but marshals every mutation of the UI-bound
+        /// <c>Nodes</c>/<c>Connections</c> collections back onto <see cref="Dispatcher.UIThread"/>
+        /// in small batches, keeping the editor responsive without ever raising a change
+        /// notification from a background thread.
+        /// </summary>
+        private static async Task AddBatchedAsync(int count, Action<int> addAt)
+        {
+            await Task.Run(async () =>
+            {
+                for (int start = 0; start < count; start += UiBatchSize)
+                {
+                    int begin = start;
+                    int end = Math.Min(begin + UiBatchSize, count);
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        for (int i = begin; i < end; i++)
+                        {
+                            addAt(i);
+                        }
+                    });
+                }
+            });
         }
     }
 }

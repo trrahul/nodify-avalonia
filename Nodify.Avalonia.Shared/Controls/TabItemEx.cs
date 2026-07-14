@@ -23,7 +23,6 @@ namespace Nodify.Avalonia.Shared.Controls
 
         static TabItemEx()
         {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(TabItemEx), new FrameworkPropertyMetadata(typeof(TabItemEx)));
         }
     }
 }

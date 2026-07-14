@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:common="clr-namespace:Nodify.Avalonia.Workflow.Common"
+             x:Class="Nodify.Avalonia.Workflow.Settings.KeybindingsCategory"
+             x:Name="Root">
+
+    <Button Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+            HorizontalAlignment="Stretch"
+            HorizontalContentAlignment="Stretch"
+            Command="{Binding Command, ElementName=Root}"
+            Padding="16">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <Grid Grid.Column="0" Margin="0 0 12 0"
+                  Width="20" Height="20" VerticalAlignment="Center">
+                <Path Stretch="Uniform"
+                      StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Stroke="{DynamicResource TextFillColorPrimaryBrush}"
+                      Data="{Binding Icon, ElementName=Root, Converter={x:Static common:IconToGeometryConverter.Instance}}" />
+            </Grid>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Label, ElementName=Root}" />
+                <TextBlock Text="{Binding Description, ElementName=Root}"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <Path Grid.Column="2"
+                  Height="16" Stretch="Uniform"
+                  StrokeThickness="1.6" StrokeLineCap="Round" StrokeJoin="Round"
+                  Stroke="{DynamicResource TextFillColorSecondaryBrush}"
+                  VerticalAlignment="Center"
+                  Data="{StaticResource Icon.ChevronRight}" />
+        </Grid>
+    </Button>
+</UserControl>

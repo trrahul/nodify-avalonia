@@ -1,0 +1,130 @@
+<UserControl x:Class="Nodify.StateMachine.BlackboardKeyEditorView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Nodify.StateMachine"
+             xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared"
+             xmlns:sharedControls="clr-namespace:Nodify.Avalonia.Shared.Controls;assembly=Nodify.Avalonia.Shared"
+             xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
+             xmlns:behaviours="clr-namespace:Nodify.Avalonia.StateMachine.Behaviours"
+             mc:Ignorable="d"
+             d:Background="{DynamicResource PanelBackgroundBrush}"
+             d:DesignWidth="400">
+    <UserControl.Resources>
+        <local:FilterBlackboardKeysConverter x:Key="FilterBlackboardKeysConverter" />
+
+        <DataTemplate x:Key="BooleanTemplate"
+                      DataType="{x:Type local:BlackboardKeyEditorViewModel}">
+            <CheckBox IsChecked="{Binding Target.Value}"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center" />
+        </DataTemplate>
+        <DataTemplate x:Key="IntegerTemplate"
+                      DataType="{x:Type local:BlackboardKeyEditorViewModel}">
+            <TextBox Text="{Binding Target.Value, UpdateSourceTrigger=LostFocus}" />
+        </DataTemplate>
+        <DataTemplate x:Key="DoubleTemplate"
+                      DataType="{x:Type local:BlackboardKeyEditorViewModel}">
+            <TextBox Text="{Binding Target.Value, UpdateSourceTrigger=LostFocus}" />
+        </DataTemplate>
+        <DataTemplate x:Key="StringTemplate"
+                      DataType="{x:Type local:BlackboardKeyEditorViewModel}">
+            <TextBox Text="{Binding Target.Value, UpdateSourceTrigger=LostFocus}" />
+        </DataTemplate>
+        <DataTemplate x:Key="ObjectTemplate"
+                      DataType="{x:Type local:BlackboardKeyEditorViewModel}">
+            <TextBox Text="{Binding Target.Value, UpdateSourceTrigger=LostFocus}"
+                     IsEnabled="False" />
+        </DataTemplate>
+        <DataTemplate x:Key="KeyTemplate"
+                      DataType="{x:Type local:BlackboardKeyEditorViewModel}">
+            <ComboBox SelectedItem="{Binding Target.Value}"
+                      DisplayMemberBinding="{Binding Name}">
+                <ComboBox.ItemsSource>
+                    <MultiBinding Converter="{StaticResource FilterBlackboardKeysConverter}">
+                        <Binding Path="AvailableKeys" />
+                        <Binding Path="Target.Type" />
+                        <!--USED TO NOTIFY OF COLLECTION CHANGED-->
+                        <Binding Path="AvailableKeys.Count" />
+                    </MultiBinding>
+                </ComboBox.ItemsSource>
+            </ComboBox>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="KeyName" />
+            <ColumnDefinition Width="Auto"
+                              SharedSizeGroup="KeyType" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <sharedControls:EditableTextBlock Text="{Binding Target.Name}"
+                                           IsEditing="{Binding IsEditing}"
+                                           Foreground="{DynamicResource ForegroundBrush}"
+                                           VerticalAlignment="Stretch"
+                                           Margin="1 1 5 1" />
+
+        <ComboBox ItemsSource="{Binding Target.Type, Converter={shared:EnumValuesConverter}}"
+                  IsEnabled="{Binding CanChangeKeyType}"
+                  SelectedValue="{Binding Target.Type}"
+                  SelectedValueBinding="{Binding Value}"
+                  DisplayMemberBinding="{Binding Name}"
+                  Grid.Column="1"
+                  Margin="0 0 5 0" />
+
+        <Grid Grid.Column="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MaxWidth="150" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <ContentControl Content="{Binding}">
+                <i:Interaction.Behaviors>
+                    <behaviours:DataTrigger Property="Target.Type" Value="Boolean">
+                        <behaviours:PropertySetter Property="ContentTemplate" Value="{StaticResource BooleanTemplate}" />
+                    </behaviours:DataTrigger>
+                    <behaviours:DataTrigger Property="Target.Type" Value="Integer">
+                        <behaviours:PropertySetter Property="ContentTemplate" Value="{StaticResource IntegerTemplate}" />
+                    </behaviours:DataTrigger>
+                    <behaviours:DataTrigger Property="Target.Type" Value="Double">
+                        <behaviours:PropertySetter Property="ContentTemplate" Value="{StaticResource DoubleTemplate}" />
+                    </behaviours:DataTrigger>
+                    <behaviours:DataTrigger Property="Target.Type" Value="String">
+                        <behaviours:PropertySetter Property="ContentTemplate" Value="{StaticResource StringTemplate}" />
+                    </behaviours:DataTrigger>
+                    <behaviours:DataTrigger Property="Target.Type" Value="Object">
+                        <behaviours:PropertySetter Property="ContentTemplate" Value="{StaticResource ObjectTemplate}" />
+                    </behaviours:DataTrigger>
+                    <behaviours:DataTrigger Property="Target.ValueIsKey" Value="True">
+                        <behaviours:PropertySetter Property="ContentTemplate" Value="{StaticResource KeyTemplate}" />
+                    </behaviours:DataTrigger>
+                </i:Interaction.Behaviors>
+            </ContentControl>
+
+            <CheckBox IsVisible="{Binding CanChangeInputType}"
+                      IsChecked="{Binding Target.ValueIsKey}"
+                      ToolTip.Tip="Toggle input type"
+                      Theme="{StaticResource IconCheckBox}"
+                      Grid.Column="1">
+                <CheckBox.Styles>
+                    <Style Selector="CheckBox">
+                        <Setter Property="Content" Value="{StaticResource DiamondIcon}" />
+                    </Style>
+                </CheckBox.Styles>
+                <i:Interaction.Behaviors>
+                    <behaviours:DataTrigger Property="IsChecked" UseDataContext="False" Value="True">
+                        <behaviours:PropertySetter Property="Content" Value="{StaticResource DiamondFillIcon}" />
+                    </behaviours:DataTrigger>
+                </i:Interaction.Behaviors>
+            </CheckBox>
+        </Grid>
+    </Grid>
+</UserControl>

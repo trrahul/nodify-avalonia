@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Nodify.Avalonia.Shared;
 using Avalonia;
 using ReactiveUI;
 
@@ -63,8 +64,6 @@ namespace Nodify.Avalonia.Playground.Editor
 
         public ConnectorFlow Flow { get; private set; }
 
-        public bool IsFlow { get; private set; }
-
         public int MaxConnections { get; set; } = 2;
 
         public NodifyObservableCollection<ConnectionViewModel> Connections { get; } = new NodifyObservableCollection<ConnectionViewModel>();
@@ -75,7 +74,6 @@ namespace Nodify.Avalonia.Playground.Editor
             {
                 c.Input.IsConnected = true;
                 c.Output.IsConnected = true;
-                c.IsFlow = IsFlow;
             }).WhenRemoved(c =>
             {
                 if (c.Input.Connections.Count == 0)
@@ -94,31 +92,11 @@ namespace Nodify.Avalonia.Playground.Editor
         {
             if (Node is FlowNodeViewModel flow)
             {
-                if (flow.Input.Contains(this))
-                {
-                    Flow = ConnectorFlow.Input;
-                    IsFlow = false;
-                }
-                else if (flow.Output.Contains(this))
-                {
-                    Flow = ConnectorFlow.Output;
-                    IsFlow = false;
-                }
-                else if (flow.FlowInput.Contains(this))
-                {
-                    Flow = ConnectorFlow.Input;
-                    IsFlow = true;
-                }
-                else if (flow.FlowOutput.Contains(this))
-                {
-                    Flow = ConnectorFlow.Output;
-                    IsFlow = true;
-                }
+                Flow = flow.Input.Contains(this) ? ConnectorFlow.Input : ConnectorFlow.Output;
             }
             else if (Node is KnotNodeViewModel knot)
             {
                 Flow = knot.Flow;
-                IsFlow = knot.IsFlow;
             }
         }
 

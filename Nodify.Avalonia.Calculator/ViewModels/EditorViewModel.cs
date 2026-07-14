@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Input;
-using Avalonia.Controls;
 using ReactiveUI;
 
 namespace Nodify.Avalonia.Calculator.ViewModels
@@ -36,12 +35,6 @@ namespace Nodify.Avalonia.Calculator.ViewModels
         {
             get => _name;
             set => this.RaiseAndSetIfChanged(ref _name, value);
-        }
-
-        public object? Header //todo temp fix for issue with tabitem header
-        {
-            get => Name;
-            set => Name = (string?)value;
         }
     }
 }

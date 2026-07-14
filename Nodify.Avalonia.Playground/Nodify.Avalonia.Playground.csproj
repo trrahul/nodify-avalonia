@@ -5,18 +5,27 @@
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Reflection bindings by default: this is a demo app and several settings bindings are
+         intentionally late-bound (enum item lists, object-typed setting values). -->
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>Nodify.Avalonia.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="Themes\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="12.0.5" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.5" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
+    <PackageReference Include="ReactiveUI.Avalonia" Version="12.0.3" />
 
   </ItemGroup>
 

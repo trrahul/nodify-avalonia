@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:shared="clr-namespace:Nodify.Avalonia.Shared.Converters;assembly=Nodify.Avalonia.Shared">
+
+    <shared:ColorToSolidColorBrushConverter x:Key="ColorToBrush" />
+    <shared:ToStringConverter x:Key="ToStringConverter" />
+
+</ResourceDictionary>
