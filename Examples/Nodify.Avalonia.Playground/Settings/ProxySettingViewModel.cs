@@ -35,20 +35,36 @@ namespace Nodify.Avalonia.Playground
                 if (value is T t)
                 {
                     converted = t;
+
+                    _setter(converted);
+                    this.RaisePropertyChanged(nameof(Value));
                 }
                 else if (typeof(T).IsEnum && value != null)
                 {
+                    // PLL : Seems for enum we got null value and we don't go here. So I had to test for null value below.
                     converted = (T)Enum.ToObject(typeof(T), value);
+
+                    _setter(converted);
+                    this.RaisePropertyChanged(nameof(Value));
                 }
                 else
                 {
-                    // Invariant culture so number rows like "1.5" parse to 1.5 regardless of
-                    // OS locale (under CurrentCulture de-DE it became 15).
-                    converted = (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture)!;
-                }
+                    if (value is not null)
+                    {
+                        // Invariant culture so number rows like "1.5" parse to 1.5 regardless of
+                        // OS locale (under CurrentCulture de-DE it became 15).
+                        converted = (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture)!;
 
-                _setter(converted);
-                this.RaisePropertyChanged(nameof(Value));
+                        _setter(converted);
+                        this.RaisePropertyChanged(nameof(Value));
+                    }
+                    else
+                    {
+                        // PLL : filter null
+                        Console.WriteLine($"Bug in {Name} {Description} {Type} : Old value {Value} - new value {value}");
+                        this.RaisePropertyChanged(nameof(Value));
+                    }
+                }
             }
         }
     }
